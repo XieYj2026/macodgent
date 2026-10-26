@@ -1,0 +1,38 @@
+Package: macodgent
+Title: Toolkit for Routine Medical Data Science Analysis
+Version: 0.1.1
+Authors@R: c(person(given = "Xie YJ", role = c("aut", "cre"),
+    email = "xiemacodgent@163.com"), person(given = "MA Codgent",
+    role = c("cph")))
+Maintainer: Xie YJ <xiemacodgent@163.com>
+Description: A collection of reusable analysis functions derived from the second
+    part of the Chinese column "Exploring Medical Data Science with R"
+    ("Routine Analysis Techniques"). It covers data preprocessing, quantitative
+    and qualitative descriptive statistics, conventional and advanced regression,
+    survival analysis, competing-risk models, and models for transitions
+    between multiple states.
+    All exported functions use the 'mc_' prefix and return tidy data frames for
+    direct use in reports and downstream workflows.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Imports:
+    tidyr,
+    survival,
+    ggplot2,
+    broom,
+    stats,
+    utils
+Suggests:
+    MASS,
+    mice,
+    glmnet,
+    mgcv,
+    cmprsk,
+    mstate,
+    quantreg,
+    testthat (>= 3.0.0),
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3
