@@ -1,0 +1,11 @@
+^.*\.Rproj$
+^\.Rbuildignore$
+^\.git$
+^\.DS_Store$
+^\.gitignore$
+^\.Rhistory$
+^\.RData$
+^\.Ruserdata$
+^.*\.tar\.gz$
+^\.Rcheck$
+^cran-comments\.md$
