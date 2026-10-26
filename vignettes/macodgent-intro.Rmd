@@ -1,0 +1,61 @@
+---
+title: "macodgent: packaging the Routine Analysis Techniques into one toolkit"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction to macodgent}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+library(macodgent)
+library(MASS)
+```
+
+# Background
+
+Part 2 ("Routine Analysis Techniques") of the column *Exploring Medical Data
+Science with R* covers eight chapters: meeting the data, preprocessing,
+quantitative / qualitative description, conventional regression, survival
+analysis, advanced regression, and advanced survival analysis. Each section
+scatters reusable analysis actions. `macodgent` distils those actions into a
+uniform set of `mc_*` functions that always return a tidy `data.frame`.
+
+# 1. Data overview and mode
+
+```{r}
+mc_inspect(birthwt)[1:6, ]
+mc_mode(c(1, 2, 2, 3, 3, 3, 4, 5, 5, 6))
+```
+
+# 2. Quantitative description (flagship: 20 metrics at once)
+
+```{r}
+mc_desc_quant(birthwt, vars = c("age", "lwt", "bwt"))
+```
+
+# 3. Univariate screen -> multivariable logistic
+
+```{r}
+sc <- mc_logistic_screen(birthwt, y = "low",
+  x_vars = c("age", "lwt", "race", "smoke", "ht", "ui"))
+sc$univariate
+```
+
+# 4. Survival analysis
+
+```{r}
+fit <- mc_cox(survival::lung, survival::Surv(time, status) ~ age + sex + ph.ecog)
+fit$forest
+```
+
+# 5. Restricted cubic spline (self-built basis)
+
+```{r}
+rcs <- mc_rcs(birthwt, x = "age", y = "bwt", nk = 3)
+rcs$plot
+```
+
+The mapping between each function and the chapters of Part 2 is listed in the
+module table of `README.md`.
