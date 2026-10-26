@@ -1,0 +1,15 @@
+# R 包源码管理忽略项
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+.Renv.lock
+.DS_Store
+
+# pkgdown 站点产物（本地预览用，勿提交）
+docs/
+
+# 本地构建/检查产物
+*.tar.gz
+.Rcheck/
+..Rcheck/
