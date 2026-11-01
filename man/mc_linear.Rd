@@ -31,7 +31,7 @@ Regression diagnostic plots.
 Purpose: fit simple or multiple linear regression and automatically produce a
 Reportable coefficient table and diagnostics.
 Methods: ordinary least squares via \code{stats::lm}; on top of it, three
-Self-implemented diagnostics—
+Self-implemented diagnostics -
 (1) \emph{Bootstrap CI}: resample observations with replacement and refit
 Repeatedly, taking empirical quantiles of coefficients as the interval, with
 No normality assumption (enable with \code{bootstrap > 0});
@@ -45,7 +45,7 @@ Points).
 Arguments: \code{data} is a data frame; \code{formula} is the model formula
 (e.g. \code{y ~ x1 + x2}); \code{bootstrap} is the number of resamples (default 0 = no
 Bootstrap CI); \code{conf_level} is the confidence level, default 0.95.
-Result: returns a list—\code{coef} (coefficient table: estimate/SE/t/p/normal CI,
+Result: returns a list - \code{coef} (coefficient table: estimate/SE/t/p/normal CI,
 Plus boot lower/upper if bootstrap on), \code{performance} (R^2/adjusted R^2/F
 Statistic/AIC/BIC), \code{vif} (VIF per predictor), \code{diagnostics} (diagnostic
 Data frame), \code{diag_plots} (list of four ggplot objects), \code{plot} (main
