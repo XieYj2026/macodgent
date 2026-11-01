@@ -2,7 +2,7 @@
 % Please edit documentation in R/mc-preprocess.R
 \name{mc_wide_long}
 \alias{mc_wide_long}
-\title{Wide to long (tidyr wrapper)}
+\title{Wide to long (native base R)}
 \usage{
 mc_wide_long(
   .data,
@@ -13,23 +13,47 @@ mc_wide_long(
 )
 }
 \arguments{
-\item{.data}{A data.frame.}
+\item{.data}{A \code{data.frame}.}
 
 \item{id_cols}{Identifier columns to keep.}
 
 \item{measure_vars}{Measured columns to pivot longer.}
 
-\item{name_to}{Output name column. Default "variable".}
+\item{name_to}{Output name column; default \code{"variable"}.}
 
-\item{value_to}{Output value column. Default "value".}
+\item{value_to}{Output value column; default \code{"value"}.}
 }
 \value{
-The long data.frame.
+The long \code{data.frame}.
 }
 \description{
-Corresponds to Chapter 2 ("wide/long conversion").
+Pivots the specified measure columns of a wide table into a long layout.
+Implemented natively in base R with \strong{no external pivoting dependency}.
+}
+\details{
+Purpose: Convert a wide table (multiple measurements of one subject in
+different columns) to a long table (one row per measurement); a core step in
+data processing.
+Method (original, native implementation): First verify that \code{id_cols} and
+\code{measure_vars} exist in the data.frame; then for each measure column, replicate
+and stack the identifier columns by the number of measure columns, and merge
+each measure column name as the "variable" and its values as the "value",
+producing a tidy long table. Uses only base R with no external dependency.
+Arguments: \code{.data} is a data.frame; \code{id_cols} are the identifier columns to
+keep (e.g. ID, group); \code{measure_vars} are the measure columns to lengthen;
+\code{name_to}/\code{value_to} are the output column names for "variable" and "value",
+defaulting to variable / value.
+Result: Returns a long-format data.frame.
+Note: After conversion, rows = original rows x number of measure columns; this
+is the inverse of mc_long_wide(). If measure columns carry time suffixes
+(e.g. t1/t2/t3), the result is a tidy "time-value" pair of columns, convenient
+for repeated-measures analysis. Identifier columns that are factors are
+preserved as factors; measure columns should share a common type, otherwise
+the "value" column is coerced to a common type.
 }
 \examples{
-wide <- data.frame(id = 1:2, t1 = c(10, 20), t2 = c(15, 25))
-mc_wide_long(wide, id_cols = "id", measure_vars = c("t1", "t2"))
+# Chapter 2: convert wide table of longitudinal blood-pressure measurements to long (t1/t2/t3 visits)
+wide <- data.frame(id = 1:4,
+  t1 = rnorm(4, 120), t2 = rnorm(4, 122), t3 = rnorm(4, 118))
+mc_wide_long(wide, id_cols = "id", measure_vars = c("t1", "t2", "t3"))
 }
