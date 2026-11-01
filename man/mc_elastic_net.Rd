@@ -23,30 +23,30 @@ mc_elastic_net(data, x, y, alpha = 0.5, nfolds = 10, family = "gaussian")
 A list with \code{cv}, \code{coefficients}, \code{lambda.min}, \code{alpha}.
 }
 \description{
-Corresponds to Chapter 7 "Elastic Net Regression" of the routine
-medical-data-science tutorial. Built on \pkg{glmnet}; \code{alpha} tunes between
+Elastic net blends L1 and L2 penalties, balancing variable selection and shrinkage.
+Built on \pkg{glmnet}; \code{alpha} tunes between
 ridge (0) and lasso (1).
 }
 \details{
 Purpose: Use elastic net to combine Lasso's sparsity with ridge's robustness to
-collinearity; it is a continuous interpolation between the two.
+Collinearity; it is a continuous interpolation between the two.
 Method: Based on glmnet; \code{alpha} tunes the mixing ratio between 0 (pure
-ridge) and 1 (pure Lasso); \code{alpha = 0.5} is a common compromise.
+Ridge) and 1 (pure Lasso); \code{alpha = 0.5} is a common compromise.
 Arguments: \code{data} is a data frame; \code{x} is a vector of predictor column
-names; \code{y} is the response column name; \code{alpha} is the mixing parameter
+Names; \code{y} is the response column name; \code{alpha} is the mixing parameter
 (default 0.5); \code{nfolds} is the number of CV folds; \code{family} defaults to gaussian.
 Results: Returns a list with \code{coefficients} (coefficients shrunk per the
-chosen alpha, some possibly zero).
+Chosen alpha, some possibly zero).
 Notes: When predictors are grouped and highly correlated, elastic net is more
-robust than Lasso: it keeps or drops the whole group together rather than
-randomly keeping one. The closer alpha is to 1, the more it favours selection;
-the closer to 0, the more it favours shrinkage. Depends on glmnet (Suggests).
+Robust than Lasso: it keeps or drops the whole group together rather than
+Randomly keeping one. The closer alpha is to 1, the more it favours selection;
+The closer to 0, the more it favours shrinkage. Depends on glmnet (Suggests).
 }
 \examples{
 \donttest{
-# Chapter 7: elastic net (alpha = 0.5) balances variable selection and shrinkage
-xvars <- setdiff(names(mtcars), "mpg")
-mc_elastic_net(mtcars, x = xvars, y = "mpg", alpha = 0.5)$coefficients
+# elastic net (alpha = 0.5) balances variable selection and shrinkage
+Xvars <- setdiff(names(mtcars), "mpg")
+Mc_elastic_net(mtcars, x = xvars, y = "mpg", alpha = 0.5)$coefficients
 }
 }
 \seealso{
