@@ -7,19 +7,38 @@
 mc_var_test(x, g, method = c("bartlett", "fligner", "levene"))
 }
 \arguments{
-\item{x}{A numeric vector.}
+\item{x}{Numeric vector.}
 
 \item{g}{A grouping factor.}
 
-\item{method}{"bartlett" (default), "fligner" or "levene".}
+\item{method}{\code{"bartlett"} (default) / \code{"fligner"} / \code{"levene"} (test method).}
 }
 \value{
-A data.frame: test / statistic / p.value.
+A \code{data.frame} with columns \code{test}, \code{statistic}, \code{p.value}.
 }
 \description{
 Corresponds to Chapter 3 ("three methods for variance homogeneity"):
-Bartlett, Fligner-Killeen, and Levene (mean-deviation method).
+Bartlett, Fligner-Killeen, and Levene (mean-deviation method). Returns the
+test name, statistic and p-value.
+}
+\details{
+Purpose: test whether several groups have equal population variances (variance
+homogeneity), a prerequisite before choosing ANOVA / t-tests (which usually
+assume equal variance).
+Methods: \code{bartlett} (default) is most sensitive for normal data; \code{fligner}
+(Fligner-Killeen) is robust to non-normality; \code{levene} (Levene) is based on
+deviations and robust to heavy-tailed distributions, the most commonly used.
+Arguments: \code{x} is a numeric vector; \code{g} is the grouping factor/vector (same
+length as \code{x}); \code{method} selects one of the three.
+Result: returns the test statistic, degrees of freedom and p-value.
+Note: if variances are unequal (small p), use Welch correction (e.g. mc_ttest
+defaults to Welch for two samples) or a non-parametric method instead of the
+standard t-test/ANOVA. Bartlett relies strongly on normality; for non-normal
+data prefer Levene or Fligner.
 }
 \examples{
-mc_var_test(MASS::birthwt$bwt, MASS::birthwt$smoke, method = "bartlett")
+# Chapter 3: test variance homogeneity of birth weight across races (race)
+birthwt <- MASS::birthwt
+mc_var_test(birthwt$bwt, birthwt$race, method = "bartlett")
+mc_var_test(birthwt$bwt, birthwt$race, method = "levene")
 }
