@@ -7,19 +7,36 @@
 mc_norm_test(x, method = c("shapiro", "ks"), ...)
 }
 \arguments{
-\item{x}{A numeric vector.}
+\item{x}{Numeric vector.}
 
-\item{method}{"shapiro" (default) or "ks".}
+\item{method}{\code{"shapiro"} (default) or \code{"ks"} (test method).}
 
-\item{...}{Extra arguments passed to \code{ks.test}.}
+\item{...}{Extra arguments passed to \code{stats::ks.test()}.}
 }
 \value{
-A data.frame: test / statistic / p.value.
+A \code{data.frame} with columns \code{test}, \code{statistic}, \code{p.value}.
 }
 \description{
-Corresponds to Chapter 3: Shapiro-Wilk (default, robust for n <= 5000)
-or Kolmogorov-Smirnov.
+Corresponds to Chapter 3: Shapiro-Wilk (default, robust for n <= 5000) or
+Kolmogorov-Smirnov. Returns the test name, statistic and p-value.
+}
+\details{
+Purpose: test whether a quantitative variable follows a normal distribution;
+a prerequisite for choosing parametric vs non-parametric methods.
+Methods: \code{shapiro} (default) is the Shapiro-Wilk test, sensitive and powerful
+for small-to-moderate samples (typically n < 5000); \code{ks} is the
+Kolmogorov-Smirnov test, by default compared against the standard normal,
+sensitive to location/scale.
+Arguments: \code{x} is the numeric vector to test; \code{method} selects one of the two.
+Result: returns the test statistic, p-value, etc.
+Note: with large samples normality tests easily become "significant" (tiny p)
+even when deviation is practically harmless, so do not rely on p alone—combine
+with histograms, Q-Q plots and skewness/kurtosis. The Shapiro test may be
+unreliable or very slow for n > 5000.
 }
 \examples{
-mc_norm_test(MASS::birthwt$age)
+# Chapter 3: test whether quantitative variables in birthwt are normal
+birthwt <- MASS::birthwt
+mc_norm_test(birthwt$bwt)         # birth weight
+mc_norm_test(birthwt$age)         # mother's age
 }
