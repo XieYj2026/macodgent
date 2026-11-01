@@ -20,33 +20,33 @@ A list with \code{model} (final glm object), \code{coefficients}
 (coefficient table), and \code{formula} (final formula).
 }
 \description{
-Corresponds to Chapters 5 and 7: stepwise selection based on AIC
+Stepwise selection based on AIC
 (default \code{k = 2}), returning a coefficient table (OR / regression
-coefficients).
+Coefficients).
 }
 \details{
 Purpose: Perform stepwise variable selection based on an information criterion
 (AIC), automatically adding/removing variables from the full model to obtain a
-simpler regression model.
+Simpler regression model.
 Method: Aims to minimise AIC and supports "both" (default, bidirectional, can
-enter or leave), "backward" (drop from the full model), and "forward" (add
-from the null model); \code{k} is the penalty (default 2 gives AIC; using log(n)
-gives BIC).
+Enter or leave), "backward" (drop from the full model), and "forward" (add
+From the null model); \code{k} is the penalty (default 2 gives AIC; using log(n)
+Gives BIC).
 Arguments: \code{data} is a data.frame; \code{formula} contains all candidate
-predictors; \code{direction} selects the direction; \code{k} is the AIC/BIC penalty.
+Predictors; \code{direction} selects the direction; \code{k} is the AIC/BIC penalty.
 Result: Returns a list with the final \code{coefficients} (coefficient table) and
 \code{formula} (the formula of finally selected variables).
 Note: Stepwise regression is convenient for exploration but has statistical
-flaws — p values are underestimated, confidence intervals are too narrow, and
-overfitting is likely; results also depend on arbitrary entry/removal
-thresholds. Treat it as a "draft" for variable screening; important
-conclusions still need domain knowledge and a pre-registered analysis plan.
+Flaws — p values are underestimated, confidence intervals are too narrow, and
+Overfitting is likely; results also depend on arbitrary entry/removal
+Thresholds. Treat it as a "draft" for variable screening; important
+Conclusions still need domain knowledge and a pre-registered analysis plan.
 }
 \examples{
-# Chapters 5/7: AIC-based stepwise variable selection
-birthwt <- MASS::birthwt
-bw <- birthwt
-bw$race  <- factor(bw$race)
-bw$smoke <- factor(bw$smoke)
-mc_stepwise(bw, low ~ age + lwt + race + smoke + ht + ui)$coefficients
+# AIC-based stepwise variable selection
+Birthwt <- MASS::birthwt
+Bw <- birthwt
+Bw$race <- factor(bw$race)
+Bw$smoke <- factor(bw$smoke)
+Mc_stepwise(bw, low ~ age + lwt + race + smoke + ht + ui)$coefficients
 }
