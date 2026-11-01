@@ -17,51 +17,50 @@ mc_impute_mice(.data, m = 5, method = NULL, ...)
 }
 \value{
 A list with \code{mids}, \code{long}, and \code{summary}: \code{mids} is
-the raw \code{mids} object, \code{long} is the imputed long table (from
+The raw \code{mids} object, \code{long} is the imputed long table (from
 \code{mice::complete(action = "long")}), and \code{summary} is the per-variable
-imputation diagnostic table.
+Imputation diagnostic table.
 }
 \description{
-Corresponds to Chapter 2 ("multiple imputation by chained equations").
 Requires the \pkg{mice} package (Suggests). On top of the MICE engine, it
 \strong{adds an original per-variable imputation diagnostic}.
 }
 \details{
 Purpose: Use multiple imputation by chained equations (MICE) to handle
-missingness, suitable when the missingness mechanism is complex and you want
-to retain uncertainty; it also provides a quantitative per-column imputation
-diagnostic afterwards.
+Missingness, suitable when the missingness mechanism is complex and you want
+To retain uncertainty; it also provides a quantitative per-column imputation
+Diagnostic afterwards.
 Dependency: Requires the mice package (Suggests); an informative error is
-raised if it is not installed.
+Raised if it is not installed.
 Method: For each variable with missingness, related variables are used as
-predictors in an iterative model that generates multiple complete datasets,
-preserving the uncertainty due to missingness.
+Predictors in an iterative model that generates multiple complete datasets,
+Preserving the uncertainty due to missingness.
 Arguments: \code{.data} is a data.frame; \code{m} is the number of imputations
 (datasets generated), default 5; \code{method} of NULL means automatic selection;
 \code{...} is passed to mice::mice().
 Result: Returns a list containing \code{mids} (the raw multiple-imputation object
-for further analysis), \code{long} (the long table from
-mice::complete(action = "long")), and \code{summary} — an \strong{original diagnostic
-table}: per variable it gives \code{n_missing_original} (original missing count),
+For further analysis), \code{long} (the long table from
+Mice::complete(action = "long")), and \code{summary} — an \strong{original diagnostic
+Table}: per variable it gives \code{n_missing_original} (original missing count),
 \code{n_imputed} (count of imputed observations), and \code{pct_imputed} (imputation
-proportion).
+Proportion).
 Note: Analysis after multiple imputation should not rely on a single dataset;
-instead use the \code{mids} object with downstream functions supporting mice
+Instead use the \code{mids} object with downstream functions supporting mice
 (e.g. with()/pool()) to pool results. The \code{summary} is only for quickly
-checking which variables were imputed and by how much, and does not represent
-imputation quality itself.
+Checking which variables were imputed and by how much, and does not represent
+Imputation quality itself.
 }
 \examples{
 \dontrun{
-# Chapter 2: multiple imputation by chained equations (MICE) with per-variable diagnostic
-set.seed(106)
-n <- 44
-df <- data.frame(
-  age  = c(rnorm(n - 4, 50), NA, NA, rnorm(2, 55)),
-  bili = c(NA, rnorm(n - 4, 1.2), NA, rnorm(2, 1.5)),
-  chol = rnorm(n, 200, 40), stringsAsFactors = FALSE)
-res <- mc_impute_mice(df, m = 3)
-head(res$long)
-print(res$summary)   # original: per-variable imputation diagnostic
+# multiple imputation by chained equations (MICE) with per-variable diagnostic
+Set.seed(106)
+N <- 44
+Df <- data.frame(
+Age = c(rnorm(n - 4, 50), NA, NA, rnorm(2, 55)),
+Bili = c(NA, rnorm(n - 4, 1.2), NA, rnorm(2, 1.5)),
+Chol = rnorm(n, 200, 40), stringsAsFactors = FALSE)
+Res <- mc_impute_mice(df, m = 3)
+Head(res$long)
+Print(res$summary) # original: per-variable imputation diagnostic
 }
 }
