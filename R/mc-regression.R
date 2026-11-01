@@ -77,7 +77,7 @@ mc_logistic <- function(data, formula, conf = 0.95) {
 #' Result: Returns a list with `univariate` (univariate results per variable),
 #' `selected` (names of selected variables), and `multivariable` (the tidy
 #' Multivariable coefficient table).
-#' Note: This is convenient but not a gold standard — stepwise/screening can
+#' Note: This is convenient but not a gold standard  -  stepwise/screening can
 #' Introduce selection bias and overfitting, and univariate significance does not
 #' Imply multivariable significance (variables may mask or amplify each other).
 #' Report both univariate and multivariable results and state the screening rule.
@@ -153,7 +153,7 @@ mc_logistic_screen <- function(data, y, x_vars, alpha = 0.05, conf = 0.95) {
 #' Result: Returns a list with the final `coefficients` (coefficient table) and
 #' `formula` (the formula of finally selected variables).
 #' Note: Stepwise regression is convenient for exploration but has statistical
-#' Flaws — p values are underestimated, confidence intervals are too narrow, and
+#' Flaws  -  p values are underestimated, confidence intervals are too narrow, and
 #' Overfitting is likely; results also depend on arbitrary entry/removal
 #' Thresholds. Treat it as a "draft" for variable screening; important
 #' Conclusions still need domain knowledge and a pre-registered analysis plan.
@@ -212,7 +212,7 @@ mc_stepwise <- function(data, formula, direction = c("both", "backward", "forwar
 #' \code{p.value}; \code{OR = exp(Value)}.
 #' @examples
 #' \donttest{
-#' # ordinal logistic — ordinal outcome of number of prenatal visits (ftv)
+#' # ordinal logistic  -  ordinal outcome of number of prenatal visits (ftv)
 #' Birthwt <- MASS::birthwt
 #' Bw <- birthwt
 #' Bw$ftv_ord <- ordered(cut(bw$ftv, c(-1, 0, 2, Inf),
