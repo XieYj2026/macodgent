@@ -13,34 +13,34 @@ mc_clogistic(data, formula)
 }
 \value{
 A coefficient table with estimate / standard error / z / p / OR / OR
-confidence interval.
+Confidence interval.
 }
 \description{
-Corresponds to Chapter 5 (5.10, conditional logistic regression). Suitable for
+Suitable for
 1:M matched case-control studies; fits \code{survival::clogit()} which
-conditions on each matched set, yielding a conditional odds ratio.
+Conditions on each matched set, yielding a conditional odds ratio.
 }
 \details{
 Purpose: Analyse the association between exposure and outcome in matched
-case-control data, controlling for confounding from the matching variables.
+Case-control data, controlling for confounding from the matching variables.
 Dependency: Requires the survival package (Suggests); a clear message is given
-if not installed.
+If not installed.
 Method: Specify the matched stratum in the formula with
 \code{strata(matching variable)}, and \code{survival::clogit()} performs a
-conditional logistic likelihood estimation within each stratum.
+Conditional logistic likelihood estimation within each stratum.
 Arguments: \code{data} is a data.frame; \code{formula} is the model formula
-with a 0/1 response (1 = case), and must include a
+With a 0/1 response (1 = case), and must include a
 \code{strata(matching variable)} term.
 Result: Returns a coefficient table with estimate, standard error, z value,
-p value, OR (exp(estimate)), and the OR 95\% confidence interval. OR > 1
-indicates the exposure is a risk factor.
+P value, OR (exp(estimate)), and the OR 95\% confidence interval. OR > 1
+Indicates the exposure is a risk factor.
 Note: Each matched stratum should contain both cases and controls; if a
-stratum has only one status, it contributes nothing to the conditional
-likelihood. Model comparison can be done with mc_model_compare().
+Stratum has only one status, it contributes nothing to the conditional
+Likelihood. Model comparison can be done with mc_model_compare().
 }
 \examples{
-# Chapter 5, Section 5.10: demonstrating conditional logistic regression with the built-in matched case-control dataset infert
+# demonstrating conditional logistic regression with the built-in matched case-control dataset infert
 # case: infertility status (1 = case); stratum: matched set; spontaneous/induced: miscarriage history
-infert <- datasets::infert
-mc_clogistic(infert, case ~ spontaneous + induced + strata(stratum))
+Infert <- datasets::infert
+Mc_clogistic(infert, case ~ spontaneous + induced + strata(stratum))
 }
