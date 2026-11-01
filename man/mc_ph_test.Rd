@@ -27,33 +27,33 @@ mc_ph_test(
 A list with the test table and residual plot.
 }
 \description{
-Corresponds to Chapter 6 (6.5, testing the PH assumption). Runs
+Runs
 \code{survival::cox.zph()} on a Cox model and adds a \emph{self-built} ggplot of
-scaled Schoenfeld residuals versus transformed time.
+Scaled Schoenfeld residuals versus transformed time.
 }
 \details{
 Purpose: Test the core assumption of the Cox proportional-hazards model -- whether
-each covariate's hazard ratio is constant over time.
+Each covariate's hazard ratio is constant over time.
 Dependencies: Requires the survival package (already in Imports).
 Method: Scaled Schoenfeld residuals should show no trend over time;
 \code{survival::cox.zph()} smooths each curve and runs a correlation test; p > 0.05
-is usually taken as satisfying the PH assumption.
+Is usually taken as satisfying the PH assumption.
 Arguments: \code{fit} is a fitted \code{coxph} object (e.g. returned by
 \code{mc_cox()}); or pass \code{data} and \code{formula} for the function to fit first.
 Results: Returns a list -- \code{test} (test table: variable / chi-square / df / p
-value, including a Global row), \code{plot} (ggplot of scaled Schoenfeld residuals
-vs time; the \code{which} variable can be specified, defaulting to the first covariate).
+Value, including a Global row), \code{plot} (ggplot of scaled Schoenfeld residuals
+Vs time; the \code{which} variable can be specified, defaulting to the first covariate).
 Notes: With small sample size or few events the PH test has low power; if the PH
-assumption is violated, consider stratified Cox, time-dependent terms, or an
-alternative model such as \code{mc_competing_risk()}.
+Assumption is violated, consider stratified Cox, time-dependent terms, or an
+Alternative model such as \code{mc_competing_risk()}.
 }
 \examples{
-# Chapter 6, Section 6.5: test the proportional-hazards assumption of an ovarian-cancer Cox model
-ovarian <- survival::ovarian
-ov <- ovarian
-ov$status <- ifelse(ov$fustat == 2, 0, 1)
-fit <- survival::coxph(survival::Surv(futime, status) ~ age + rx + resid.ds, data = ov)
-r <- mc_ph_test(fit)
-print(r$test)        # PH test table for each covariate
-print(r$plot)        # scaled Schoenfeld residuals vs time
+# test the proportional-hazards assumption of an ovarian-cancer Cox model
+Ovarian <- survival::ovarian
+Ov <- ovarian
+Ov$status <- ifelse(ov$fustat == 2, 0, 1)
+Fit <- survival::coxph(survival::Surv(futime, status) ~ age + rx + resid.ds, data = ov)
+R <- mc_ph_test(fit)
+Print(r$test) # PH test table for each covariate
+Print(r$plot) # scaled Schoenfeld residuals vs time
 }
