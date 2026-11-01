@@ -7,19 +7,39 @@
 mc_scale(.data, cols = NULL, method = c("z", "minmax", "robust"))
 }
 \arguments{
-\item{.data}{A data.frame.}
+\item{.data}{A \code{data.frame}.}
 
-\item{cols}{Numeric columns to scale; NULL means all numeric columns.}
+\item{cols}{Numeric columns to scale; \code{NULL} = all numeric columns.}
 
-\item{method}{"z" (default), "minmax" or "robust".}
+\item{method}{Scaling method: \code{"z"} (default), \code{"minmax"}, or \code{"robust"}.}
 }
 \value{
-The scaled data.frame (only numeric columns are replaced).
+The scaled \code{data.frame}; only numeric columns are replaced.
 }
 \description{
-Corresponds to Chapter 2 ("feature scaling"). Supports z-score, min-max,
-and robust (median/IQR based) scaling.
+Corresponds to Chapter 2 ("feature scaling"). Supports z-score (default),
+min-max, and robust (median/IQR based) scaling. Only numeric columns are
+replaced.
+}
+\details{
+Purpose: Scale numeric columns to remove scale differences, speed up model
+convergence, or prepare data for algorithms such as KNN or regularised
+regression.
+Method: Three scaling options — z (default; z-score: subtract mean, divide by
+SD, yielding mean 0 and SD 1), minmax (linear transform to \link{0, 1}), and
+robust (subtract median, divide by IQR; robust to outliers).
+Arguments: \code{.data} is a data.frame; \code{cols} names the columns to scale, NULL
+means all numeric columns; \code{method} selects one of the three above.
+Result: Returns a data.frame where only numeric columns are replaced; other
+columns are unchanged.
+Note: Scaling discards the original units, so model coefficients are harder to
+interpret in real units; if interpretability is needed, keep the original
+variables or record the scaling parameters for back-transformation. Missing
+values are excluded column-wise when computing scaling.
 }
 \examples{
-mc_scale(mtcars, cols = c("mpg", "hp"), method = "z")
+# Chapter 2: scaling numeric columns of iris (removing scale differences)
+mc_scale(iris[, 1:4], method = "z")        # z-score standardisation
+mc_scale(iris[, 1:4], method = "minmax")   # normalise to [0, 1]
+mc_scale(iris[, 1:4], method = "robust")   # robust scaling
 }
