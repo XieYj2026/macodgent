@@ -47,13 +47,13 @@ Scale; categorical variables should be dummy-coded first. This function depends
 Only on base R, no extra package needed.
 }
 \examples{
-# predict birth weight from several correlated predictors (PCR removes collinearity)
-# Note: PCR requires all predictors to be numeric, so the categorical variable race is
+# predict birth weight from several correlated predictors (pCR removes collinearity)
+# note: pCR requires all predictors to be numeric, so the categorical variable race is
 # excluded (dummy-coding is discussed elsewhere)
-Birthwt <- MASS::birthwt
-Bw <- birthwt
-Res <- mc_pcr(bw, bwt ~ age + lwt + smoke + ht + ui + ptl, k = 5, seed = 1)
-Res$best_ncomp
-Res$coef_original
-Print(res$plot)
+birthwt <- MASS::birthwt
+bw <- birthwt
+res <- mc_pcr(bw, bwt ~ age + lwt + smoke + ht + ui + ptl, k = 5, seed = 1)
+res$best_ncomp
+res$coef_original
+print(res$plot)
 }

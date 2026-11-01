@@ -53,9 +53,9 @@ Wilcoxon test.
 }
 \examples{
 #
-Birthwt <- MASS::birthwt
-# One-sample: is the average birth weight equal to 3000 g?
-Mc_ttest(birthwt$bwt, mu = 3000)
-# Independent two-sample (Welch correction): smoking vs non-smoking mothers' birth weight
-Mc_ttest(birthwt$bwt[birthwt$smoke == 1], birthwt$bwt[birthwt$smoke == 0])
+birthwt <- MASS::birthwt
+# one-sample: is the average birth weight equal to 3000 g?
+mc_ttest(birthwt$bwt, mu = 3000)
+# independent two-sample (welch correction): smoking vs non-smoking mothers' birth weight
+mc_ttest(birthwt$bwt[birthwt$smoke == 1], birthwt$bwt[birthwt$smoke == 0])
 }

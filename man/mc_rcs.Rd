@@ -48,10 +48,10 @@ Inverted-U relationships. View the result with \code{print(res$plot)}.
 }
 \examples{
 # dose-response curve of maternal age vs low-birth-weight risk (non-linear)
-Birthwt <- MASS::birthwt
-Res <- mc_rcs(birthwt, x = "age", y = "low", nk = 4, family = "binomial")
-Cat("knots:", round(res$knots, 2), "\n")
-Print(res$plot)
+birthwt <- MASS::birthwt
+res <- mc_rcs(birthwt, x = "age", y = "low", nk = 4, family = "binomial")
+cat("knots:", round(res$knots, 2), "\n")
+print(res$plot)
 }
 \seealso{
 \code{\link{mc_gam}} (smooth terms are also used for non-linear relationship modeling).

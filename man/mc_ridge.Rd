@@ -43,8 +43,8 @@ Interpretation. Larger lambda means stronger shrinkage. Depends on glmnet (Sugge
 \examples{
 \donttest{
 # ridge regression for multicollinearity among mtcars predictors
-Xvars <- setdiff(names(mtcars), "mpg")
-Mc_ridge(mtcars, x = xvars, y = "mpg")$coefficients
+xvars <- setdiff(names(mtcars), "mpg")
+mc_ridge(mtcars, x = xvars, y = "mpg")$coefficients
 }
 }
 \seealso{

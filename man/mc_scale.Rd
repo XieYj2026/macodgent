@@ -39,7 +39,7 @@ Values are excluded column-wise when computing scaling.
 }
 \examples{
 # scaling numeric columns of iris (removing scale differences)
-Mc_scale(iris[, 1:4], method = "z") # z-score standardisation
-Mc_scale(iris[, 1:4], method = "minmax") # normalise to [0, 1]
-Mc_scale(iris[, 1:4], method = "robust") # robust scaling
+mc_scale(iris[, 1:4], method = "z") # z-score standardisation
+mc_scale(iris[, 1:4], method = "minmax") # normalise to [0, 1]
+mc_scale(iris[, 1:4], method = "robust") # robust scaling
 }

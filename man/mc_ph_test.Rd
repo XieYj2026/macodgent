@@ -48,12 +48,12 @@ Assumption is violated, consider stratified Cox, time-dependent terms, or an
 Alternative model such as \code{mc_competing_risk()}.
 }
 \examples{
-# test the proportional-hazards assumption of an ovarian-cancer Cox model
-Ovarian <- survival::ovarian
-Ov <- ovarian
-Ov$status <- ifelse(ov$fustat == 2, 0, 1)
-Fit <- survival::coxph(survival::Surv(futime, status) ~ age + rx + resid.ds, data = ov)
-R <- mc_ph_test(fit)
-Print(r$test) # PH test table for each covariate
-Print(r$plot) # scaled Schoenfeld residuals vs time
+# test the proportional-hazards assumption of an ovarian-cancer cox model
+ovarian <- survival::ovarian
+ov <- ovarian
+ov$status <- ifelse(ov$fustat == 2, 0, 1)
+fit <- survival::coxph(survival::Surv(futime, status) ~ age + rx + resid.ds, data = ov)
+r <- mc_ph_test(fit)
+print(r$test) # pH test table for each covariate
+print(r$plot) # scaled schoenfeld residuals vs time
 }

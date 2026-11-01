@@ -43,10 +43,10 @@ Thresholds. Treat it as a "draft" for variable screening; important
 Conclusions still need domain knowledge and a pre-registered analysis plan.
 }
 \examples{
-# AIC-based stepwise variable selection
-Birthwt <- MASS::birthwt
-Bw <- birthwt
-Bw$race <- factor(bw$race)
-Bw$smoke <- factor(bw$smoke)
-Mc_stepwise(bw, low ~ age + lwt + race + smoke + ht + ui)$coefficients
+# aIC-based stepwise variable selection
+birthwt <- MASS::birthwt
+bw <- birthwt
+bw$race <- factor(bw$race)
+bw$smoke <- factor(bw$smoke)
+mc_stepwise(bw, low ~ age + lwt + race + smoke + ht + ui)$coefficients
 }

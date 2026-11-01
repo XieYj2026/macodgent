@@ -42,18 +42,18 @@ Colours: primary (blue), secondary (purple), accent (green), warn (red),
 Info (cyan), muted (grey). When n is given, returns a colour vector of length
 N (gradient is unnamed by default; discrete/brand keep anchor names).
 Note: colours are generated purely algorithmically with no dependence on
-Data; interpolation is in linear RGB space — switch to HCL space later if a
+Data; interpolation is in linear RGB space  -  switch to HCL space later if a
 More perceptually uniform ramp is needed. Often paired with mc_theme() for
 Style-consistent report figures.
 }
 \examples{
-Pal <- mc_palette() # default: six brand colours
-Print(pal)
-Grad <- mc_palette(n = 20, type = "gradient") # 20-colour continuous gradient
-Print(head(grad))
-Library(ggplot2)
-Df <- data.frame(name = factor(names(pal), names(pal)), col = pal)
-P <- ggplot(df, aes(name, fill = name)) + geom_bar() +
-Scale_fill_manual(values = pal) + theme_void()
-Print(p)
+pal <- mc_palette() # default: six brand colours
+print(pal)
+grad <- mc_palette(n = 20, type = "gradient") # 20-colour continuous gradient
+print(head(grad))
+library(ggplot2)
+df <- data.frame(name = factor(names(pal), names(pal)), col = pal)
+p <- ggplot(df, aes(name, fill = name)) + geom_bar() +
+scale_fill_manual(values = pal) + theme_void()
+print(p)
 }

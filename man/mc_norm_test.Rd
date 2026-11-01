@@ -36,7 +36,7 @@ Unreliable or very slow for n > 5000.
 }
 \examples{
 # test whether quantitative variables in birthwt are normal
-Birthwt <- MASS::birthwt
-Mc_norm_test(birthwt$bwt) # birth weight
-Mc_norm_test(birthwt$age) # mother's age
+birthwt <- MASS::birthwt
+mc_norm_test(birthwt$bwt) # birth weight
+mc_norm_test(birthwt$age) # mother's age
 }

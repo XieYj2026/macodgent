@@ -41,11 +41,11 @@ Log-rank test is insensitive to late differences (use a weighted test to emphasi
 Distant differences). View the result directly with \code{print(res$plot)}.
 }
 \examples{
-# demonstrate KM curve and log-rank test with the ovarian cancer prognostic dataset
-Ovarian <- survival::ovarian
-Ov <- ovarian
-Ov$status <- ifelse(ov$fustat == 2, 0, 1) # 2 = censored -> 0, 1 = death -> 1
-Res <- mc_survfit(ov, time = "futime", status = "status", group = "rx")
-Cat("---- log-rank test ----\n"); print(res$logrank, row.names = FALSE)
-Print(res$plot)
+# demonstrate kM curve and log-rank test with the ovarian cancer prognostic dataset
+ovarian <- survival::ovarian
+ov <- ovarian
+ov$status <- ifelse(ov$fustat == 2, 0, 1) # 2 = censored -> 0, 1 = death -> 1
+res <- mc_survfit(ov, time = "futime", status = "status", group = "rx")
+cat("---- log-rank test ----\n"); print(res$logrank, row.names = FALSE)
+print(res$plot)
 }

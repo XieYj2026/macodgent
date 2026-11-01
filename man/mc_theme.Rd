@@ -30,11 +30,11 @@ Such as geom_point() or geom_line(); pair it with mc_palette() to change the
 Colour scheme.
 }
 \examples{
-Library(ggplot2)
+library(ggplot2)
 # maternal pregnancy weight vs. birth weight scatter
 # (coloured by smoking status)
-Birthwt <- MASS::birthwt
-P <- ggplot(birthwt, aes(lwt, bwt, color = factor(smoke))) +
-Geom_point(size = 2, alpha = 0.6) + mc_theme(base_size = 13)
-Print(p)
+birthwt <- MASS::birthwt
+p <- ggplot(birthwt, aes(lwt, bwt, color = factor(smoke))) +
+geom_point(size = 2, alpha = 0.6) + mc_theme(base_size = 13)
+print(p)
 }

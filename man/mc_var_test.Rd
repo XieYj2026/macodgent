@@ -37,7 +37,7 @@ Data prefer Levene or Fligner.
 }
 \examples{
 # test variance homogeneity of birth weight across races (race)
-Birthwt <- MASS::birthwt
-Mc_var_test(birthwt$bwt, birthwt$race, method = "bartlett")
-Mc_var_test(birthwt$bwt, birthwt$race, method = "levene")
+birthwt <- MASS::birthwt
+mc_var_test(birthwt$bwt, birthwt$race, method = "bartlett")
+mc_var_test(birthwt$bwt, birthwt$race, method = "levene")
 }

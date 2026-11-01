@@ -53,7 +53,7 @@ The "value" column is coerced to a common type.
 }
 \examples{
 # convert wide table of longitudinal blood-pressure measurements to long (t1/t2/t3 visits)
-Wide <- data.frame(id = 1:4,
-T1 = rnorm(4, 120), t2 = rnorm(4, 122), t3 = rnorm(4, 118))
-Mc_wide_long(wide, id_cols = "id", measure_vars = c("t1", "t2", "t3"))
+wide <- data.frame(id = 1:4,
+t1 = rnorm(4, 120), t2 = rnorm(4, 122), t3 = rnorm(4, 118))
+mc_wide_long(wide, id_cols = "id", measure_vars = c("t1", "t2", "t3"))
 }

@@ -42,7 +42,7 @@ Outliers. Depends on quantreg (Suggests).
 \examples{
 \donttest{
 # conditional quantile regression of birth weight (slope of pregnancy weight lwt across quantiles)
-Birthwt <- MASS::birthwt
-Mc_quantile_reg(birthwt, bwt ~ lwt + age, taus = c(0.25, 0.5, 0.75))
+birthwt <- MASS::birthwt
+mc_quantile_reg(birthwt, bwt ~ lwt + age, taus = c(0.25, 0.5, 0.75))
 }
 }

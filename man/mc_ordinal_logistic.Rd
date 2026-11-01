@@ -41,11 +41,11 @@ Meaningless. Depends on MASS (Suggests).
 \examples{
 \donttest{
 # ordinal logistic  -  ordinal outcome of number of prenatal visits (ftv)
-Birthwt <- MASS::birthwt
-Bw <- birthwt
-Bw$ftv_ord <- ordered(cut(bw$ftv, c(-1, 0, 2, Inf),
-Labels = c("0", "1-2", "3+")))
-Bw$smoke <- factor(bw$smoke)
-Mc_ordinal_logistic(bw, ftv_ord ~ age + lwt + smoke)
+birthwt <- MASS::birthwt
+bw <- birthwt
+bw$ftv_ord <- ordered(cut(bw$ftv, c(-1, 0, 2, Inf),
+labels = c("0", "1-2", "3+")))
+bw$smoke <- factor(bw$smoke)
+mc_ordinal_logistic(bw, ftv_ord ~ age + lwt + smoke)
 }
 }
