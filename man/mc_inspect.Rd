@@ -14,26 +14,26 @@ A \code{data.frame} with those six columns, one row per input column.
 }
 \description{
 One row per column: the column \code{class}, number of observations \code{n},
-count of missing values \code{n_missing}, missing percentage \code{pct_missing}, and
-number of unique values \code{n_unique}. Handy for a quick data-quality check
-before modelling.
+Count of missing values \code{n_missing}, missing percentage \code{pct_missing}, and
+Number of unique values \code{n_unique}. Handy for a quick data-quality check
+Before modelling.
 }
 \details{
 Purpose: a quick pre-modelling data-quality check; for each column it reports
-the type, number of observations, number of missing values, missing
-percentage and number of unique values.
-Arguments: .data is a data.frame or tibble; no other arguments.
+The type, number of observations, number of missing values, missing
+Percentage and number of unique values.
+Arguments:.data is a data.frame or tibble; no other arguments.
 Result: returns a data.frame with one row per input column. Columns: variable
 (column name), class (type), n (valid observations), n_missing (missing
-count), pct_missing (missing percentage), n_unique (number of unique values).
+Count), pct_missing (missing percentage), n_unique (number of unique values).
 Note: n is the count of valid (non-missing) observations, so n + n_missing
-equals the column's total length, and the missing percentage is computed
-against that total length. This is the first "health check" of the
-preprocessing pipeline — run it before any cleaning or modelling.
+Equals the column's total length, and the missing percentage is computed
+Against that total length. This is the first "health check" of the
+Preprocessing pipeline — run it before any cleaning or modelling.
 }
 \examples{
-# Chapter 1: data-quality check on the birthwt data frame (try injecting
+# data-quality check on the birthwt data frame (try injecting
 # missing values to practice)
-birthwt <- MASS::birthwt
-mc_inspect(birthwt[, c("age", "lwt", "bwt", "smoke", "low")])
+Birthwt <- MASS::birthwt
+Mc_inspect(birthwt[, c("age", "lwt", "bwt", "smoke", "low")])
 }
