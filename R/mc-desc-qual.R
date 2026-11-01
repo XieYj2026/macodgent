@@ -1,6 +1,6 @@
 # =============================================================================
 # 软件名称    : macodgent 医学数据科学研究工具包
-# 著作权人    : 谢耀珏（Dr.Xie）【个人，待最终确认】
+# 著作权人    : Dr.Xie
 # 版本号      : 1.0.0
 # 开发语言    : R
 # 开发完成日期: 2026-10-30
@@ -15,7 +15,7 @@
 
 #' 列联表与独立性检验（卡方 / Fisher / CMH）/ Contingency table & independence test
 #'
-#' 对应专栏第 4 章 4.3 节「独立性检验，卡方检验，费希尔精确概率检验和
+#' 对应第 4 章 4.3 节「独立性检验，卡方检验，费希尔精确概率检验和
 #' Cochran-Mantel-Haenszel 检验」。可构建两个分类变量的列联表并做三种检验：
 #' ① `"chisq"`（默认）卡方独立性检验，对 2×2 表额外用 Fisher 法给出 OR 与 95% CI；
 #' ② `"fisher"` 对任意 r×c 表做 Fisher 精确检验；
@@ -52,7 +52,7 @@
 #'   `commonOR`（共同比值比及其 CI）（a list with \code{table}, \code{test},
 #'   and method-specific OR / commonOR）。
 #' @examples
-#' # 专栏第 4 章 4.3 节：以 birthwt 演示三种独立性检验
+#' # 第 4 章 4.3 节：以 birthwt 演示三种独立性检验
 #' birthwt <- MASS::birthwt
 #'
 #' ## ---- 卡方独立性检验（2x2 附 Fisher OR）----
@@ -164,7 +164,7 @@ mc_contingency <- function(.data, row, col, correct = TRUE,
 
 #' 相关分析（含偏相关）/ Correlation analysis (with partial correlation)
 #'
-#' 对应专栏第 4 章：Pearson / Spearman 相关；可通过 `control` 指定控制变量，
+#' 对应第 4 章：Pearson / Spearman 相关；可通过 `control` 指定控制变量，
 #' 对所有变量先就控制变量做回归取残差，从而得到偏相关。
 #'
 #' Corresponds to Chapter 4: Pearson / Spearman correlation; optionally compute
@@ -185,7 +185,7 @@ mc_contingency <- function(.data, row, col, correct = TRUE,
 #' @return 长格式数据框，列为 `var1` / `var2` / `r` / `p.value`（a long
 #'   `data.frame` with columns `var1`, `var2`, `r`, `p.value`）。
 #' @examples
-#' # 专栏第 4 章 4.5 节：birthwt 中出生体重、孕期体重的相关（Spearman）
+#' # 第 4 章 4.5 节：birthwt 中出生体重、孕期体重的相关（Spearman）
 #' birthwt <- MASS::birthwt
 #' cat("==== Spearman 相关 / Spearman ====\n")
 #' # 注：birthwt 含相同观测值（ties），cor.test 会以渐近法替代精确 p 值并提示，
@@ -226,7 +226,7 @@ mc_corr <- function(.data, vars = NULL, method = c("pearson", "spearman"),
 
 #' 基线特征表（Table One）/ Baseline characteristics table
 #'
-#' 对应专栏第 4 章「基线表」。数值变量以「均值 ± 标准差」呈现，分类变量以
+#' 对应第 4 章「基线表」。数值变量以「均值 ± 标准差」呈现，分类变量以
 #' 频数与百分比呈现，支持按分组变量分层。
 #'
 #' Corresponds to Chapter 4 ("Table One"). Numeric variables are summarised as
@@ -246,7 +246,7 @@ mc_corr <- function(.data, vars = NULL, method = c("pearson", "spearman"),
 #' @return 数据框，列为 `variable` / `level` / `stratum` / `value`（a
 #'   `data.frame` with columns `variable`, `level`, `stratum`, `value`）。
 #' @examples
-#' # 专栏第 4 章：birthwt 基线特征表（按低出生体重 low 分组）
+#' # 第 4 章：birthwt 基线特征表（按低出生体重 low 分组）
 #' birthwt <- MASS::birthwt
 #' bw <- birthwt
 #' bw$race  <- factor(bw$race, levels = 1:3, labels = c("白人","黑人","其他"))
