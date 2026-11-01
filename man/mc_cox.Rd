@@ -2,45 +2,51 @@
 % Please edit documentation in R/mc-survival.R
 \name{mc_cox}
 \alias{mc_cox}
-\title{Cox 比例风险模型（含 PH 检验与森林图）/ Cox PH model (PH test & forest plot)}
+\title{Cox PH model (PH test & forest plot)}
 \usage{
 mc_cox(data, formula, conf = 0.95)
 }
 \arguments{
-\item{data}{数据框（a \code{data.frame}）。}
+\item{data}{A \code{data.frame}.}
 
-\item{formula}{Cox 模型公式，如 \code{Surv(time, status) ~ x1 + x2}（a Cox
-model formula）。}
+\item{formula}{A Cox model formula, e.g. \code{Surv(time, status) ~ x1 + x2}.}
 
-\item{conf}{置信水平，默认 \code{0.95}（confidence level; default \code{0.95}）。}
+\item{conf}{Confidence level; default \code{0.95}.}
 }
 \value{
-列表，含 \code{model}（coxph 对象）/ \code{coefficients}（HR 表：term/estimate/
-conf.low/conf.high/p.value）/ \code{ph_test}（PH 检验表）/ \code{forest}（ggplot
-森林图）（a list with \code{model}, \code{coefficients}, \code{ph_test},
-\code{forest}）。
+A list with \code{model} (coxph object), \code{coefficients} (HR table:
+term/estimate/conf.low/conf.high/p.value), \code{ph_test} (PH test table),
+\code{forest} (ggplot forest plot).
 }
 \description{
-对应第 6 章：Cox 模型、比例风险假设检验（Schoenfeld 残差）与森林图。
-返回 HR 表、PH 检验结果，以及按 \code{mc_theme()} 主题的森林图。
-}
-\details{
 Corresponds to Chapter 6: Cox model, proportional-hazards assumption test
 (Schoenfeld residuals), and a forest plot.
-
-用途：拟合 Cox 比例风险模型，评估多个协变量对发生事件风险的同期影响，得到风险比（HR）。
-方法：半参数模型，不假设基线风险形态，只估计协变量对应的风险比；默认对比例风险（PH）假设做检验。
-参数：data 为数据框；formula 形如 Surv(time, status) ~ 协变量，需用 survival::Surv() 构造生存对象；conf 为 HR 置信水平。
-结果：返回列表，含 coefficients（各变量 HR、标准误、z、p 值与置信区间）、ph_test（比例风险假设检验结果）、以及 forest（HR 森林图，ggplot 对象）。
-注意：HR>1 表示该协变量升高时事件风险升高。PH 假设是 Cox 的核心前提——若 ph_test 提示显著违背（如某变量 p 很小），需考虑分层 Cox、时变效应或改参数模型。森林图用 print(res$forest) 查看。
+}
+\details{
+Purpose: Fit a Cox proportional-hazards model to assess the concurrent effect of
+several covariates on the hazard of an event, yielding hazard ratios (HR).
+Method: A semi-parametric model that makes no assumption about the baseline hazard
+shape and only estimates covariate hazard ratios; by default it tests the
+proportional-hazards (PH) assumption.
+Arguments: \code{data} is a data frame; \code{formula} is of the form
+\code{Surv(time, status) ~ covariates}, requiring \code{survival::Surv()} to build
+the survival object; \code{conf} is the HR confidence level.
+Results: Returns a list with \code{coefficients} (per-variable HR, SE, z, p value
+and CI), \code{ph_test} (PH-assumption test result), and \code{forest} (HR forest
+plot, ggplot object).
+Notes: HR > 1 means the event hazard rises as that covariate increases. The PH
+assumption is the core premise of Cox -- if \code{ph_test} shows a significant
+violation (e.g. a very small p for a variable), consider stratified Cox,
+time-varying effects, or a parametric model. View the forest plot with
+\code{print(res$forest)}.
 }
 \examples{
-# 第 6 章：Cox 比例风险模型——卵巢癌生存预后
+# Chapter 6: Cox proportional-hazards model -- ovarian-cancer survival prognosis
 ovarian <- survival::ovarian
 ov <- ovarian
 ov$status <- ifelse(ov$fustat == 2, 0, 1)
 res <- mc_cox(ov, survival::Surv(futime, status) ~ age + rx + resid.ds + ecog.ps)
-cat("---- HR 表 / coefficients ----\n"); print(as.data.frame(res$coefficients), row.names = FALSE)
-cat("\n---- PH 假设检验 / PH test ----\n"); print(res$ph_test)
+cat("---- HR table / coefficients ----\n"); print(as.data.frame(res$coefficients), row.names = FALSE)
+cat("\n---- PH assumption test ----\n"); print(res$ph_test)
 print(res$forest)
 }
