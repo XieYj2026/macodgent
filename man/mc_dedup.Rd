@@ -2,25 +2,38 @@
 % Please edit documentation in R/mc-preprocess.R
 \name{mc_dedup}
 \alias{mc_dedup}
-\title{Remove duplicates}
+\title{去重 / Remove duplicates}
 \usage{
 mc_dedup(.data, by = NULL, keep = c("last", "first"))
 }
 \arguments{
-\item{.data}{A data.frame.}
+\item{.data}{数据框（a \code{data.frame}）。}
 
-\item{by}{Key column names; NULL means all columns.}
+\item{by}{键列名；\code{NULL} 表示按所有列（key column names; \code{NULL} = all
+columns）。}
 
-\item{keep}{"first" or "last". Default "last".}
+\item{keep}{保留 \code{"first"} 还是 \code{"last"}，默认 \code{"last"}（which row to keep;
+default \code{"last"}）。}
 }
 \value{
-The deduplicated data.frame.
+去重后的数据框（the deduplicated \code{data.frame}）。
 }
 \description{
+对应第 2 章「去重」。默认按全部列去重；也可指定键列（\code{by}），
+保留每组的最后一行（或第一行）。
+}
+\details{
 Corresponds to Chapter 2 ("deduplication"). Deduplicates by all columns by
 default, or by specified key columns, keeping the last row of each group.
+
+用途：去除重复行，常用于清洗重复录入或重复随访记录。
+参数：.data 为数据框；by 指定用于判断重复的键列（如受试者 ID），NULL 表示按所有列判断；keep 选择保留每组的 "last"（默认）或 "first" 行。
+结果：返回去重后的数据框。
+注意：当指定 by 时，只比较这些键列是否相同，其余列即使不同也会被判为重复并只保留一行——因此请确保键列能唯一标识一条记录，否则可能误删信息。这与 Excel 的「删除重复项」语义一致。
 }
 \examples{
-df <- data.frame(id = c(1, 1, 2), v = c("a", "a", "b"))
-mc_dedup(df, by = "id")
+# 第 2 章：去除重复录入的随访记录（按受试者 ID 去重）
+df <- data.frame(subj = c(1, 1, 2, 2, 3), measure = c("a", "a", "b", "b", "c"), visit = 1:5)
+mc_dedup(df, by = "subj")                  # 保留每组最后一行
+mc_dedup(df, by = "subj", keep = "first")  # 保留每组第一行
 }
