@@ -2,48 +2,54 @@
 % Please edit documentation in R/mc-desc-qual.R
 \name{mc_corr}
 \alias{mc_corr}
-\title{相关分析（含偏相关）/ Correlation analysis (with partial correlation)}
+\title{Correlation analysis (with partial correlation)}
 \usage{
 mc_corr(.data, vars = NULL, method = c("pearson", "spearman"), control = NULL)
 }
 \arguments{
-\item{.data}{数据框（a \code{data.frame}）。}
+\item{.data}{A \code{data.frame}.}
 
-\item{vars}{变量名；\code{NULL} 表示全部数值列（variable names; \code{NULL} = all
-numeric columns）。}
+\item{vars}{Variable names; \code{NULL} = all numeric columns.}
 
-\item{method}{\code{"pearson"}（默认）或 \code{"spearman"}（correlation method）。}
+\item{method}{\code{"pearson"} (default) or \code{"spearman"}.}
 
-\item{control}{可选控制变量名（用于偏相关）（optional control variable names
-for partial correlation）。}
+\item{control}{Optional control variable names for partial correlation.}
 }
 \value{
-长格式数据框，列为 \code{var1} / \code{var2} / \code{r} / \code{p.value}（a long
-\code{data.frame} with columns \code{var1}, \code{var2}, \code{r}, \code{p.value}）。
+A long \code{data.frame} with columns \code{var1}, \code{var2}, \code{r}, \code{p.value}.
 }
 \description{
-对应第 4 章：Pearson / Spearman 相关；可通过 \code{control} 指定控制变量，
-对所有变量先就控制变量做回归取残差，从而得到偏相关。
-}
-\details{
 Corresponds to Chapter 4: Pearson / Spearman correlation; optionally compute
 partial correlation by residualising all variables on the control variable(s).
-
-用途：计算变量间的相关系数，支持 Pearson（线性）与 Spearman（秩/单调），并可计算偏相关（控制混杂变量后）。
-方法：pearson 衡量线性关联，假设近似正态；spearman 基于秩，对非线性单调关系与异常值更稳健；control 指定一个或多个控制变量，计算偏相关（剔除这些变量影响后的净相关）。
-参数：.data 为数据框；vars 为参与相关的变量名向量；method 选择相关类型；control 为可选的控制变量名。
-结果：返回相关矩阵（含相关系数），偏相关时返回控制后的矩阵。
-注意：相关系数只衡量关联强度与方向，不等于因果；接近 0 不代表无关（可能是非线性）。Spearman 更适合 ordinal 数据或明显偏态。偏相关能帮助识别「虚假相关」（由共同混杂变量造成）。
+}
+\details{
+Purpose: compute correlation coefficients between variables, supporting
+Pearson (linear) and Spearman (rank/monotonic), plus partial correlation
+(after controlling for confounders).
+Methods: pearson measures linear association, assumes approximate normality;
+spearman is rank-based, robust to non-linear monotonic relations and outliers;
+control specifies one or more control variables to compute partial correlation
+(the net correlation after removing their effect).
+Arguments: \code{.data} is a data frame; \code{vars} is a vector of variable names to
+correlate; \code{method} selects the correlation type; \code{control} is an optional
+control variable name.
+Result: returns a correlation matrix (coefficients); for partial correlation
+returns the controlled matrix.
+Note: the correlation coefficient only measures association strength and
+direction, not causation; near 0 does not mean no relation (could be
+non-linear). Spearman suits ordinal data or clearly skewed data. Partial
+correlation helps identify "spurious correlation" caused by a common confounder.
 }
 \examples{
-# 第 4 章 4.5 节：birthwt 中出生体重、孕期体重的相关（Spearman）
+# Chapter 4, Section 4.5: correlation of birth weight & pregnancy weight in birthwt (Spearman)
 birthwt <- MASS::birthwt
-cat("==== Spearman 相关 / Spearman ====\n")
-# 注：birthwt 含相同观测值（ties），cor.test 会以渐近法替代精确 p 值并提示，
-# 属正常统计说明；此处抑制该提示以简化示例输出
+cat("==== Spearman correlation / Spearman ====\n")
+# Note: birthwt has tied observations; cor.test switches to the asymptotic
+# method for p-values and warns, which is normal; we suppress the warning here
+# to simplify the example output
 suppressWarnings(print(mc_corr(birthwt, vars = c("bwt","lwt"), method = "spearman"),
                          row.names = FALSE))
-cat("\n==== 控制母亲年龄后的偏相关 / partial on age ====\n")
+cat("\n==== Partial correlation after controlling for mother's age / partial on age ====\n")
 print(mc_corr(birthwt, vars = c("bwt","lwt"), control = "age"),
       row.names = FALSE)
 }
