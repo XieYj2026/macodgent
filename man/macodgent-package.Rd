@@ -4,14 +4,8 @@
 \name{macodgent-package}
 \alias{macodgent-package}
 \alias{macodgent}
-\title{macodgent：医学数据科学例行性分析工具箱}
+\title{macodgent: routine-analysis toolkit for medical data science}
 \description{
-一套从医学数据科学例行性分析技术提炼出的
-可复用分析函数集合，覆盖数据预处理、定量/定性描述统计、常规与进阶回归、
-生存分析、竞争风险与多状态模型。所有导出函数均以 \code{mc_} 为前缀，并返回
-整洁的 \code{data.frame}，可直接落入报告与下游流程。
-}
-\details{
 macodgent is a curated toolkit of reusable analysis functions distilled from
 Part 2 ("Routine Analysis Techniques") of the routine medical-data-science tutorial.
 It covers data preprocessing, quantitative and qualitative
@@ -20,40 +14,35 @@ analysis, competing-risk and multi-state models. All exported functions share
 the \code{mc_} prefix and return tidy \code{data.frame} objects that drop straight into
 reports and downstream pipelines.
 }
-\section{模块与函数 / Modules and functions}{
+\section{Modules and functions}{
 
 \describe{
-\item{第 1 章 认识数据 / Meet the data}{\code{mc_mode()}, \code{mc_inspect()},
+\item{Meet the data}{\code{mc_mode()}, \code{mc_inspect()},
 \code{mc_theme()}, \code{mc_palette()}}
-\item{第 2 章 预处理 / Preprocessing}{\code{mc_impute_knn()},
+\item{Preprocessing}{\code{mc_impute_knn()},
 \code{mc_impute_mice()}, \code{mc_dedup()}, \code{mc_scale()}, \code{mc_wide_long()},
 \code{mc_long_wide()}}
-\item{第 3 章 定量描述 / Quantitative}{\code{mc_desc_quant()},
+\item{Quantitative}{\code{mc_desc_quant()},
 \code{mc_norm_test()}, \code{mc_var_test()}, \code{mc_ttest()}, \code{mc_anova()},
 \code{mc_nonparam()}}
-\item{第 4 章 定性描述 / Qualitative}{\code{mc_contingency()}, \code{mc_corr()},
+\item{Qualitative}{\code{mc_contingency()}, \code{mc_corr()},
 \code{mc_tableone()}}
-\item{第 5 章 常规回归 / Conventional regression}{\code{mc_linear()},
+\item{Conventional regression}{\code{mc_linear()},
 \code{mc_logistic()}, \code{mc_logistic_screen()}, \code{mc_stepwise()},
 \code{mc_ordinal_logistic()}, \code{mc_clogistic()}, \code{mc_model_compare()}}
-\item{第 6 章 生存分析 / Survival}{\code{mc_survfit()}, \code{mc_cox()},
+\item{Survival}{\code{mc_survfit()}, \code{mc_cox()},
 \code{mc_ph_test()}}
-\item{第 7 章 进阶回归 / Advanced regression}{\code{mc_gam()}, \code{mc_lasso()},
+\item{Advanced regression}{\code{mc_gam()}, \code{mc_lasso()},
 \code{mc_ridge()}, \code{mc_elastic_net()}, \code{mc_rcs()}, \code{mc_quantile_reg()},
 \code{mc_pcr()}, \code{mc_nnet_reg()}}
-\item{第 8 章 进阶生存 / Advanced survival}{\code{mc_competing_risk()},
+\item{Advanced survival}{\code{mc_competing_risk()},
 \code{mc_multistate()}}
 }
 }
 
-\section{设计原则 / Design principles}{
+\section{Design principles}{
 
 \enumerate{
-\item 所有导出函数以 \code{mc_} 前缀命名，避免与基础 R 及其它包冲突。
-\item 分析函数一律返回整洁 \code{data.frame}（而非仅打印输出），便于报告与管道。
-\item 重方法（GAM、Lasso、竞争风险、多状态等）放在 \code{Suggests}，通过
-\code{requireNamespace()} 优雅降级；核心仅依赖 \code{survival}、
-\code{ggplot2}、\code{broom}、\code{stats}、\code{utils}。
 \item All exported functions use the \code{mc_} prefix to avoid name clashes.
 \item Analysis functions return tidy \code{data.frame} objects, ready for
 reporting and piping.
@@ -62,7 +51,7 @@ reporting and piping.
 }
 
 \seealso{
-入口函数 / Entry points: \code{\link{mc_inspect}},
+Entry points: \code{\link{mc_inspect}},
 \code{\link{mc_desc_quant}}, \code{\link{mc_tableone}},
 \code{\link{mc_logistic}}, \code{\link{mc_cox}}.
 }
