@@ -1,6 +1,6 @@
 Package: macodgent
 Title: Toolkit for Routine Medical Data Science Analysis
-Version: 0.1.1
+Version: 1.0.1
 Authors@R: c(person(given = "Xie YJ", role = c("aut", "cre"),
     email = "xiemacodgent@163.com"), person(given = "MA Codgent",
     role = c("cph")))
@@ -16,7 +16,6 @@ Description: A collection of reusable analysis functions derived from the second
 License: MIT + file LICENSE
 Encoding: UTF-8
 Imports:
-    tidyr,
     survival,
     ggplot2,
     broom,
