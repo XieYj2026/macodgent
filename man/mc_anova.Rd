@@ -31,7 +31,7 @@ Result: returns the degrees of freedom, sum of squares, mean square, F value
 And p-value of each term.
 Note: ANOVA only tells you "at least two groups differ"; which two require
 Post-hoc multiple comparisons (e.g. Tukey HSD). Its assumptions are normality
-And equal variance per group—verify first with mc_norm_test() and mc_var_test().
+And equal variance per group - verify first with mc_norm_test() and mc_var_test().
 If variances are unequal or distributions skewed, consider Kruskal-Wallis
 (see mc_nonparam).
 }
