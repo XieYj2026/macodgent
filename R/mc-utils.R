@@ -28,7 +28,7 @@
 #' Missing values are removed before counting (default TRUE, so NAs are excluded
 #' From the frequency tally).
 #' Result: returns every value tied for the highest frequency, so multimodal
-#' Data is handled naturally — a bimodal distribution returns both modes; the
+#' Data is handled naturally  -  a bimodal distribution returns both modes; the
 #' Return type matches the input (numeric input yields a numeric vector).
 #' Note: if every value occurs exactly once, all values are treated as modes and
 #' Returned as-is, which is usually meaningless; run mc_inspect() first to
@@ -73,7 +73,7 @@ mc_mode <- function(x, na.rm = TRUE) {
 #' Note: n is the count of valid (non-missing) observations, so n + n_missing
 #' Equals the column's total length, and the missing percentage is computed
 #' Against that total length. This is the first "health check" of the
-#' Preprocessing pipeline — run it before any cleaning or modelling.
+#' Preprocessing pipeline  -  run it before any cleaning or modelling.
 #' @param.data A `data.frame` or `tibble`.
 #' @return A `data.frame` with those six columns, one row per input column.
 #' @examples
@@ -167,7 +167,7 @@ mc_theme <- function(base_size = 12) {
 #' Info (cyan), muted (grey). When n is given, returns a colour vector of length
 #' N (gradient is unnamed by default; discrete/brand keep anchor names).
 #' Note: colours are generated purely algorithmically with no dependence on
-#' Data; interpolation is in linear RGB space — switch to HCL space later if a
+#' Data; interpolation is in linear RGB space  -  switch to HCL space later if a
 #' More perceptually uniform ramp is needed. Often paired with mc_theme() for
 #' Style-consistent report figures.
 #' @param n The number of colours to generate; `NULL` = the six fixed brand
