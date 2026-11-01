@@ -1,74 +1,87 @@
 # =============================================================================
-# 软件名称    : macodgent 医学数据科学研究工具包
-# 著作权人    : Dr.Xie
-# 版本号      : 1.0.0
-# 开发语言    : R
-# 开发完成日期: 2026-10-30
-# 权利声明    : 本程序为著作权人独立开发，受《计算机软件保护条例》保护；
-#              未经书面许可，不得复制、发行、出租或将其用于商业目的。
+# Software name : macodgent medical data-science research toolkit
+# Copyright holder : Dr.Xie
+# Version : 1.0.0
+# Language : R
+# Completion date : 2026-10-30
+# Copyright notice : This program is independently developed by the copyright
+#                   holder and protected under the Software Protection
+#                   Regulations; without written permission it may not be
+#                   copied, distributed, rented, or used for commercial purposes.
 # -----------------------------------------------------------------------------
-# 模块        : 定性描述与关联分析模块（desc-qual）
-# 本文件包含  : mc_contingency / mc_corr / mc_tableone
-#              mc_contingency 覆盖卡方、Fisher 精确与 CMH 分层三种独立性检验；
-#              mc_corr 的偏相关通过对控制变量回归取残差后计算，为原创实现。
+# Module : qualitative description & association analysis module (desc-qual)
+# This file contains : mc_contingency / mc_corr / mc_tableone
+#              mc_contingency covers three independence tests: chi-square,
+#              Fisher's exact, and CMH stratified; mc_corr's partial correlation
+#              is computed by regressing on controls and taking residuals, an
+#              original implementation.
 # =============================================================================
 
-#' 列联表与独立性检验（卡方 / Fisher / CMH）/ Contingency table & independence test
-#'
-#' 对应第 4 章 4.3 节「独立性检验，卡方检验，费希尔精确概率检验和
-#' Cochran-Mantel-Haenszel 检验」。可构建两个分类变量的列联表并做三种检验：
-#' ① `"chisq"`（默认）卡方独立性检验，对 2×2 表额外用 Fisher 法给出 OR 与 95% CI；
-#' ② `"fisher"` 对任意 r×c 表做 Fisher 精确检验；
-#' ③ `"cmh"` 在给定分层变量 `strata` 下做 Cochran-Mantel-Haenszel 分层检验，
-#' 控制混杂后得到共同的（合并）比值比。
+#' Contingency table & independence test
 #'
 #' Corresponds to Chapter 4, Section 4.3 (chi-square, Fisher's exact, and the
 #' Cochran-Mantel-Haenszel test). Builds a contingency table and runs one of
 #' three independence tests selected by `method`.
 #'
 #' @details
-#' 用途：构建分类变量的列联表并做独立性/关联检验，是分析分类变量关联的第一步，且覆盖 4.3 节要求的三种方法。
-#' 方法：
+#' Purpose: build contingency tables for categorical variables and run
+#' independence/association tests; the first step in analyzing categorical
+#' associations, covering the three methods required by Section 4.3.
+#' Methods:
 #' \itemize{
-#'   \item \code{"chisq"}（默认）：对 2×2 及以上表做卡方独立性检验；\code{correct=TRUE} 时对 2×2 表加 Yates 连续性校正，防止小样本高估显著性。当表为 2×2 时，额外用 Fisher 精确法给出 OR 及其 95% CI。
-#'   \item \code{"fisher"}：对任意 r×c 表用 \code{stats::fisher.test} 做精确检验（适合小样本或期望频数过小的情形）。
-#'   \item \code{"cmh"}：需提供 \code{strata} 分层变量，构造三维列联表后用 \code{stats::mantelhaen.test} 做 Cochran-Mantel-Haenszel 检验，在控制分层因素后判断行-列关联是否仍然存在，并返回共同比值比（common OR）。
+#'   \item \code{"chisq"} (default): chi-square independence test for 2x2 and
+#'   larger tables; \code{correct = TRUE} applies Yates' continuity correction to
+#'   2x2 tables to avoid overstating significance in small samples. For 2x2
+#'   tables, Fisher's exact method additionally gives the OR and its 95% CI.
+#'   \item \code{"fisher"}: \code{stats::fisher.test} exact test for any r x c
+#'   table (suitable for small samples or sparse expected counts).
+#'   \item \code{"cmh"}: requires a \code{strata} variable; builds a 3-way
+#'   contingency table and runs \code{stats::mantelhaen.test} (Cochran-Mantel-
+#'   Haenszel) to judge whether the row-column association persists after
+#'   controlling for the stratifying factor, returning the common OR.
 #' }
-#' 参数：.data 为数据框；row/col 为行、列变量名；correct 控制卡方连续性校正；method 选择检验类型；strata 为 CMH 所需的层变量名。
-#' 结果：返回列表，含 table（列联表，三维时分层展开）、test（检验数据框：test/statistic/df/p.value），并视方法附带 OR / commonOR。
-#' 注意：卡方检验要求期望频数不能过小（一般要求足够比例的格子期望 >5），否则改用 \code{method="fisher"}。CMH 适用于存在混杂分层（如多中心研究）时估计「调整后的」关联。OR>1 提示正关联；置信区间跨 1 表示关联不显著。
-#' @param .data 数据框（a `data.frame`）。
-#' @param row 行变量名（分类）（row variable name, categorical）。
-#' @param col 列变量名（分类）（column variable name, categorical）。
-#' @param correct 卡方连续性校正，默认 `TRUE`（continuity correction for
-#'   chi-square; default `TRUE`；仅对 `method="chisq"` 生效）。
-#' @param method 检验类型：`"chisq"`（默认）、`"fisher"` 或 `"cmh"`
-#'   （test type: chi-square / Fisher exact / Cochran-Mantel-Haenszel）。
-#' @param strata CMH 分层变量名（仅 `method="cmh"` 时使用）（stratifying
-#'   variable name for the CMH test）。
-#' @return 列表，含 `table`（列联表）、`test`（检验数据框：test/statistic/df/
-#'   p.value）；`method="chisq"` 且 2×2 表时附 `OR`（OR/CI.low/CI.high/fisher.p），
-#'   `method="fisher"` 时附 `OR`（含 95% CI 与 p），`method="cmh"` 时附
-#'   `commonOR`（共同比值比及其 CI）（a list with \code{table}, \code{test},
-#'   and method-specific OR / commonOR）。
+#' Arguments: `.data` is a data frame; `row`/`col` are the row/column variable
+#' names; `correct` controls chi-square continuity correction; `method` selects
+#' the test type; `strata` is the layer variable name for CMH.
+#' Result: returns a list with table (contingency table, stratified when 3-way),
+#' test (a data frame: test/statistic/df/p.value), and method-specific OR /
+#' commonOR.
+#' Note: chi-square requires sufficiently large expected counts (generally a
+#' sufficient proportion of cells with expected > 5), otherwise use
+#' \code{method = "fisher"}. CMH is suitable for estimating "adjusted"
+#' association when there is a confounding stratum (e.g. multi-center studies).
+#' OR > 1 suggests a positive association; a CI crossing 1 means the association
+#' is not significant.
+#' @param .data A `data.frame`.
+#' @param row Row variable name, categorical.
+#' @param col Column variable name, categorical.
+#' @param correct Continuity correction for chi-square; default `TRUE` (only
+#'   applies to `method = "chisq"`).
+#' @param method Test type: `"chisq"` (default), `"fisher"`, or `"cmh"`.
+#' @param strata Stratifying variable name for the CMH test.
+#' @return A list with `table` (contingency table), `test` (a data frame:
+#'   test/statistic/df/p.value); for `method = "chisq"` with a 2x2 table it also
+#'   returns `OR` (OR/CI.low/CI.high/fisher.p), for `method = "fisher"` it
+#'   returns `OR` (with 95% CI and p), and for `method = "cmh"` it returns
+#'   `commonOR` (common odds ratio and its CI).
 #' @examples
-#' # 第 4 章 4.3 节：以 birthwt 演示三种独立性检验
+#' # Chapter 4, Section 4.3: demonstrate three independence tests with birthwt
 #' birthwt <- MASS::birthwt
 #'
-#' ## ---- 卡方独立性检验（2x2 附 Fisher OR）----
+#' ## ---- Chi-square independence test (2x2 with Fisher OR) ----
 #' res <- mc_contingency(birthwt, row = "smoke", col = "low")
-#' cat("---- 列联表 / table ----\n"); print(res$table)
-#' cat("\n---- 卡方检验 / chi-square ----\n"); print(res$test, row.names = FALSE)
-#' cat("\n---- 比值比 OR / odds ratio ----\n"); print(res$OR, row.names = FALSE)
+#' cat("---- Contingency table / table ----\n"); print(res$table)
+#' cat("\n---- Chi-square test / chi-square ----\n"); print(res$test, row.names = FALSE)
+#' cat("\n---- Odds ratio OR / odds ratio ----\n"); print(res$OR, row.names = FALSE)
 #'
-#' ## ---- Fisher 精确检验（小样本/期望频数过小时）----
+#' ## ---- Fisher's exact test (small samples / sparse expected counts) ----
 #' res2 <- mc_contingency(birthwt, row = "smoke", col = "low", method = "fisher")
 #' print(res2$test, row.names = FALSE); print(res2$OR, row.names = FALSE)
 #'
-#' ## ---- CMH 分层检验：控制高血压(ht)后吸烟与低体重的共同 OR ----
+#' ## ---- CMH stratified test: common OR of smoking & low birth weight after controlling for hypertension (ht) ----
 #' res3 <- mc_contingency(birthwt, row = "smoke", col = "low",
 #'                        method = "cmh", strata = "ht")
-#' cat("\n---- CMH 检验 / Cochran-Mantel-Haenszel ----\n")
+#' cat("\n---- CMH test / Cochran-Mantel-Haenszel ----\n")
 #' print(res3$test, row.names = FALSE)
 #' print(res3$commonOR, row.names = FALSE)
 #' @export
@@ -87,9 +100,10 @@ mc_contingency <- function(.data, row, col, correct = TRUE,
                        df = as.numeric(mh$parameter),
                        p.value = as.numeric(mh$p.value),
                        stringsAsFactors = FALSE)
-    ## 共同比值比（MH 点估计），其 95% CI 用「精确条件 Logistic」
-    ## （survival::coxph, method="exact"，等价于 clogit）求得，比 MH 渐进方差
-    ## 更稳健；survival 已在 Imports 中。
+    ## Common odds ratio (MH point estimate); its 95% CI is obtained with an
+    ## exact conditional logistic model (survival::coxph, method = "exact",
+    ## equivalent to clogit), more robust than the MH asymptotic variance;
+    ## survival is already in Imports.
     cor <- as.numeric(mh$estimate)
     dn <- dimnames(xtab)
     rows <- list()
@@ -162,37 +176,43 @@ mc_contingency <- function(.data, row, col, correct = TRUE,
   res
 }
 
-#' 相关分析（含偏相关）/ Correlation analysis (with partial correlation)
-#'
-#' 对应第 4 章：Pearson / Spearman 相关；可通过 `control` 指定控制变量，
-#' 对所有变量先就控制变量做回归取残差，从而得到偏相关。
+#' Correlation analysis (with partial correlation)
 #'
 #' Corresponds to Chapter 4: Pearson / Spearman correlation; optionally compute
 #' partial correlation by residualising all variables on the control variable(s).
 #'
 #' @details
-#' 用途：计算变量间的相关系数，支持 Pearson（线性）与 Spearman（秩/单调），并可计算偏相关（控制混杂变量后）。
-#' 方法：pearson 衡量线性关联，假设近似正态；spearman 基于秩，对非线性单调关系与异常值更稳健；control 指定一个或多个控制变量，计算偏相关（剔除这些变量影响后的净相关）。
-#' 参数：.data 为数据框；vars 为参与相关的变量名向量；method 选择相关类型；control 为可选的控制变量名。
-#' 结果：返回相关矩阵（含相关系数），偏相关时返回控制后的矩阵。
-#' 注意：相关系数只衡量关联强度与方向，不等于因果；接近 0 不代表无关（可能是非线性）。Spearman 更适合 ordinal 数据或明显偏态。偏相关能帮助识别「虚假相关」（由共同混杂变量造成）。
-#' @param .data 数据框（a `data.frame`）。
-#' @param vars 变量名；`NULL` 表示全部数值列（variable names; `NULL` = all
-#'   numeric columns）。
-#' @param method `"pearson"`（默认）或 `"spearman"`（correlation method）。
-#' @param control 可选控制变量名（用于偏相关）（optional control variable names
-#'   for partial correlation）。
-#' @return 长格式数据框，列为 `var1` / `var2` / `r` / `p.value`（a long
-#'   `data.frame` with columns `var1`, `var2`, `r`, `p.value`）。
+#' Purpose: compute correlation coefficients between variables, supporting
+#' Pearson (linear) and Spearman (rank/monotonic), plus partial correlation
+#' (after controlling for confounders).
+#' Methods: pearson measures linear association, assumes approximate normality;
+#' spearman is rank-based, robust to non-linear monotonic relations and outliers;
+#' control specifies one or more control variables to compute partial correlation
+#' (the net correlation after removing their effect).
+#' Arguments: `.data` is a data frame; `vars` is a vector of variable names to
+#' correlate; `method` selects the correlation type; `control` is an optional
+#' control variable name.
+#' Result: returns a correlation matrix (coefficients); for partial correlation
+#' returns the controlled matrix.
+#' Note: the correlation coefficient only measures association strength and
+#' direction, not causation; near 0 does not mean no relation (could be
+#' non-linear). Spearman suits ordinal data or clearly skewed data. Partial
+#' correlation helps identify "spurious correlation" caused by a common confounder.
+#' @param .data A `data.frame`.
+#' @param vars Variable names; `NULL` = all numeric columns.
+#' @param method `"pearson"` (default) or `"spearman"`.
+#' @param control Optional control variable names for partial correlation.
+#' @return A long `data.frame` with columns `var1`, `var2`, `r`, `p.value`.
 #' @examples
-#' # 第 4 章 4.5 节：birthwt 中出生体重、孕期体重的相关（Spearman）
+#' # Chapter 4, Section 4.5: correlation of birth weight & pregnancy weight in birthwt (Spearman)
 #' birthwt <- MASS::birthwt
-#' cat("==== Spearman 相关 / Spearman ====\n")
-#' # 注：birthwt 含相同观测值（ties），cor.test 会以渐近法替代精确 p 值并提示，
-#' # 属正常统计说明；此处抑制该提示以简化示例输出
+#' cat("==== Spearman correlation / Spearman ====\n")
+#' # Note: birthwt has tied observations; cor.test switches to the asymptotic
+#' # method for p-values and warns, which is normal; we suppress the warning here
+#' # to simplify the example output
 #' suppressWarnings(print(mc_corr(birthwt, vars = c("bwt","lwt"), method = "spearman"),
 #'                          row.names = FALSE))
-#' cat("\n==== 控制母亲年龄后的偏相关 / partial on age ====\n")
+#' cat("\n==== Partial correlation after controlling for mother's age / partial on age ====\n")
 #' print(mc_corr(birthwt, vars = c("bwt","lwt"), control = "age"),
 #'       row.names = FALSE)
 #' @export
@@ -224,34 +244,38 @@ mc_corr <- function(.data, vars = NULL, method = c("pearson", "spearman"),
   do.call(rbind, rows)
 }
 
-#' 基线特征表（Table One）/ Baseline characteristics table
-#'
-#' 对应第 4 章「基线表」。数值变量以「均值 ± 标准差」呈现，分类变量以
-#' 频数与百分比呈现，支持按分组变量分层。
+#' Baseline characteristics table
 #'
 #' Corresponds to Chapter 4 ("Table One"). Numeric variables are summarised as
 #' mean +/- SD; categorical variables as counts and percentages; can be
 #' stratified by a grouping variable.
 #'
 #' @details
-#' 用途：生成论文中常见的「Table 1」基线特征表，一行一个变量，按暴露/分组列展示，便于直接写进 manuscript。
-#' 方法：数值变量汇总为「均值 ± 标准差」（近似正态时）；分类变量汇总为频数与百分比。
-#' 参数：.data 为数据框；vars 为要纳入的变量名；group 为可选的分组列（如治疗组），此时按组分别汇总；digits 控制小数位数，默认 2。
-#' 结果：返回整齐的数据框，可直接 knitr::kable() 或 print() 成表。
-#' 注意：分组比较的 p 值通常不在此表内（可另行用 mc_ttest/mc_nonparam/mc_contingency 计算）。分类变量若水平过多会撑宽表格，建议先合并稀有类别。这是描述性表格，不替代统计推断。
-#' @param .data 数据框（a `data.frame`）。
-#' @param vars 需要纳入的变量名（variable names to include）。
-#' @param group 可选的分组变量名（optional grouping variable name）。
-#' @param digits 小数位数，默认 `2`（number of decimals; default `2`）。
-#' @return 数据框，列为 `variable` / `level` / `stratum` / `value`（a
-#'   `data.frame` with columns `variable`, `level`, `stratum`, `value`）。
+#' Purpose: generate the common "Table 1" baseline characteristics table, one row
+#' per variable, shown by exposure/group column, ready for the manuscript.
+#' Methods: numeric variables summarised as "mean +/- SD" (when approximately
+#' normal); categorical variables as counts and percentages.
+#' Arguments: `.data` is a data frame; `vars` are the variable names to include;
+#' `group` is an optional grouping column (e.g. treatment), summarising per group;
+#' `digits` controls decimal places, default 2.
+#' Result: returns a tidy data frame, directly usable with knitr::kable() or
+#' print() to make a table.
+#' Note: p-values for group comparisons are usually not in this table (compute
+#' separately with mc_ttest/mc_nonparam/mc_contingency). Too many levels for a
+#' categorical variable widens the table; consider merging rare categories first.
+#' This is a descriptive table, not a substitute for statistical inference.
+#' @param .data A `data.frame`.
+#' @param vars Variable names to include.
+#' @param group Optional grouping variable name.
+#' @param digits Number of decimals; default `2`.
+#' @return A `data.frame` with columns `variable`, `level`, `stratum`, `value`.
 #' @examples
-#' # 第 4 章：birthwt 基线特征表（按低出生体重 low 分组）
+#' # Chapter 4: birthwt baseline characteristics table (grouped by low birth weight)
 #' birthwt <- MASS::birthwt
 #' bw <- birthwt
-#' bw$race  <- factor(bw$race, levels = 1:3, labels = c("白人","黑人","其他"))
-#' bw$smoke <- factor(bw$smoke, levels = 0:1, labels = c("否","是"))
-#' bw$low   <- factor(bw$low, levels = 0:1, labels = c("正常","低体重"))
+#' bw$race  <- factor(bw$race, levels = 1:3, labels = c("White","Black","Other"))
+#' bw$smoke <- factor(bw$smoke, levels = 0:1, labels = c("No","Yes"))
+#' bw$low   <- factor(bw$low, levels = 0:1, labels = c("Normal","Low"))
 #' mc_tableone(bw, vars = c("age","lwt","race","smoke","bwt"), group = "low")
 #' @export
 mc_tableone <- function(.data, vars, group = NULL, digits = 2) {
