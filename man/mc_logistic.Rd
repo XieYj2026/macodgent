@@ -7,22 +7,40 @@
 mc_logistic(data, formula, conf = 0.95)
 }
 \arguments{
-\item{data}{A data.frame.}
+\item{data}{A \code{data.frame}.}
 
-\item{formula}{Model formula, e.g. \code{y ~ x1 + x2}.}
+\item{formula}{A model formula, e.g. \code{y ~ x1 + x2}.}
 
-\item{conf}{Confidence level. Default 0.95.}
+\item{conf}{Confidence level; default \code{0.95}.}
 }
 \value{
-A data.frame: term / estimate(OR) / std.error / statistic / p.value /
-conf.low / conf.high
+A tidy \code{data.frame} with columns \code{term} / \code{estimate}
+(OR) / \code{std.error} / \code{statistic} / \code{p.value} / \code{conf.low}
+/ \code{conf.high}; \code{estimate} is the exponentiated OR.
 }
 \description{
 Corresponds to Chapter 5: based on \code{glm(family = binomial)}, returns a
-tidy coefficient table (with OR and its 95\% CI).
+tidy coefficient table (with OR and its 95\% CI, already exponentiated).
+}
+\details{
+Purpose: Fit a binary logistic regression to obtain the log-odds ratio and OR
+of each predictor for the outcome.
+Method: A binomial logit model estimated by maximum likelihood; factor/
+character variables are automatically handled as categorical.
+Arguments: \code{data} is a data.frame; \code{formula} is of the form
+outcome ~ predictors (the outcome must be 0/1 or a two-level factor);
+\code{conf} is the confidence level for the OR, default 0.95.
+Result: Returns a tidy coefficient table with estimate (on the logit scale),
+standard error, z value, p value, and the exponentiated OR with its
+confidence interval, for direct interpretation.
+Note: OR > 1 means the odds of the outcome increase by one unit of the
+predictor (or relative to the reference level); a CI crossing 1 indicates the
+predictor is not significant at alpha = 0.05. Check for severe
+multicollinearity and empty cells before modelling. For non-binary outcomes,
+use a multinomial or ordinal model instead.
 }
 \examples{
-bw <- MASS::birthwt
-bw$low <- factor(bw$low)
-mc_logistic(bw, low ~ age + smoke)
+# Chapter 5, Section 5.7: multivariable logistic regression for low birth weight
+birthwt <- MASS::birthwt
+mc_logistic(birthwt, low ~ age + lwt + smoke + factor(race))
 }
