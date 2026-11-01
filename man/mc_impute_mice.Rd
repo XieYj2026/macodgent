@@ -40,7 +40,7 @@ Arguments: \code{.data} is a data.frame; \code{m} is the number of imputations
 \code{...} is passed to mice::mice().
 Result: Returns a list containing \code{mids} (the raw multiple-imputation object
 For further analysis), \code{long} (the long table from
-Mice::complete(action = "long")), and \code{summary} — an \strong{original diagnostic
+Mice::complete(action = "long")), and \code{summary}  -  an \strong{original diagnostic
 Table}: per variable it gives \code{n_missing_original} (original missing count),
 \code{n_imputed} (count of imputed observations), and \code{pct_imputed} (imputation
 Proportion).
