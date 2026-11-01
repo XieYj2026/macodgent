@@ -2,12 +2,12 @@
 % Please edit documentation in R/mc-preprocess.R
 \name{mc_long_wide}
 \alias{mc_long_wide}
-\title{Long to wide (tidyr wrapper)}
+\title{Long to wide (native base R)}
 \usage{
 mc_long_wide(.data, id_cols, name_from, value_from)
 }
 \arguments{
-\item{.data}{A data.frame.}
+\item{.data}{A \code{data.frame}.}
 
 \item{id_cols}{Identifier columns.}
 
@@ -16,13 +16,36 @@ mc_long_wide(.data, id_cols, name_from, value_from)
 \item{value_from}{Column providing values.}
 }
 \value{
-The wide data.frame.
+The wide \code{data.frame}.
 }
 \description{
-Long to wide (tidyr wrapper)
+Spreads a long table back to wide. Implemented natively in base R with
+\strong{no external pivoting dependency}.
+}
+\details{
+Purpose: Spread a long table back to wide by the name column; the inverse of
+mc_wide_long(), commonly used to restore a "time-value" long table to a
+subject x time-point wide matrix.
+Method (original, native implementation): First take the unique combinations
+of identifier columns as the skeleton of output rows; then for each value of
+the name column, fill the corresponding \code{value_from} back into the new column
+according to the "identifier key -> value" relationship. Spreading is done via
+custom key concatenation and matching, relying only on base R.
+Arguments: \code{.data} is the long table; \code{id_cols} are the identifier columns;
+\code{name_from} is the source column supplying new column names; \code{value_from} is
+the source column supplying fill values.
+Result: Returns a wide-format data.frame.
+Note: If duplicate (identifier + name) combinations exist (same ID and name
+appearing multiple times), the spread takes the first occurrence and issues a
+warning; ensure identifier + name is unique before converting. This is the
+inverse of mc_wide_long().
 }
 \examples{
 \dontrun{
-mc_long_wide(long_df, id_cols = "id", name_from = "variable", value_from = "value")
+# Chapter 2: restore a "visit-blood pressure" long table to a subject x visit wide table
+long_df <- data.frame(id = 1:2, variable = c("t1", "t2"),
+                      value = c(120, 118))
+mc_long_wide(long_df, id_cols = "id",
+  name_from = "variable", value_from = "value")
 }
 }
