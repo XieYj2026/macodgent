@@ -2,45 +2,45 @@
 % Please edit documentation in R/mc-regression.R
 \name{mc_clogistic}
 \alias{mc_clogistic}
-\title{条件 Logistic 回归（匹配病例对照）/ Conditional logistic regression}
+\title{Conditional logistic regression}
 \usage{
 mc_clogistic(data, formula)
 }
 \arguments{
-\item{data}{数据框（a \code{data.frame}）。}
+\item{data}{A \code{data.frame}.}
 
-\item{formula}{含 \code{strata(配对变量)} 的模型公式（a formula with a
-\code{strata()} term）。}
+\item{formula}{A formula with a \code{strata()} term.}
 }
 \value{
-系数表（估计 / 标准误 / z / p / OR / OR 置信区间）
-（a coefficient table with OR and its 95\% CI）。
+A coefficient table with estimate / standard error / z / p / OR / OR
+confidence interval.
 }
 \description{
-对应第 5 章「条件 Logistic 回归模型的分析」（5.10）。用于 1:M 配对病例
-对照研究，通过 \code{survival::clogit()} 在每层（配对组）内做条件似然估计，
-消除配对因素混杂。相比普通 Logistic，它不估计配对截距，只估计暴露的
-条件优势比（OR）。
-}
-\details{
 Corresponds to Chapter 5 (5.10, conditional logistic regression). Suitable for
 1:M matched case-control studies; fits \code{survival::clogit()} which
 conditions on each matched set, yielding a conditional odds ratio.
-
-用途：分析配对（匹配）病例对照数据中暴露与结局的关联，控制配对变量带来的混杂。
-依赖：需要 survival 包（位于 Suggests）；未安装时给出明确提示。
-方法：在公式内用 f4QxCPfrbqLDmSN5Y1TpcGdXvGBrkWPR-2\code{survival::clogit()}
-在每层内做条件 logistic 似然估计。
-参数：\code{data} 为数据框；\code{formula} 为模型公式，响应变量为 0/1（1=病例），
-必须含 \code{strata(配对变量)} 项。
-结果：返回系数表，含估计值、标准误、z 值、p 值、OR（exp(估计)）与 OR 的
-95\% 置信区间。OR>1 表示该暴露为危险因素。
-注意：每个配对层内应同时包含病例与对照；若某层只有一种状态，该层对条件
-似然无贡献。模型比较可配合 mc_model_compare() 使用。
+}
+\details{
+Purpose: Analyse the association between exposure and outcome in matched
+case-control data, controlling for confounding from the matching variables.
+Dependency: Requires the survival package (Suggests); a clear message is given
+if not installed.
+Method: Specify the matched stratum in the formula with
+\code{strata(matching variable)}, and \code{survival::clogit()} performs a
+conditional logistic likelihood estimation within each stratum.
+Arguments: \code{data} is a data.frame; \code{formula} is the model formula
+with a 0/1 response (1 = case), and must include a
+\code{strata(matching variable)} term.
+Result: Returns a coefficient table with estimate, standard error, z value,
+p value, OR (exp(estimate)), and the OR 95\% confidence interval. OR > 1
+indicates the exposure is a risk factor.
+Note: Each matched stratum should contain both cases and controls; if a
+stratum has only one status, it contributes nothing to the conditional
+likelihood. Model comparison can be done with mc_model_compare().
 }
 \examples{
-# 第 5 章 5.10 节：以内置配对病例对照数据集 infert 演示条件 Logistic
-# case：是否不孕(1=病例)；stratum：配对组；spontaneous/induced：流产史
+# Chapter 5, Section 5.10: demonstrating conditional logistic regression with the built-in matched case-control dataset infert
+# case: infertility status (1 = case); stratum: matched set; spontaneous/induced: miscarriage history
 infert <- datasets::infert
 mc_clogistic(infert, case ~ spontaneous + induced + strata(stratum))
 }
