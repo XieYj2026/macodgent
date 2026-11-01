@@ -3,7 +3,7 @@
 ## macodgent 1.0.1 (2026-11-01)
 
 - Patch release aligning all help-page examples (`\examples`) with the teaching
-  datasets from the column *Exploring Medical Data Science with R*
+  datasets from the routine medical-data-science tutorial
   ("Routine Analysis Techniques"): `birthwt` (MASS), `ovarian` (survival),
   `infert` (datasets), `mtcars`, and `iris`. Examples now load data via the
   `pkg::dataset` idiom (e.g. `MASS::birthwt`) so they run cleanly under
@@ -25,8 +25,7 @@
   `0.1.0` tarball was uploaded once but never published on CRAN, so this is the
   version users can actually install.
 - A curated toolkit of reusable analysis functions distilled from the second
-  part ("Routine Analysis Techniques") of the column *Exploring Medical Data
-  Science with R*.
+  part ("Routine Analysis Techniques") of the routine medical-data-science tutorial.
 - Eight modules: meet the data, preprocessing, quantitative / qualitative
   descriptive statistics, conventional and advanced regression, survival
   analysis, and advanced survival analysis.
