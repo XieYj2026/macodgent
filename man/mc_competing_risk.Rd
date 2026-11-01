@@ -22,39 +22,39 @@ A list with \code{model} (crr object), \code{coefficients} (subdistribution
 HR table: variable / HR / coef / p.value).
 }
 \description{
-Corresponds to Chapter 8 ("competing-risk survival analysis"). Based on
+Based on
 \pkg{cmprsk}'s \code{crr}. \code{status}: 0 = censored, >0 = different event
-types; \code{cause} selects the event of interest.
+Types; \code{cause} selects the event of interest.
 }
 \details{
 Purpose: Perform regression in the presence of competing events, avoiding
-overestimation of the target-event risk by mistakenly treating competing events as
-censored. Typical scenario: a relapse analysis where death is the competing event.
+Overestimation of the target-event risk by mistakenly treating competing events as
+Censored. Typical scenario: a relapse analysis where death is the competing event.
 Method: Based on cmprsk's Fine-Gray subdistribution-hazard model, which treats
-competing events as a special kind of censoring and directly estimates the
-cumulative incidence of the target cause.
+Competing events as a special kind of censoring and directly estimates the
+Cumulative incidence of the target cause.
 Arguments: \code{data} is a data frame; \code{time} is the time column;
 \code{status} is the status column (0 = censored, >0 = different event types);
 \code{group} is the grouping/exposure variable; \code{cause} specifies the target
-event code (default 1).
+Event code (default 1).
 Results: Returns a list with \code{coefficients} (subdistribution hazard ratio SHR,
 SE, z, p value per variable).
 Notes: The \code{status} coding differs from \code{mc_survfit()}/\code{mc_cox()}:
-here 0 is censored and each other positive integer represents one event type;
-arrange the data accordingly. If there is only one event type with no competition,
-an ordinary Cox model suffices. Depends on cmprsk (Suggests).
+Here 0 is censored and each other positive integer represents one event type;
+Arrange the data accordingly. If there is only one event type with no competition,
+An ordinary Cox model suffices. Depends on cmprsk (Suggests).
 }
 \examples{
 \donttest{
-# Chapter 8, Section 8.2: competing risks of leukemia relapse (1) and death (2)
+# competing risks of leukemia relapse (1) and death (2)
 # Event of interest cause = 1 (relapse); death is a competing event and must not be treated as censored
-set.seed(126)
-n <- 300
-trt     <- sample(c(0,1), n, TRUE)
-ftime   <- rexp(n, .05)
-fstatus <- sample(0:2, n, TRUE, c(.4,.35,.25))   # 0 censored, 1 relapse, 2 death (competing)
-df <- data.frame(ftime = ftime, fstatus = fstatus, trt = trt)
-res <- mc_competing_risk(df, time = "ftime", status = "fstatus", group = "trt", cause = 1)
-print(res$coefficients)
+Set.seed(126)
+N <- 300
+Trt <- sample(c(0,1), n, TRUE)
+Ftime <- rexp(n,.05)
+Fstatus <- sample(0:2, n, TRUE, c(.4,.35,.25)) # 0 censored, 1 relapse, 2 death (competing)
+Df <- data.frame(ftime = ftime, fstatus = fstatus, trt = trt)
+Res <- mc_competing_risk(df, time = "ftime", status = "fstatus", group = "trt", cause = 1)
+Print(res$coefficients)
 }
 }
