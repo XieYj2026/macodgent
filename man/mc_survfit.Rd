@@ -2,27 +2,50 @@
 % Please edit documentation in R/mc-survival.R
 \name{mc_survfit}
 \alias{mc_survfit}
-\title{Kaplan-Meier survival curve and log-rank test}
+\title{KM survival curve & log-rank test}
 \usage{
 mc_survfit(data, time, status, group = NULL)
 }
 \arguments{
-\item{data}{A data.frame.}
+\item{data}{A \code{data.frame}.}
 
 \item{time}{Time variable name.}
 
-\item{status}{Outcome variable name (0 = censored, 1 = event).}
+\item{status}{Outcome variable name; 0 = censored, 1 = event.}
 
 \item{group}{Optional grouping variable name.}
 }
 \value{
-A list: \code{fit} (survfit object), \code{logrank} (test data.frame),
-\code{plot} (ggplot KM plot).
+A list with \code{fit} (survfit object), \code{logrank} (test data frame:
+test/chisq/p.value; \code{NULL} when ungrouped), \code{plot} (ggplot KM plot).
 }
 \description{
 Corresponds to Chapter 6: survival estimation, between-group log-rank test,
 and visualisation.
 }
+\details{
+Purpose: Estimate the Kaplan-Meier survival curve and compare between-group
+survival differences with the log-rank test; the most basic exploratory tool in
+survival analysis.
+Method: The KM method estimates the survival function from the product of
+conditional survival probabilities; with grouping it automatically performs a
+log-rank test (whether the group survival curves are overall equal).
+Arguments: \code{data} is a data frame; \code{time} is the follow-up time column;
+\code{status} is the event indicator column (usually 1 = event, 0 = censored);
+\code{group} is an optional grouping column.
+Results: Returns a list with \code{survfit} (survival object), \code{logrank}
+(chi-square, df, p value of the log-rank test, present when grouped), and
+\code{plot} (KM curve drawn by ggplot, with confidence band and group legend).
+Notes: Censored data (\code{status = 0}) must not be counted as events; the
+log-rank test is insensitive to late differences (use a weighted test to emphasize
+distant differences). View the result directly with \code{print(res$plot)}.
+}
 \examples{
-mc_survfit(survival::lung, time = "time", status = "status", group = "sex")
+# Chapter 6: demonstrate KM curve and log-rank test with the ovarian cancer prognostic dataset
+ovarian <- survival::ovarian
+ov <- ovarian
+ov$status <- ifelse(ov$fustat == 2, 0, 1)   # 2 = censored -> 0, 1 = death -> 1
+res <- mc_survfit(ov, time = "futime", status = "status", group = "rx")
+cat("---- log-rank test ----\n"); print(res$logrank, row.names = FALSE)
+print(res$plot)
 }
