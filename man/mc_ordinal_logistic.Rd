@@ -40,7 +40,7 @@ Meaningless. Depends on MASS (Suggests).
 }
 \examples{
 \donttest{
-# ordinal logistic — ordinal outcome of number of prenatal visits (ftv)
+# ordinal logistic  -  ordinal outcome of number of prenatal visits (ftv)
 Birthwt <- MASS::birthwt
 Bw <- birthwt
 Bw$ftv_ord <- ordered(cut(bw$ftv, c(-1, 0, 2, Inf),
