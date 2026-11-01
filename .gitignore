@@ -1,4 +1,4 @@
-# R 包源码管理忽略项
+# R package source-management ignore rules
 .Rproj.user
 .Rhistory
 .RData
@@ -6,10 +6,10 @@
 .Renv.lock
 .DS_Store
 
-# pkgdown 站点产物（本地预览用，勿提交）
+# pkgdown site output (local preview only, do not commit)
 docs/
 
-# 本地构建/检查产物
+# local build / check artifacts
 *.tar.gz
 .Rcheck/
 ..Rcheck/
