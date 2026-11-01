@@ -2,9 +2,8 @@
 
 **MA Codgent Toolkit for Routine Medical Data Science Analysis**
 
-A curated collection of reusable analysis functions distilled from the second
-part ("Routine Analysis Techniques") of the routine medical-data-science
-tutorial. Every exported function uses the `mc_` prefix and returns a tidy
+A curated collection of reusable analysis functions implementing the Routine
+Analysis Techniques for medical-data-science analysis. Every exported function uses the `mc_` prefix and returns a tidy
 `data.frame`, so results drop straight into reports and downstream pipelines.
 
 ---
@@ -37,7 +36,7 @@ library(macodgent)
 
 33 exported functions in 8 modules.
 
-### Chapter 1 — Meet the data
+### Meet the data
 
 | Function       | Purpose                                              |
 | -------------- | ---------------------------------------------------- |
@@ -46,7 +45,7 @@ library(macodgent)
 | `mc_theme()`   | MA Codgent light ggplot2 theme                       |
 | `mc_palette()` | Brand colour palette                                 |
 
-### Chapter 2 — Preprocessing
+### Preprocessing
 
 | Function         | Purpose                                          |
 | ---------------- | ------------------------------------------------ |
@@ -57,7 +56,7 @@ library(macodgent)
 | `mc_wide_long()`   | Wide to long (tidyr wrapper)                     |
 | `mc_long_wide()`   | Long to wide (tidyr wrapper)                     |
 
-### Chapter 3 — Quantitative description
+### Quantitative description
 
 | Function         | Purpose                                                  |
 | ---------------- | -------------------------------------------------------- |
@@ -68,7 +67,7 @@ library(macodgent)
 | `mc_anova()`      | One-way ANOVA                                            |
 | `mc_nonparam()`   | Non-parametric group tests (Wilcoxon / Kruskal-Wallis)   |
 
-### Chapter 4 — Qualitative description
+### Qualitative description
 
 | Function          | Purpose                               |
 | ----------------- | ------------------------------------- |
@@ -76,7 +75,7 @@ library(macodgent)
 | `mc_corr()`        | Correlation (with partial)            |
 | `mc_tableone()`    | Baseline Table One (supports strata)  |
 
-### Chapter 5 — Conventional regression
+### Conventional regression
 
 | Function               | Purpose                                    |
 | --------------------- | ------------------------------------------ |
@@ -85,14 +84,14 @@ library(macodgent)
 | `mc_stepwise()`       | Stepwise selection (AIC based)             |
 | `mc_ordinal_logistic()`| Ordinal logistic (MASS::polr)            |
 
-### Chapter 6 — Survival analysis
+### Survival analysis
 
 | Function      | Purpose                                  |
 | ------------- | ---------------------------------------- |
 | `mc_survfit()`| Kaplan-Meier + log-rank + plot          |
 | `mc_cox()`    | Cox PH model + forest plot              |
 
-### Chapter 7 — Advanced regression
+### Advanced regression
 
 | Function           | Purpose                               |
 | ----------------- | ------------------------------------- |
@@ -103,7 +102,7 @@ library(macodgent)
 | `mc_rcs()`        | Restricted cubic spline (self-impl.)  |
 | `mc_quantile_reg()`| Quantile regression (quantreg)       |
 
-### Chapter 8 — Advanced survival
+### Advanced survival
 
 | Function             | Purpose                              |
 | ------------------- | ------------------------------------ |
