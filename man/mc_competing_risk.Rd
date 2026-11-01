@@ -2,49 +2,57 @@
 % Please edit documentation in R/mc-survival.R
 \name{mc_competing_risk}
 \alias{mc_competing_risk}
-\title{竞争风险回归（Fine-Gray 模型）/ Competing-risk regression (Fine-Gray)}
+\title{Competing-risk regression (Fine-Gray)}
 \usage{
 mc_competing_risk(data, time, status, group, cause = 1)
 }
 \arguments{
-\item{data}{数据框（a \code{data.frame}）。}
+\item{data}{A \code{data.frame}.}
 
-\item{time}{时间变量名（time variable name）。}
+\item{time}{Time variable name.}
 
-\item{status}{竞争风险状态变量名（competing-risk status variable name）。}
+\item{status}{Competing-risk status variable name.}
 
-\item{group}{协变量（分组/暴露）变量名（covariate/grouping variable name）。}
+\item{group}{Covariate (grouping/exposure) variable name.}
 
-\item{cause}{关注事件类型，默认 \code{1}（event type of interest; default \code{1}）。}
+\item{cause}{Event type of interest; default \code{1}.}
 }
 \value{
-列表，含 \code{model}（crr 对象）/ \code{coefficients}（亚分布 HR 表：variable/
-HR/coef/p.value）（a list with \code{model}, \code{coefficients}）。
+A list with \code{model} (crr object), \code{coefficients} (subdistribution
+HR table: variable / HR / coef / p.value).
 }
 \description{
-对应第 8 章「竞争风险生存分析」。基于 \pkg{cmprsk} 的 \code{crr}。
-\code{status}：0 = 删失，>0 = 不同事件类型；\code{cause} 选择关注事件。
-}
-\details{
 Corresponds to Chapter 8 ("competing-risk survival analysis"). Based on
 \pkg{cmprsk}'s \code{crr}. \code{status}: 0 = censored, >0 = different event
 types; \code{cause} selects the event of interest.
-
-用途：在存在「竞争事件」时做回归，避免把竞争事件误当作删失而高估目标事件风险。典型场景：研究死亡为竞争事件的复发分析。
-方法：基于 cmprsk 包的 Fine-Gray 子分布风险模型（subdistribution hazard），将竞争事件作为特殊的删失处理，直接估计目标原因累积发生率。
-参数：data 为数据框；time 为时间列；status 为状态列（0=删失，>0 代表不同事件类型）；group 为分组/暴露变量；cause 指定关注的目标事件编号（默认 1）。
-结果：返回列表，含 coefficients（各变量对应的子分布风险比 SHR、标准误、z、p 值）。
-注意：status 的编码约定与 mc_survfit()/mc_cox() 不同：这里 0 才是删失，其它正整数各代表一类事件，务必按此约定整理数据。若仅有一个事件类型且无竞争，普通 Cox 即可。依赖 cmprsk（Suggests）。
+}
+\details{
+Purpose: Perform regression in the presence of competing events, avoiding
+overestimation of the target-event risk by mistakenly treating competing events as
+censored. Typical scenario: a relapse analysis where death is the competing event.
+Method: Based on cmprsk's Fine-Gray subdistribution-hazard model, which treats
+competing events as a special kind of censoring and directly estimates the
+cumulative incidence of the target cause.
+Arguments: \code{data} is a data frame; \code{time} is the time column;
+\code{status} is the status column (0 = censored, >0 = different event types);
+\code{group} is the grouping/exposure variable; \code{cause} specifies the target
+event code (default 1).
+Results: Returns a list with \code{coefficients} (subdistribution hazard ratio SHR,
+SE, z, p value per variable).
+Notes: The \code{status} coding differs from \code{mc_survfit()}/\code{mc_cox()}:
+here 0 is censored and each other positive integer represents one event type;
+arrange the data accordingly. If there is only one event type with no competition,
+an ordinary Cox model suffices. Depends on cmprsk (Suggests).
 }
 \examples{
 \donttest{
-# 第 8 章 8.2 节：白血病复发(1)与死亡(2)的竞争风险
-# 关注事件 cause = 1（复发）；死亡为竞争事件，不能当作删失
+# Chapter 8, Section 8.2: competing risks of leukemia relapse (1) and death (2)
+# Event of interest cause = 1 (relapse); death is a competing event and must not be treated as censored
 set.seed(126)
 n <- 300
 trt     <- sample(c(0,1), n, TRUE)
 ftime   <- rexp(n, .05)
-fstatus <- sample(0:2, n, TRUE, c(.4,.35,.25))   # 0删失 1复发 2死亡(竞争)
+fstatus <- sample(0:2, n, TRUE, c(.4,.35,.25))   # 0 censored, 1 relapse, 2 death (competing)
 df <- data.frame(ftime = ftime, fstatus = fstatus, trt = trt)
 res <- mc_competing_risk(df, time = "ftime", status = "fstatus", group = "trt", cause = 1)
 print(res$coefficients)
