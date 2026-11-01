@@ -1,43 +1,48 @@
 # =============================================================================
-# 软件名称    : macodgent 医学数据科学研究工具包
-# 著作权人    : Dr.Xie
-# 版本号      : 1.0.0
-# 开发语言    : R
-# 开发完成日期: 2026-10-30
-# 权利声明    : 本程序为著作权人独立开发，受《计算机软件保护条例》保护；
-#              未经书面许可，不得复制、发行、出租或将其用于商业目的。
+# Software name: macodgent medical data science research toolkit
+# Copyright holder: Dr.Xie
+# Version: 1.0.0
+# Language: R
+# Date completed: 2026-10-30
+# Rights: This program was independently developed by the copyright holder and is
+#         protected under the Computer Software Protection Regulations; without
+#         written permission it may not be copied, distributed, rented, or used
+#         for commercial purposes.
 # -----------------------------------------------------------------------------
-# 模块        : 工具模块（utils）
-# 本文件包含  : mc_mode / mc_inspect / mc_theme / mc_palette
-#              （另含内部原创算法 .nice_breaks：坐标轴“美观刻度”生成）
+# Module: utilities module (utils)
+# This file contains: mc_mode / mc_inspect / mc_theme / mc_palette
+#   (also includes the internal original algorithm .nice_breaks: "nice numbers"
+#   axis tick generator)
 # =============================================================================
 
-#' 众数（支持多众数）/ Mode (multiple modes supported)
-#'
-#' 教学版众数函数：R 基础未提供。返回出现频率最高的全部取值，
-#' 因此支持「多众数」场景（多个取值并列最高频）。
+#' Mode (multiple modes supported)
 #'
 #' `mc_mode()` is a teaching implementation of the mode, which base R does
 #' not provide. It returns *every* value tied for the highest frequency, so
 #' data with several modes is handled correctly instead of returning only one.
 #'
 #' @details
-#' 用途：找出数据中出现频率最高的取值（众数）。R 基础语言没有内置众数函数，这里是面向教学的自实现版本。
-#' 参数：x 接受数值或因子向量；na.rm 决定是否在计数前剔除缺失值（默认 TRUE，缺失值不计入频率）。
-#' 结果：返回全部并列最高频的取值，因此天然支持「多众数」——双峰分布会同时返回两个众数；返回类型与输入保持一致（数值输入返回数值型向量）。
-#' 注意：若每个取值都只出现一次，则所有值都会被判为「众数」并原样返回，这种情况通常没有实际意义；使用前可先用 mc_inspect() 了解分布形态。当所有观测都是缺失值时返回 NULL。
-#' @param x 数值或因子向量（numeric or factor vector）。
-#' @param na.rm 是否先剔除缺失值，默认 `TRUE`（logical; remove `NA`s before
-#'   counting? Default `TRUE`）。
-#' @return 众数向量（保持输入类型；数值输入返回数值型）；若无非缺失值则返回
-#'   `NULL`（a vector of all mode(s), coerced back to the input type; `NULL` when
-#'   there are no non-missing values）。
+#' Purpose: find the value(s) with the highest frequency (the mode). Base R has
+#' no built-in mode function, so this is a teaching-oriented reimplementation.
+#' Arguments: x accepts a numeric or factor vector; na.rm controls whether
+#' missing values are removed before counting (default TRUE, so NAs are excluded
+#' from the frequency tally).
+#' Result: returns every value tied for the highest frequency, so multimodal
+#' data is handled naturally — a bimodal distribution returns both modes; the
+#' return type matches the input (numeric input yields a numeric vector).
+#' Note: if every value occurs exactly once, all values are treated as modes and
+#' returned as-is, which is usually meaningless; run mc_inspect() first to
+#' understand the distribution. Returns NULL when all observations are missing.
+#' @param x A numeric or factor vector.
+#' @param na.rm Remove missing values first? Default `TRUE` (logical).
+#' @return A vector of all mode(s), coerced back to the input type; `NULL` when
+#'   there are no non-missing values.
 #' @examples
-#' # 第 3 章：低出生体重研究数据集 birthwt（MASS 包）
+#' # Chapter 3: low birthweight study dataset (birthwt, MASS)
 #' birthwt <- MASS::birthwt
-#' mc_mode(factor(birthwt$race))     # 种族变量的最常见类别（1 = 白人）
-#' mc_mode(factor(birthwt$smoke))    # 吸烟状态众数（0 = 不吸烟）
-#' mc_mode(c(NA, NA, 1, 2), na.rm = FALSE)   # 含 NA 时返回 "NA"
+#' mc_mode(factor(birthwt$race))     # most common race category (1 = white)
+#' mc_mode(factor(birthwt$smoke))    # mode of smoking status (0 = non-smoker)
+#' mc_mode(c(NA, NA, 1, 2), na.rm = FALSE)   # returns "NA" when NA present
 #' @export
 mc_mode <- function(x, na.rm = TRUE) {
   if (na.rm) x <- x[!is.na(x)]
@@ -50,10 +55,7 @@ mc_mode <- function(x, na.rm = TRUE) {
   modes
 }
 
-#' 数据框概览 / Data frame overview
-#'
-#' 逐列给出：类别（class）、观测数（n）、缺失数（n_missing）、缺失百分比
-#' （pct_missing）与唯一值个数（n_unique）。常用于建模前快速把脉数据质量。
+#' Data frame overview
 #'
 #' One row per column: the column `class`, number of observations `n`,
 #' count of missing values `n_missing`, missing percentage `pct_missing`, and
@@ -61,16 +63,22 @@ mc_mode <- function(x, na.rm = TRUE) {
 #' before modelling.
 #'
 #' @details
-#' 用途：建模前快速把脉数据质量，逐列给出类型、观测数、缺失数、缺失百分比与唯一值个数。
-#' 参数：.data 为数据框或 tibble，无需其它参数。
-#' 结果：返回一个数据框，每行对应输入的一列，列为 variable（列名）、class（类别）、n（有效观测数）、n_missing（缺失数）、pct_missing（缺失百分比）、n_unique（唯一值个数）。
-#' 注意：n 是剔除缺失后的有效观测数，因此 n + n_missing 等于该列总长度，缺失百分比按列总长度计算。这是预处理流水线第一道「体检」步骤，建议在任何清洗/建模之前先跑一遍。
-#' @param .data 数据框或 tibble（a `data.frame` or `tibble`）。
-#' @return 数据框，列为 `variable` / `class` / `n` / `n_missing` /
-#'   `pct_missing` / `n_unique`（a `data.frame` with those six columns, one row
-#'   per input column）。
+#' Purpose: a quick pre-modelling data-quality check; for each column it reports
+#' the type, number of observations, number of missing values, missing
+#' percentage and number of unique values.
+#' Arguments: .data is a data.frame or tibble; no other arguments.
+#' Result: returns a data.frame with one row per input column. Columns: variable
+#' (column name), class (type), n (valid observations), n_missing (missing
+#' count), pct_missing (missing percentage), n_unique (number of unique values).
+#' Note: n is the count of valid (non-missing) observations, so n + n_missing
+#' equals the column's total length, and the missing percentage is computed
+#' against that total length. This is the first "health check" of the
+#' preprocessing pipeline — run it before any cleaning or modelling.
+#' @param .data A `data.frame` or `tibble`.
+#' @return A `data.frame` with those six columns, one row per input column.
 #' @examples
-#' # 第 1 章：用 birthwt 体检数据框把脉数据质量（可先人为制造缺失演练）
+#' # Chapter 1: data-quality check on the birthwt data frame (try injecting
+#' # missing values to practice)
 #' birthwt <- MASS::birthwt
 #' mc_inspect(birthwt[, c("age", "lwt", "bwt", "smoke", "low")])
 #' @export
@@ -92,10 +100,7 @@ mc_inspect <- function(.data) {
   do.call(rbind, rows)
 }
 
-#' MA Codgent 浅色 ggplot2 主题 / MA Codgent light ggplot2 theme
-#'
-#' 浅色、克制、留白充足的 ggplot2 主题，可直接用于报告出图，与各分析函数的
-#' 返回值（如 `mc_survfit()`、`mc_cox()`、`mc_rcs()` 的 `plot` 组件）无缝衔接。
+#' MA Codgent light ggplot2 theme
 #'
 #' A light, restrained ggplot2 theme with ample whitespace, ready for direct use
 #' in reports. It is the default theme returned inside the `plot`/`forest`
@@ -103,15 +108,21 @@ mc_inspect <- function(.data) {
 #' `mc_rcs()`).
 #'
 #' @details
-#' 用途：提供一套浅色、克制、留白充足的 ggplot2 主题，用于报告出图，与多个分析函数返回值中的 plot 组件（如 mc_survfit()、mc_cox()、mc_rcs()）配色一致。
-#' 参数：base_size 控制基础字号，默认 12。
-#' 结果：返回一个 ggplot2 主题对象，可用 + 追加到任意 ggplot 图形之后。
-#' 注意：这是纯主题（theme），不含几何对象（geom），必须配合 geom_point()、geom_line() 等图层使用；想换配色请配合 mc_palette() 一起使用。
-#' @param base_size 基础字号，默认 `12`（base font size; default `12`）。
-#' @return 一个 ggplot2 主题对象（a `ggplot2` theme object），可与 `+` 连用。
+#' Purpose: a light, restrained ggplot2 theme with ample whitespace for report
+#' figures, matching the plot components returned by several analysis functions
+#' (e.g. mc_survfit(), mc_cox(), mc_rcs()).
+#' Arguments: base_size controls the base font size; default 12.
+#' Result: returns a ggplot2 theme object that can be appended to any ggplot
+#' with +.
+#' Note: this is a pure theme (no geoms), so it must be combined with layers
+#' such as geom_point() or geom_line(); pair it with mc_palette() to change the
+#' colour scheme.
+#' @param base_size Base font size; default `12`.
+#' @return A `ggplot2` theme object, usable with `+`.
 #' @examples
 #' library(ggplot2)
-#' # 第 3 章：母亲孕期体重与出生体重的散点（按是否吸烟着色）
+#' # Chapter 3: maternal pregnancy weight vs. birth weight scatter
+#' # (coloured by smoking status)
 #' birthwt <- MASS::birthwt
 #' p <- ggplot(birthwt, aes(lwt, bwt, color = factor(smoke))) +
 #'   geom_point(size = 2, alpha = 0.6) + mc_theme(base_size = 13)
@@ -129,11 +140,7 @@ mc_theme <- function(base_size = 12) {
     )
 }
 
-#' 品牌配色与调色板生成 / Brand palette & palette generator
-#'
-#' 提供一组稳定的品牌基准色（十六进制），并可**在基准色之间做线性插值**生成
-#' 任意数量的过渡色（连续渐变或离散色板）。返回带名字的字符向量，可直接传给
-#' ggplot2 的 `scale_color_manual()` / `scale_fill_manual()`。
+#' Brand palette & palette generator
 #'
 #' Supplies a set of stable brand anchor colours (hex) and, instead of a static
 #' vector, **linearly interpolates** between anchors to generate any number of
@@ -142,23 +149,36 @@ mc_theme <- function(base_size = 12) {
 #' `scale_fill_manual()`.
 #'
 #' @details
-#' 用途：返回品牌基准色并保证出图配色一致；当类别数超过 6 个时，可在基准色之间插值生成所需数量的颜色，避免手动配色。
-#' 方法（原创）：内部先自行把 "#RRGGBB" 解析为 0–255 的 RGB 三元组（.hex_to_rgb），在锚点颜色间按位置做线性插值（.interp_palette），再把结果还原为十六进制（.rgb_to_hex）；整个过程不调用任何调色板包。
-#' 参数：n 为需要生成的颜色个数，NULL（默认）时返回六个固定品牌色；type 选择 "brand"（默认，六个离散品牌色）、"gradient"（品牌色间的连续渐变，默认 100 色）、"discrete"（在品牌色基础上插值出的离散色板）。
-#' 结果：默认返回一个带名字的字符向量，含 primary（主蓝）、secondary（紫）、accent（绿）、warn（红）、info（青）、muted（灰）六个品牌色；指定 n 时返回长度 n 的颜色向量（gradient 默认无名，discrete/brand 保留锚点名）。
-#' 注意：这是纯算法生成的配色，不依赖任何数据；插值为线性 RGB 空间，如需感知更均匀的色板可后续改用 HCL 空间。常与 mc_theme() 搭配得到风格统一的报告图。
-#' @param n 需要生成的颜色个数；`NULL`（默认）时返回六个固定品牌色
-#'   （the number of colours to generate; `NULL` = the six fixed brand colours）。
-#' @param type 调色板类型：`"brand"`（默认，品牌离散色）/ `"gradient"`
-#'   （品牌色间的连续渐变）/ `"discrete"`（在品牌色基础上插值出的离散色）
-#'   （palette type: `"brand"`, `"gradient"` or `"discrete"`）。
-#' @return 命名字符向量（默认六个品牌色）或长度为 `n` 的颜色向量（a named
-#'   character vector of the six brand colours by default, or a vector of length
-#'   `n`）。
+#' Purpose: returns the brand anchor colours to keep plotting colours
+#' consistent; when the number of categories exceeds 6, it interpolates between
+#' anchors to generate the required number of colours, avoiding manual colour
+#' picking.
+#' Method (original): internally it parses "#RRGGBB" into a 0-255 RGB triplet
+#' (.hex_to_rgb), performs linear interpolation between anchor colours by
+#' position (.interp_palette), then converts the result back to hex
+#' (.rgb_to_hex); the whole process uses no palette package.
+#' Arguments: n is the number of colours to generate; NULL (default) returns the
+#' six fixed brand colours. type selects "brand" (default, six discrete brand
+#' colours), "gradient" (continuous gradient between brand colours, default 100
+#' colours), or "discrete" (a discrete ramp interpolated over the brand
+#' colours).
+#' Result: by default returns a named character vector with the six brand
+#' colours: primary (blue), secondary (purple), accent (green), warn (red),
+#' info (cyan), muted (grey). When n is given, returns a colour vector of length
+#' n (gradient is unnamed by default; discrete/brand keep anchor names).
+#' Note: colours are generated purely algorithmically with no dependence on
+#' data; interpolation is in linear RGB space — switch to HCL space later if a
+#' more perceptually uniform ramp is needed. Often paired with mc_theme() for
+#' style-consistent report figures.
+#' @param n The number of colours to generate; `NULL` = the six fixed brand
+#'   colours.
+#' @param type Palette type: `"brand"`, `"gradient"` or `"discrete"`.
+#' @return A named character vector of the six brand colours by default, or a
+#'   vector of length `n`.
 #' @examples
-#' pal <- mc_palette()                 # 默认：六个品牌色
+#' pal <- mc_palette()                 # default: six brand colours
 #' print(pal)
-#' grad <- mc_palette(n = 20, type = "gradient")  # 20 色连续渐变
+#' grad <- mc_palette(n = 20, type = "gradient")  # 20-colour continuous gradient
 #' print(head(grad))
 #' library(ggplot2)
 #' df <- data.frame(name = factor(names(pal), names(pal)), col = pal)
