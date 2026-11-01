@@ -37,7 +37,7 @@ Predictors; \code{direction} selects the direction; \code{k} is the AIC/BIC pena
 Result: Returns a list with the final \code{coefficients} (coefficient table) and
 \code{formula} (the formula of finally selected variables).
 Note: Stepwise regression is convenient for exploration but has statistical
-Flaws — p values are underestimated, confidence intervals are too narrow, and
+Flaws  -  p values are underestimated, confidence intervals are too narrow, and
 Overfitting is likely; results also depend on arbitrary entry/removal
 Thresholds. Treat it as a "draft" for variable screening; important
 Conclusions still need domain knowledge and a pre-registered analysis plan.
