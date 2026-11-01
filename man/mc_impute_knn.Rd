@@ -2,24 +2,39 @@
 % Please edit documentation in R/mc-preprocess.R
 \name{mc_impute_knn}
 \alias{mc_impute_knn}
-\title{K-nearest-neighbour imputation (self-implemented, no extra dependency)}
+\title{K 近邻填补（自实现，无额外依赖）/ K-nearest-neighbour imputation}
 \usage{
 mc_impute_knn(.data, k = 5)
 }
 \arguments{
-\item{.data}{A data.frame.}
+\item{.data}{数据框（a \code{data.frame}）。}
 
-\item{k}{Number of neighbours. Default 5.}
+\item{k}{近邻个数，默认 \code{5}（number of neighbours; default \code{5}）。}
 }
 \value{
-The imputed data.frame.
+填补后的数据框（the imputed \code{data.frame}；结构与输入一致）。
 }
 \description{
+对应第 2 章「KNN 填补」。仅对数值列做填补：先按列标准化，再用欧氏距离
+找最近的 k 个非缺失观测，取其均值回填。非数值列的缺失值原样保留并给出警告。
+}
+\details{
 Corresponds to Chapter 2 ("KNN imputation"). Imputes only numeric columns
 using standardised Euclidean distance; missing values in non-numeric columns
-are left untouched with a warning.
+are left untouched with a warning. No extra dependency is required.
+
+用途：用 K 近邻法填补数值列的缺失值，适合缺失比例不高、且变量间存在相关性的场景。
+方法：只对数值列处理。先按列标准化（减均值除标准差），再用欧氏距离为每个缺失点寻找最近的 k 个非缺失观测，取它们均值回填；标准差为 0 的列退化为用列均值填补。非数值列的缺失值原样保留并给出警告。
+参数：.data 为数据框；k 为近邻个数，默认 5。
+结果：返回与输入结构一致的填补后数据框。
+注意：KNN 对量纲敏感，故内部已做标准化；但不同列取值范围差异极大时仍建议先用 mc_scale()。分类变量不参与 KNN，需另行处理（如众数填补或合并类别）。
 }
 \examples{
-df <- data.frame(a = c(1, 2, NA, 4, 5), b = c(2, NA, 3, 4, 5))
-mc_impute_knn(df, k = 2)
+# 第 2 章：以 iris 演示 KNN 缺失值填补
+data(iris)
+set.seed(105)
+iris_na <- iris
+iris_na$Sepal.Length[sample(150, 15)] <- NA
+iris_na$Sepal.Width[sample(150, 15)] <- NA
+head(mc_impute_knn(iris_na, k = 3))
 }
