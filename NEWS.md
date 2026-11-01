@@ -32,7 +32,7 @@
 - 33 exported functions, backed by a `testthat` unit-test suite.
 - Layered dependencies: core depends only on `tidyr`, `survival`, `ggplot2`,
   `broom`, `stats`, and `utils`; heavier methods (GAM, Lasso, competing-risk,
-  multistate, …) sit in `Suggests` with `requireNamespace()` guards for graceful
+  multistate, ...) sit in `Suggests` with `requireNamespace()` guards for graceful
   degradation.
 - Fixes addressing the CRAN incoming pre-test NOTEs on `0.1.0`:
   - `cran-comments.md` is now listed in `.Rbuildignore`, so it is no longer a
