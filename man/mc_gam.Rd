@@ -2,47 +2,51 @@
 % Please edit documentation in R/mc-advanced.R
 \name{mc_gam}
 \alias{mc_gam}
-\title{广义可加模型（GAM）/ Generalized Additive Model (GAM)}
+\title{Generalized Additive Model (GAM)}
 \usage{
 mc_gam(data, formula, ...)
 }
 \arguments{
-\item{data}{数据框（a \code{data.frame}）。}
+\item{data}{A \code{data.frame}.}
 
-\item{formula}{GAM 公式，如 \code{y ~ s(x1) + x2}（a GAM formula such as
-\code{y ~ s(x1) + x2}）。}
+\item{formula}{A GAM formula such as \code{y ~ s(x1) + x2}.}
 
-\item{...}{传给 \code{\link[mgcv]{gam}} 的额外参数（additional arguments
-passed to \code{\link[mgcv]{gam}}）。}
+\item{...}{Additional arguments passed to \code{\link[mgcv]{gam}}.}
 }
 \value{
-列表，含 \code{model}（拟合的 gam 对象）与 \code{terms}（平滑项的整洁表）
-（a list with \code{model} and \code{terms}）。
+A list with \code{model} and \code{terms}.
 }
 \description{
-对应第 7 章「广义可加回归模型」。基于 \code{\link[mgcv]{gam}}，返回每个
-平滑项的自由度与显著性。
-}
-\details{
 Corresponds to Chapter 7 "Generalized Additive Regression Models" of the
 second part of the routine medical-data-science tutorial. Built on \code{\link[mgcv]{gam}}, it returns the
 degrees of freedom and significance of each smooth term.
-
-用途：拟合广义可加模型（GAM），在保持线性模型可解释性的同时，允许自变量以平滑（非线性）形式进入模型，自动捕捉曲线关系。
-方法：基于 mgcv 包的 gam()，用样条（如 s(x)）表示平滑项，自动选择平滑自由度并给出显著性。
-参数：data 为数据框；formula 形如 y ~ s(x1) + x2，其中 s() 包裹的项为平滑项，其余为线性项。
-结果：返回列表，含 model（gam 对象，可用 plot() 看平滑曲线）、terms（各平滑项的自由度 edf、参考自由度、F 值与 p 值，用于判断该变量是否具非线性效应）。
-注意：edf 接近 1 且 p 不显著，说明该变量近似线性、无需平滑；edf 很大可能过拟合。平滑项需要足够样本量才能稳定估计。依赖 mgcv（Suggests）。想看效应图用 plot(res$model, pages=1, shade=TRUE)。
+}
+\details{
+Purpose: Fit a generalized additive model (GAM) that, while keeping the
+interpretability of a linear model, lets predictors enter the model as smooth
+(non-linear) terms, automatically capturing curved relationships.
+Method: Built on mgcv's \code{gam()}, using splines (e.g. \code{s(x)}) for the
+smooth terms; it auto-selects the smoothing degrees of freedom and reports
+significance.
+Arguments: \code{data} is a data frame; \code{formula} is of the form
+\code{y ~ s(x1) + x2}, where \code{s()}-wrapped terms are smooth and the rest are linear.
+Results: Returns a list with \code{model} (a gam object; use \code{plot()} to view
+the smooth curves) and \code{terms} (edf, reference df, F value and p value of
+each smooth term, used to judge whether the variable has a non-linear effect).
+Notes: If \code{edf} is near 1 and not significant, the variable is approximately
+linear and smoothing is unnecessary; a very large \code{edf} may overfit. Smooth
+terms need sufficient sample size for stable estimation. Depends on mgcv (Suggests).
+To view the effect plot, use \code{plot(res$model, pages = 1, shade = TRUE)}.
 }
 \examples{
 \donttest{
-# 第 7 章：用 GAM 刻画孕期体重(lwt)对出生体重的非线性效应
+# Chapter 7: use GAM to capture the non-linear effect of pregnancy weight (lwt) on birth weight
 birthwt <- MASS::birthwt
 res <- mc_gam(birthwt, bwt ~ s(lwt) + smoke)
-cat("平滑项表 / smooth terms:\n")
+cat("smooth terms:\n")
 print(as.data.frame(res$terms), row.names = FALSE)
 }
 }
 \seealso{
-\code{\link{mc_rcs}}（受限立方样条，自实现基函数）。
+\code{\link{mc_rcs}} (restricted cubic spline with self-implemented basis).
 }
