@@ -2,7 +2,7 @@
 % Please edit documentation in R/mc-desc-qual.R
 \name{mc_contingency}
 \alias{mc_contingency}
-\title{列联表与独立性检验（卡方 / Fisher / CMH）/ Contingency table & independence test}
+\title{Contingency table & independence test}
 \usage{
 mc_contingency(
   .data,
@@ -14,70 +14,79 @@ mc_contingency(
 )
 }
 \arguments{
-\item{.data}{数据框（a \code{data.frame}）。}
+\item{.data}{A \code{data.frame}.}
 
-\item{row}{行变量名（分类）（row variable name, categorical）。}
+\item{row}{Row variable name, categorical.}
 
-\item{col}{列变量名（分类）（column variable name, categorical）。}
+\item{col}{Column variable name, categorical.}
 
-\item{correct}{卡方连续性校正，默认 \code{TRUE}（continuity correction for
-chi-square; default \code{TRUE}；仅对 \code{method="chisq"} 生效）。}
+\item{correct}{Continuity correction for chi-square; default \code{TRUE} (only
+applies to \code{method = "chisq"}).}
 
-\item{method}{检验类型：\code{"chisq"}（默认）、\code{"fisher"} 或 \code{"cmh"}
-（test type: chi-square / Fisher exact / Cochran-Mantel-Haenszel）。}
+\item{method}{Test type: \code{"chisq"} (default), \code{"fisher"}, or \code{"cmh"}.}
 
-\item{strata}{CMH 分层变量名（仅 \code{method="cmh"} 时使用）（stratifying
-variable name for the CMH test）。}
+\item{strata}{Stratifying variable name for the CMH test.}
 }
 \value{
-列表，含 \code{table}（列联表）、\code{test}（检验数据框：test/statistic/df/
-p.value）；\code{method="chisq"} 且 2×2 表时附 \code{OR}（OR/CI.low/CI.high/fisher.p），
-\code{method="fisher"} 时附 \code{OR}（含 95\% CI 与 p），\code{method="cmh"} 时附
-\code{commonOR}（共同比值比及其 CI）（a list with \code{table}, \code{test},
-and method-specific OR / commonOR）。
+A list with \code{table} (contingency table), \code{test} (a data frame:
+test/statistic/df/p.value); for \code{method = "chisq"} with a 2x2 table it also
+returns \code{OR} (OR/CI.low/CI.high/fisher.p), for \code{method = "fisher"} it
+returns \code{OR} (with 95\% CI and p), and for \code{method = "cmh"} it returns
+\code{commonOR} (common odds ratio and its CI).
 }
 \description{
-对应第 4 章 4.3 节「独立性检验，卡方检验，费希尔精确概率检验和
-Cochran-Mantel-Haenszel 检验」。可构建两个分类变量的列联表并做三种检验：
-① \code{"chisq"}（默认）卡方独立性检验，对 2×2 表额外用 Fisher 法给出 OR 与 95\% CI；
-② \code{"fisher"} 对任意 r×c 表做 Fisher 精确检验；
-③ \code{"cmh"} 在给定分层变量 \code{strata} 下做 Cochran-Mantel-Haenszel 分层检验，
-控制混杂后得到共同的（合并）比值比。
-}
-\details{
 Corresponds to Chapter 4, Section 4.3 (chi-square, Fisher's exact, and the
 Cochran-Mantel-Haenszel test). Builds a contingency table and runs one of
 three independence tests selected by \code{method}.
-
-用途：构建分类变量的列联表并做独立性/关联检验，是分析分类变量关联的第一步，且覆盖 4.3 节要求的三种方法。
-方法：
-\itemize{
-\item \code{"chisq"}（默认）：对 2×2 及以上表做卡方独立性检验；\code{correct=TRUE} 时对 2×2 表加 Yates 连续性校正，防止小样本高估显著性。当表为 2×2 时，额外用 Fisher 精确法给出 OR 及其 95\% CI。
-\item \code{"fisher"}：对任意 r×c 表用 \code{stats::fisher.test} 做精确检验（适合小样本或期望频数过小的情形）。
-\item \code{"cmh"}：需提供 \code{strata} 分层变量，构造三维列联表后用 \code{stats::mantelhaen.test} 做 Cochran-Mantel-Haenszel 检验，在控制分层因素后判断行-列关联是否仍然存在，并返回共同比值比（common OR）。
 }
-参数：.data 为数据框；row/col 为行、列变量名；correct 控制卡方连续性校正；method 选择检验类型；strata 为 CMH 所需的层变量名。
-结果：返回列表，含 table（列联表，三维时分层展开）、test（检验数据框：test/statistic/df/p.value），并视方法附带 OR / commonOR。
-注意：卡方检验要求期望频数不能过小（一般要求足够比例的格子期望 >5），否则改用 \code{method="fisher"}。CMH 适用于存在混杂分层（如多中心研究）时估计「调整后的」关联。OR>1 提示正关联；置信区间跨 1 表示关联不显著。
+\details{
+Purpose: build contingency tables for categorical variables and run
+independence/association tests; the first step in analyzing categorical
+associations, covering the three methods required by Section 4.3.
+Methods:
+\itemize{
+\item \code{"chisq"} (default): chi-square independence test for 2x2 and
+larger tables; \code{correct = TRUE} applies Yates' continuity correction to
+2x2 tables to avoid overstating significance in small samples. For 2x2
+tables, Fisher's exact method additionally gives the OR and its 95\% CI.
+\item \code{"fisher"}: \code{stats::fisher.test} exact test for any r x c
+table (suitable for small samples or sparse expected counts).
+\item \code{"cmh"}: requires a \code{strata} variable; builds a 3-way
+contingency table and runs \code{stats::mantelhaen.test} (Cochran-Mantel-
+Haenszel) to judge whether the row-column association persists after
+controlling for the stratifying factor, returning the common OR.
+}
+Arguments: \code{.data} is a data frame; \code{row}/\code{col} are the row/column variable
+names; \code{correct} controls chi-square continuity correction; \code{method} selects
+the test type; \code{strata} is the layer variable name for CMH.
+Result: returns a list with table (contingency table, stratified when 3-way),
+test (a data frame: test/statistic/df/p.value), and method-specific OR /
+commonOR.
+Note: chi-square requires sufficiently large expected counts (generally a
+sufficient proportion of cells with expected > 5), otherwise use
+\code{method = "fisher"}. CMH is suitable for estimating "adjusted"
+association when there is a confounding stratum (e.g. multi-center studies).
+OR > 1 suggests a positive association; a CI crossing 1 means the association
+is not significant.
 }
 \examples{
-# 第 4 章 4.3 节：以 birthwt 演示三种独立性检验
+# Chapter 4, Section 4.3: demonstrate three independence tests with birthwt
 birthwt <- MASS::birthwt
 
-## ---- 卡方独立性检验（2x2 附 Fisher OR）----
+## ---- Chi-square independence test (2x2 with Fisher OR) ----
 res <- mc_contingency(birthwt, row = "smoke", col = "low")
-cat("---- 列联表 / table ----\n"); print(res$table)
-cat("\n---- 卡方检验 / chi-square ----\n"); print(res$test, row.names = FALSE)
-cat("\n---- 比值比 OR / odds ratio ----\n"); print(res$OR, row.names = FALSE)
+cat("---- Contingency table / table ----\n"); print(res$table)
+cat("\n---- Chi-square test / chi-square ----\n"); print(res$test, row.names = FALSE)
+cat("\n---- Odds ratio OR / odds ratio ----\n"); print(res$OR, row.names = FALSE)
 
-## ---- Fisher 精确检验（小样本/期望频数过小时）----
+## ---- Fisher's exact test (small samples / sparse expected counts) ----
 res2 <- mc_contingency(birthwt, row = "smoke", col = "low", method = "fisher")
 print(res2$test, row.names = FALSE); print(res2$OR, row.names = FALSE)
 
-## ---- CMH 分层检验：控制高血压(ht)后吸烟与低体重的共同 OR ----
+## ---- CMH stratified test: common OR of smoking & low birth weight after controlling for hypertension (ht) ----
 res3 <- mc_contingency(birthwt, row = "smoke", col = "low",
                        method = "cmh", strata = "ht")
-cat("\n---- CMH 检验 / Cochran-Mantel-Haenszel ----\n")
+cat("\n---- CMH test / Cochran-Mantel-Haenszel ----\n")
 print(res3$test, row.names = FALSE)
 print(res3$commonOR, row.names = FALSE)
 }
