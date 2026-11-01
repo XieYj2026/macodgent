@@ -6,7 +6,7 @@ Authors@R: c(person(given = "Xie YJ", role = c("aut", "cre"),
     role = c("cph")))
 Maintainer: Xie YJ <xiemacodgent@163.com>
 Description: A collection of reusable analysis functions derived from the second
-    part of the Chinese column "Exploring Medical Data Science with R"
+    part of the Chinese medical-data-science tutorial
     ("Routine Analysis Techniques"). It covers data preprocessing, quantitative
     and qualitative descriptive statistics, conventional and advanced regression,
     survival analysis, competing-risk models, and models for transitions
