@@ -29,10 +29,10 @@ No ERROR / WARNING / NOTE.
 
 - **Layered dependencies.** Core exports depend only on `tidyr`, `survival`,
   `ggplot2`, `broom`, `stats`, and `utils` (all in `Imports`). Heavier or
-  specialised methods — GAM (`mgcv`), elastic net / lasso / ridge (`glmnet`),
+  specialised methods  -  GAM (`mgcv`), elastic net / lasso / ridge (`glmnet`),
   quantile regression (`quantreg`), competing-risk (`cmprsk`) and multistate
   (`mstate`) survival, multiple imputation (`mice`), and ordinal logistic
-  regression (`MASS`) — are listed under `Suggests`. Every exported function
+  regression (`MASS`)  -  are listed under `Suggests`. Every exported function
   that needs one of these optional packages calls `requireNamespace("<pkg>",
   quietly = TRUE)` and raises an informative error if it is missing, so the
   package installs and loads without them.
