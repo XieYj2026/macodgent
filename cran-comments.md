@@ -19,8 +19,7 @@ No ERROR / WARNING / NOTE.
 ## Comments for the CRAN team
 
 - **Origin of the package.** `macodgent` is a curated toolkit of reusable
-  analysis functions distilled from the second part ("Routine Analysis
-  Techniques") of the Chinese medical-data-science tutorial. The tutorial material is in Chinese, but **all user-facing
+  analysis functions implementing the Routine Analysis Techniques for medical data science. The reference documentation is written in English, but **all user-facing
   documentation in this package (roxygen help pages, man/*.Rd, vignette text,
   README, NEWS) is written in English**, so the PDF reference manual builds
   cleanly without any CJK font dependency. No non-ASCII characters remain in the
