@@ -17,24 +17,24 @@ mc_dedup(.data, by = NULL, keep = c("last", "first"))
 The deduplicated \code{data.frame}.
 }
 \description{
-Corresponds to Chapter 2 ("deduplication"). Deduplicates by all columns by
-default, or by specified key columns, keeping the last row of each group.
+Deduplicates by all columns by
+Default, or by specified key columns, keeping the last row of each group.
 }
 \details{
 Purpose: Remove duplicate rows, commonly used to clean duplicate entries or
-repeated follow-up records.
+Repeated follow-up records.
 Arguments: \code{.data} is a data.frame; \code{by} names the key columns used to detect
-duplicates (e.g. subject ID), NULL means judge by all columns; \code{keep} chooses
-whether to retain the "last" (default) or "first" row of each group.
+Duplicates (e.g. subject ID), NULL means judge by all columns; \code{keep} chooses
+Whether to retain the "last" (default) or "first" row of each group.
 Result: Returns the deduplicated data.frame.
 Note: When \code{by} is specified, only those key columns are compared; other
-columns are ignored even if they differ, and duplicates are collapsed to a
-single row. Ensure the key columns uniquely identify a record, or information
-may be lost. This matches Excel's "Remove Duplicates" semantics.
+Columns are ignored even if they differ, and duplicates are collapsed to a
+Single row. Ensure the key columns uniquely identify a record, or information
+May be lost. This matches Excel's "Remove Duplicates" semantics.
 }
 \examples{
-# Chapter 2: removing duplicate follow-up records (deduplicate by subject ID)
-df <- data.frame(subj = c(1, 1, 2, 2, 3), measure = c("a", "a", "b", "b", "c"), visit = 1:5)
-mc_dedup(df, by = "subj")                  # keep the last row of each group
-mc_dedup(df, by = "subj", keep = "first")  # keep the first row of each group
+# removing duplicate follow-up records (deduplicate by subject ID)
+Df <- data.frame(subj = c(1, 1, 2, 2, 3), measure = c("a", "a", "b", "b", "c"), visit = 1:5)
+Mc_dedup(df, by = "subj") # keep the last row of each group
+Mc_dedup(df, by = "subj", keep = "first") # keep the first row of each group
 }
