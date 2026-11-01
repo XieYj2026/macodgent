@@ -18,31 +18,31 @@ A \code{data.frame} with columns \code{term}, \code{estimate}, \code{std.error},
 \code{p.value}, \code{tau} (stacked over taus).
 }
 \description{
-Corresponds to Chapter 7 "Principles and Application Scenarios of Quantile
-Regression" of the routine medical-data-science tutorial. Built on
+Corresponds to "Principles and Application Scenarios of Quantile
+Regression" Built on
 \code{\link[quantreg]{rq}}, it returns coefficients for multiple quantiles
-at once.
+At once.
 }
 \details{
 Purpose: Use quantile regression to describe how a predictor affects different
-quantiles of the outcome (e.g. median, upper/lower quartiles); especially useful
-under heteroscedasticity or when focusing on extreme quantiles (e.g. low income,
-high death risk).
+Quantiles of the outcome (e.g. median, upper/lower quartiles); especially useful
+Under heteroscedasticity or when focusing on extreme quantiles (e.g. low income,
+High death risk).
 Method: Based on quantreg's \code{rq()}, minimizing weighted absolute residuals;
-it can estimate coefficients for multiple quantiles at once.
+It can estimate coefficients for multiple quantiles at once.
 Arguments: \code{data} is a data frame; \code{formula} is of the form \code{y ~ x};
 \code{taus} is the vector of quantiles to estimate, default \code{c(0.25, 0.5, 0.75)}.
 Results: Returns a data frame of coefficients at each quantile (including intercept
-and predictor slope), allowing comparison of slopes across quantiles.
+And predictor slope), allowing comparison of slopes across quantiles.
 Notes: If the predictor slope differs markedly across quantiles (e.g. under
-heteroscedasticity), the conditional distribution shape changes with x -- information
-invisible to ordinary mean regression (OLS). Quantile regression is robust to
-outliers. Depends on quantreg (Suggests).
+Heteroscedasticity), the conditional distribution shape changes with x -- information
+Invisible to ordinary mean regression (OLS). Quantile regression is robust to
+Outliers. Depends on quantreg (Suggests).
 }
 \examples{
 \donttest{
-# Chapter 7: conditional quantile regression of birth weight (slope of pregnancy weight lwt across quantiles)
-birthwt <- MASS::birthwt
-mc_quantile_reg(birthwt, bwt ~ lwt + age, taus = c(0.25, 0.5, 0.75))
+# conditional quantile regression of birth weight (slope of pregnancy weight lwt across quantiles)
+Birthwt <- MASS::birthwt
+Mc_quantile_reg(birthwt, bwt ~ lwt + age, taus = c(0.25, 0.5, 0.75))
 }
 }
