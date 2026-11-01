@@ -15,38 +15,38 @@ mc_cox(data, formula, conf = 0.95)
 }
 \value{
 A list with \code{model} (coxph object), \code{coefficients} (HR table:
-term/estimate/conf.low/conf.high/p.value), \code{ph_test} (PH test table),
+Term/estimate/conf.low/conf.high/p.value), \code{ph_test} (PH test table),
 \code{forest} (ggplot forest plot).
 }
 \description{
-Corresponds to Chapter 6: Cox model, proportional-hazards assumption test
+Cox model, proportional-hazards assumption test
 (Schoenfeld residuals), and a forest plot.
 }
 \details{
 Purpose: Fit a Cox proportional-hazards model to assess the concurrent effect of
-several covariates on the hazard of an event, yielding hazard ratios (HR).
+Several covariates on the hazard of an event, yielding hazard ratios (HR).
 Method: A semi-parametric model that makes no assumption about the baseline hazard
-shape and only estimates covariate hazard ratios; by default it tests the
-proportional-hazards (PH) assumption.
+Shape and only estimates covariate hazard ratios; by default it tests the
+Proportional-hazards (PH) assumption.
 Arguments: \code{data} is a data frame; \code{formula} is of the form
 \code{Surv(time, status) ~ covariates}, requiring \code{survival::Surv()} to build
-the survival object; \code{conf} is the HR confidence level.
+The survival object; \code{conf} is the HR confidence level.
 Results: Returns a list with \code{coefficients} (per-variable HR, SE, z, p value
-and CI), \code{ph_test} (PH-assumption test result), and \code{forest} (HR forest
-plot, ggplot object).
+And CI), \code{ph_test} (PH-assumption test result), and \code{forest} (HR forest
+Plot, ggplot object).
 Notes: HR > 1 means the event hazard rises as that covariate increases. The PH
-assumption is the core premise of Cox -- if \code{ph_test} shows a significant
-violation (e.g. a very small p for a variable), consider stratified Cox,
-time-varying effects, or a parametric model. View the forest plot with
+Assumption is the core premise of Cox -- if \code{ph_test} shows a significant
+Violation (e.g. a very small p for a variable), consider stratified Cox,
+Time-varying effects, or a parametric model. View the forest plot with
 \code{print(res$forest)}.
 }
 \examples{
-# Chapter 6: Cox proportional-hazards model -- ovarian-cancer survival prognosis
-ovarian <- survival::ovarian
-ov <- ovarian
-ov$status <- ifelse(ov$fustat == 2, 0, 1)
-res <- mc_cox(ov, survival::Surv(futime, status) ~ age + rx + resid.ds + ecog.ps)
-cat("---- HR table / coefficients ----\n"); print(as.data.frame(res$coefficients), row.names = FALSE)
-cat("\n---- PH assumption test ----\n"); print(res$ph_test)
-print(res$forest)
+# Cox proportional-hazards model -- ovarian-cancer survival prognosis
+Ovarian <- survival::ovarian
+Ov <- ovarian
+Ov$status <- ifelse(ov$fustat == 2, 0, 1)
+Res <- mc_cox(ov, survival::Surv(futime, status) ~ age + rx + resid.ds + ecog.ps)
+Cat("---- HR table / coefficients ----\n"); print(as.data.frame(res$coefficients), row.names = FALSE)
+Cat("\n---- PH assumption test ----\n"); print(res$ph_test)
+Print(res$forest)
 }
