@@ -15,8 +15,7 @@ library(MASS)
 
 # Background
 
-Part 2 ("Routine Analysis Techniques") of the column *Exploring Medical Data
-Science with R* covers eight chapters: meeting the data, preprocessing,
+Part 2 ("Routine Analysis Techniques") of the routine medical-data-science tutorial covers eight chapters: meeting the data, preprocessing,
 quantitative / qualitative description, conventional regression, survival
 analysis, advanced regression, and advanced survival analysis. Each section
 scatters reusable analysis actions. `macodgent` distils those actions into a
