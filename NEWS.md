@@ -1,5 +1,24 @@
 # macodgent NEWS
 
+## macodgent 1.0.1 (2026-11-01)
+
+- Patch release aligning all help-page examples (`\examples`) with the teaching
+  datasets from the column *Exploring Medical Data Science with R*
+  ("Routine Analysis Techniques"): `birthwt` (MASS), `ovarian` (survival),
+  `infert` (datasets), `mtcars`, and `iris`. Examples now load data via the
+  `pkg::dataset` idiom (e.g. `MASS::birthwt`) so they run cleanly under
+  `example(mc_xxx)` with no spurious "data set not found" warning.
+- Fixed a real bug in `mc_ph_test`: `cox.zph`'s residual matrix has events as
+  rows and covariates as columns, so the function now selects the covariate
+  **column** (was selecting by row, causing `arguments imply differing number of
+  rows`) and plots the standardized Schoenfeld residuals against (transformed)
+  event time correctly.
+- Cleaned up example output: `broom` tibbles are coerced to `data.frame` before
+  printing (no `row.names = FALSE` warning), and the partial-correlation
+  example no longer double-controls a variable.
+- `mc_pcr` example simplified to numeric predictors only (PCR requires an
+  all-numeric model matrix).
+
 ## macodgent 0.1.1 (2026-10-26)
 
 - First release, resubmitted after CRAN incoming pre-test feedback. The earlier
