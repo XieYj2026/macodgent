@@ -4,15 +4,15 @@
 \name{macodgent-package}
 \alias{macodgent-package}
 \alias{macodgent}
-\title{macodgent: routine-analysis toolkit for medical data science}
+\title{Macodgent: routine-analysis toolkit for medical data science}
 \description{
-macodgent is a curated toolkit of reusable analysis functions distilled from
-Part 2 ("Routine Analysis Techniques") of the routine medical-data-science tutorial.
-It covers data preprocessing, quantitative and qualitative
-descriptive statistics, conventional and advanced regression, survival
-analysis, competing-risk and multi-state models. All exported functions share
-the \code{mc_} prefix and return tidy \code{data.frame} objects that drop straight into
-reports and downstream pipelines.
+Macodgent is a curated toolkit of reusable analysis functions implementing the
+Routine Analysis Techniques for medical data science. It covers data
+preprocessing, quantitative and qualitative
+Descriptive statistics, conventional and advanced regression, survival
+Analysis, competing-risk and multi-state models. All exported functions share
+The \code{mc_} prefix and return tidy \code{data.frame} objects that drop straight into
+Reports and downstream pipelines.
 }
 \section{Modules and functions}{
 
@@ -45,7 +45,7 @@ reports and downstream pipelines.
 \enumerate{
 \item All exported functions use the \code{mc_} prefix to avoid name clashes.
 \item Analysis functions return tidy \code{data.frame} objects, ready for
-reporting and piping.
+Reporting and piping.
 \item Heavy methods live in \code{Suggests} with graceful namespace guards.
 }
 }
