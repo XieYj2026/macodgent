@@ -2,23 +2,41 @@
 % Please edit documentation in R/mc-utils.R
 \name{mc_mode}
 \alias{mc_mode}
-\title{Compute the mode (possibly multiple)}
+\title{Mode (multiple modes supported)}
 \usage{
 mc_mode(x, na.rm = TRUE)
 }
 \arguments{
 \item{x}{A numeric or factor vector.}
 
-\item{na.rm}{Logical; remove missing values first? Default TRUE.}
+\item{na.rm}{Remove missing values first? Default \code{TRUE} (logical).}
 }
 \value{
-A vector of all modes (NULL if no non-missing values).
+A vector of all mode(s), coerced back to the input type; \code{NULL} when
+there are no non-missing values.
 }
 \description{
-Teaching implementation of a mode function, since R has no built-in.
-Returns all values with the highest frequency (allowing multiple modes).
+\code{mc_mode()} is a teaching implementation of the mode, which base R does
+not provide. It returns \emph{every} value tied for the highest frequency, so
+data with several modes is handled correctly instead of returning only one.
+}
+\details{
+Purpose: find the value(s) with the highest frequency (the mode). Base R has
+no built-in mode function, so this is a teaching-oriented reimplementation.
+Arguments: x accepts a numeric or factor vector; na.rm controls whether
+missing values are removed before counting (default TRUE, so NAs are excluded
+from the frequency tally).
+Result: returns every value tied for the highest frequency, so multimodal
+data is handled naturally — a bimodal distribution returns both modes; the
+return type matches the input (numeric input yields a numeric vector).
+Note: if every value occurs exactly once, all values are treated as modes and
+returned as-is, which is usually meaningless; run mc_inspect() first to
+understand the distribution. Returns NULL when all observations are missing.
 }
 \examples{
-mc_mode(c(1, 2, 2, 3, 3, 3, 4, 5, 5, 6))
-mc_mode(c("a", "a", "b", "b", "c"))   # multiple modes
+# Chapter 3: low birthweight study dataset (birthwt, MASS)
+birthwt <- MASS::birthwt
+mc_mode(factor(birthwt$race))     # most common race category (1 = white)
+mc_mode(factor(birthwt$smoke))    # mode of smoking status (0 = non-smoker)
+mc_mode(c(NA, NA, 1, 2), na.rm = FALSE)   # returns "NA" when NA present
 }
