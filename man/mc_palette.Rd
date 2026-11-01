@@ -2,16 +2,58 @@
 % Please edit documentation in R/mc-utils.R
 \name{mc_palette}
 \alias{mc_palette}
-\title{MA Codgent brand palette}
+\title{Brand palette & palette generator}
 \usage{
-mc_palette()
+mc_palette(n = NULL, type = c("brand", "gradient", "discrete"))
+}
+\arguments{
+\item{n}{The number of colours to generate; \code{NULL} = the six fixed brand
+colours.}
+
+\item{type}{Palette type: \code{"brand"}, \code{"gradient"} or \code{"discrete"}.}
 }
 \value{
-A named character vector.
+A named character vector of the six brand colours by default, or a
+vector of length \code{n}.
 }
 \description{
-A stable set of categorical colours (hex codes) for consistent plotting.
+Supplies a set of stable brand anchor colours (hex) and, instead of a static
+vector, \strong{linearly interpolates} between anchors to generate any number of
+transition colours (a continuous gradient or a discrete ramp). Returns a named
+character vector usable with \code{ggplot2::scale_color_manual()} /
+\code{scale_fill_manual()}.
+}
+\details{
+Purpose: returns the brand anchor colours to keep plotting colours
+consistent; when the number of categories exceeds 6, it interpolates between
+anchors to generate the required number of colours, avoiding manual colour
+picking.
+Method (original): internally it parses "#RRGGBB" into a 0-255 RGB triplet
+(.hex_to_rgb), performs linear interpolation between anchor colours by
+position (.interp_palette), then converts the result back to hex
+(.rgb_to_hex); the whole process uses no palette package.
+Arguments: n is the number of colours to generate; NULL (default) returns the
+six fixed brand colours. type selects "brand" (default, six discrete brand
+colours), "gradient" (continuous gradient between brand colours, default 100
+colours), or "discrete" (a discrete ramp interpolated over the brand
+colours).
+Result: by default returns a named character vector with the six brand
+colours: primary (blue), secondary (purple), accent (green), warn (red),
+info (cyan), muted (grey). When n is given, returns a colour vector of length
+n (gradient is unnamed by default; discrete/brand keep anchor names).
+Note: colours are generated purely algorithmically with no dependence on
+data; interpolation is in linear RGB space — switch to HCL space later if a
+more perceptually uniform ramp is needed. Often paired with mc_theme() for
+style-consistent report figures.
 }
 \examples{
-mc_palette()
+pal <- mc_palette()                 # default: six brand colours
+print(pal)
+grad <- mc_palette(n = 20, type = "gradient")  # 20-colour continuous gradient
+print(head(grad))
+library(ggplot2)
+df <- data.frame(name = factor(names(pal), names(pal)), col = pal)
+p <- ggplot(df, aes(name, fill = name)) + geom_bar() +
+  scale_fill_manual(values = pal) + theme_void()
+print(p)
 }
