@@ -2,36 +2,41 @@
 % Please edit documentation in R/mc-desc-quant.R
 \name{mc_anova}
 \alias{mc_anova}
-\title{单因素方差分析 / One-way ANOVA}
+\title{One-way ANOVA}
 \usage{
 mc_anova(formula, data)
 }
 \arguments{
-\item{formula}{公式，如 \code{y ~ group}（a formula like \code{y ~ group}）。}
+\item{formula}{A formula like \code{y ~ group}.}
 
-\item{data}{包含变量的数据框（a \code{data.frame} containing the variables）。}
+\item{data}{A \code{data.frame} containing the variables.}
 }
 \value{
-数据框，列为 \code{term} / \code{df} / \code{sumsq} / \code{meansq} / \code{statistic} /
-\code{p.value}（a \code{data.frame} with those six columns）。
+A \code{data.frame} with columns \code{term}, \code{df}, \code{sumsq}, \code{meansq},
+\code{statistic}, \code{p.value}.
 }
 \description{
-对应第 3 章「方差分析（ANOVA）」。基于 \code{stats::aov}，返回各项的
-自由度、平方和、均方、F 统计量与 p 值。
-}
-\details{
 Corresponds to Chapter 3 ("ANOVA"). Built on \code{stats::aov}, returns the
 degrees of freedom, sum of squares, mean square, F statistic and p-value of
 each term.
-
-用途：单因素方差分析（one-way ANOVA），比较三个及以上组的均值是否总体相等。
-方法：基于线性模型分解变异，比较组间与组内均方，得到 F 统计量。
-参数：formula 形如 y ~ g（因变量 ~ 分组因子）；data 为包含这两列的数据框。
-结果：返回各项的自由度、平方和、均方、F 值与 p 值。
-注意：ANOVA 只告诉你「至少两组不同」，具体哪两组不同需事后多重比较（如 Tukey HSD）。其前提假设为各组正态且方差齐——先用 mc_norm_test()、mc_var_test() 核验。若方差不齐或分布偏态，考虑 Kruskal-Wallis（见 mc_nonparam）。
+}
+\details{
+Purpose: one-way ANOVA, comparing whether the means of three or more groups
+are equal overall.
+Methods: decomposes variation via a linear model, comparing between-group and
+within-group mean squares to obtain the F statistic.
+Arguments: \code{formula} like y ~ g (response ~ grouping factor); \code{data} is the
+data frame containing both columns.
+Result: returns the degrees of freedom, sum of squares, mean square, F value
+and p-value of each term.
+Note: ANOVA only tells you "at least two groups differ"; which two require
+post-hoc multiple comparisons (e.g. Tukey HSD). Its assumptions are normality
+and equal variance per group—verify first with mc_norm_test() and mc_var_test().
+If variances are unequal or distributions skewed, consider Kruskal-Wallis
+(see mc_nonparam).
 }
 \examples{
-# 第 3 章：不同种族(race)母亲的出生体重是否有差异（单因素 ANOVA）
+# Chapter 3: do mothers of different races (race) differ in birth weight? (one-way ANOVA)
 birthwt <- MASS::birthwt
 mc_anova(bwt ~ factor(race), data = birthwt)
 }
