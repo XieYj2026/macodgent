@@ -41,6 +41,6 @@ Likelihood. Model comparison can be done with mc_model_compare().
 \examples{
 # demonstrating conditional logistic regression with the built-in matched case-control dataset infert
 # case: infertility status (1 = case); stratum: matched set; spontaneous/induced: miscarriage history
-Infert <- datasets::infert
-Mc_clogistic(infert, case ~ spontaneous + induced + strata(stratum))
+infert <- datasets::infert
+mc_clogistic(infert, case ~ spontaneous + induced + survival::strata(stratum))
 }

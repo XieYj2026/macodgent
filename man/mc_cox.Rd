@@ -41,12 +41,12 @@ Time-varying effects, or a parametric model. View the forest plot with
 \code{print(res$forest)}.
 }
 \examples{
-# Cox proportional-hazards model -- ovarian-cancer survival prognosis
-Ovarian <- survival::ovarian
-Ov <- ovarian
-Ov$status <- ifelse(ov$fustat == 2, 0, 1)
-Res <- mc_cox(ov, survival::Surv(futime, status) ~ age + rx + resid.ds + ecog.ps)
-Cat("---- HR table / coefficients ----\n"); print(as.data.frame(res$coefficients), row.names = FALSE)
-Cat("\n---- PH assumption test ----\n"); print(res$ph_test)
-Print(res$forest)
+# cox proportional-hazards model -- ovarian-cancer survival prognosis
+ovarian <- survival::ovarian
+ov <- ovarian
+ov$status <- ifelse(ov$fustat == 2, 0, 1)
+res <- mc_cox(ov, survival::Surv(futime, status) ~ age + rx + resid.ds + ecog.ps)
+cat("---- HR table / coefficients ----\n"); print(as.data.frame(res$coefficients), row.names = FALSE)
+cat("\n---- pH assumption test ----\n"); print(res$ph_test)
+print(res$forest)
 }

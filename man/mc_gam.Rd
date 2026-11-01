@@ -40,11 +40,11 @@ To view the effect plot, use \code{plot(res$model, pages = 1, shade = TRUE)}.
 }
 \examples{
 \donttest{
-# use GAM to capture the non-linear effect of pregnancy weight (lwt) on birth weight
-Birthwt <- MASS::birthwt
-Res <- mc_gam(birthwt, bwt ~ s(lwt) + smoke)
-Cat("smooth terms:\n")
-Print(as.data.frame(res$terms), row.names = FALSE)
+# use gAM to capture the non-linear effect of pregnancy weight (lwt) on birth weight
+birthwt <- MASS::birthwt
+res <- mc_gam(birthwt, bwt ~ s(lwt) + smoke)
+cat("smooth terms:\n")
+print(as.data.frame(res$terms), row.names = FALSE)
 }
 }
 \seealso{

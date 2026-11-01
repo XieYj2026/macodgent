@@ -36,7 +36,7 @@ If variances are unequal or distributions skewed, consider Kruskal-Wallis
 (see mc_nonparam).
 }
 \examples{
-# do mothers of different races (race) differ in birth weight? (one-way ANOVA)
-Birthwt <- MASS::birthwt
-Mc_anova(bwt ~ factor(race), data = birthwt)
+# do mothers of different races (race) differ in birth weight? (one-way aNOVA)
+birthwt <- MASS::birthwt
+mc_anova(bwt ~ factor(race), data = birthwt)
 }

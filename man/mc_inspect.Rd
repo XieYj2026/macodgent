@@ -34,6 +34,6 @@ Preprocessing pipeline  -  run it before any cleaning or modelling.
 \examples{
 # data-quality check on the birthwt data frame (try injecting
 # missing values to practice)
-Birthwt <- MASS::birthwt
-Mc_inspect(birthwt[, c("age", "lwt", "bwt", "smoke", "low")])
+birthwt <- MASS::birthwt
+mc_inspect(birthwt[, c("age", "lwt", "bwt", "smoke", "low")])
 }

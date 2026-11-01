@@ -47,14 +47,14 @@ An ordinary Cox model suffices. Depends on cmprsk (Suggests).
 \examples{
 \donttest{
 # competing risks of leukemia relapse (1) and death (2)
-# Event of interest cause = 1 (relapse); death is a competing event and must not be treated as censored
-Set.seed(126)
-N <- 300
-Trt <- sample(c(0,1), n, TRUE)
-Ftime <- rexp(n,.05)
-Fstatus <- sample(0:2, n, TRUE, c(.4,.35,.25)) # 0 censored, 1 relapse, 2 death (competing)
-Df <- data.frame(ftime = ftime, fstatus = fstatus, trt = trt)
-Res <- mc_competing_risk(df, time = "ftime", status = "fstatus", group = "trt", cause = 1)
-Print(res$coefficients)
+# event of interest cause = 1 (relapse); death is a competing event and must not be treated as censored
+set.seed(126)
+n <- 300
+trt <- sample(c(0,1), n, TRUE)
+ftime <- rexp(n,.05)
+fstatus <- sample(0:2, n, TRUE, c(.4,.35,.25)) # 0 censored, 1 relapse, 2 death (competing)
+df <- data.frame(ftime = ftime, fstatus = fstatus, trt = trt)
+res <- mc_competing_risk(df, time = "ftime", status = "fstatus", group = "trt", cause = 1)
+print(res$coefficients)
 }
 }

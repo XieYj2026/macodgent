@@ -35,8 +35,8 @@ Understand the distribution. Returns NULL when all observations are missing.
 }
 \examples{
 # low birthweight study dataset (birthwt, MASS)
-Birthwt <- MASS::birthwt
-Mc_mode(factor(birthwt$race)) # most common race category (1 = white)
-Mc_mode(factor(birthwt$smoke)) # mode of smoking status (0 = non-smoker)
-Mc_mode(c(NA, NA, 1, 2), na.rm = FALSE) # returns "NA" when NA present
+birthwt <- MASS::birthwt
+mc_mode(factor(birthwt$race)) # most common race category (1 = white)
+mc_mode(factor(birthwt$smoke)) # mode of smoking status (0 = non-smoker)
+mc_mode(c(NA, NA, 1, 2), na.rm = FALSE) # returns "NA" when NA present
 }

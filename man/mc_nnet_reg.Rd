@@ -45,11 +45,11 @@ Reproducibility. Too many nodes overfit; compare structures with
 \examples{
 \donttest{
 # neural-network regression -- predict birth weight from maternal features
-Birthwt <- MASS::birthwt
-Bw <- birthwt
-Bw$race <- factor(bw$race)
-Res <- mc_nnet_reg(bw, bwt ~ age + lwt + smoke + race, hidden = 5, seed = 7)
-Res$rmse
-Print(res$plot)
+birthwt <- MASS::birthwt
+bw <- birthwt
+bw$race <- factor(bw$race)
+res <- mc_nnet_reg(bw, bwt ~ age + lwt + smoke + race, hidden = 5, seed = 7)
+res$rmse
+print(res$plot)
 }
 }

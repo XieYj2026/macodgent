@@ -52,15 +52,15 @@ Imputation quality itself.
 }
 \examples{
 \dontrun{
-# multiple imputation by chained equations (MICE) with per-variable diagnostic
-Set.seed(106)
-N <- 44
-Df <- data.frame(
-Age = c(rnorm(n - 4, 50), NA, NA, rnorm(2, 55)),
-Bili = c(NA, rnorm(n - 4, 1.2), NA, rnorm(2, 1.5)),
-Chol = rnorm(n, 200, 40), stringsAsFactors = FALSE)
-Res <- mc_impute_mice(df, m = 3)
-Head(res$long)
-Print(res$summary) # original: per-variable imputation diagnostic
+# multiple imputation by chained equations (mICE) with per-variable diagnostic
+set.seed(106)
+n <- 44
+df <- data.frame(
+age = c(rnorm(n - 4, 50), NA, NA, rnorm(2, 55)),
+bili = c(NA, rnorm(n - 4, 1.2), NA, rnorm(2, 1.5)),
+chol = rnorm(n, 200, 40), stringsAsFactors = FALSE)
+res <- mc_impute_mice(df, m = 3)
+head(res$long)
+print(res$summary) # original: per-variable imputation diagnostic
 }
 }

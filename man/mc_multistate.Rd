@@ -43,27 +43,27 @@ Or no estimable transitions. Depends on mstate (Suggests).
 }
 \examples{
 \donttest{
-# three-state model (Healthy H -> Complication I / direct Death D)
-Set.seed(127)
-Library(mstate)
-N <- 150
-Age <- rnorm(n, 55, 8)
-T12 <- rexp(n,.15); t23 <- rexp(n,.20); t13 <- rexp(n,.10)
-Rows <- list()
-For (i in 1:n) {
-If (runif(1) <.6) {
-Rows[[length(rows)+1]] <- data.frame(id=i, Tstart=0, Tstop=t12[i], status=1, from=1, to=2, age=age[i])
-Rows[[length(rows)+1]] <- data.frame(id=i, Tstart=t12[i], Tstop=t12[i]+t23[i], status=1, from=2, to=3, age=age[i])
+# three-state model (healthy h -> complication i / direct death d)
+set.seed(127)
+library(mstate)
+n <- 150
+age <- rnorm(n, 55, 8)
+t12 <- rexp(n,.15); t23 <- rexp(n,.20); t13 <- rexp(n,.10)
+rows <- list()
+for (i in 1:n) {
+if (runif(1) <.6) {
+rows[[length(rows)+1]] <- data.frame(id=i, tstart=0, tstop=t12[i], status=1, from=1, to=2, age=age[i])
+rows[[length(rows)+1]] <- data.frame(id=i, tstart=t12[i], tstop=t12[i]+t23[i], status=1, from=2, to=3, age=age[i])
 } else {
-Rows[[length(rows)+1]] <- data.frame(id=i, Tstart=0, Tstop=t13[i], status=1, from=1, to=3, age=age[i])
+rows[[length(rows)+1]] <- data.frame(id=i, tstart=0, tstop=t13[i], status=1, from=1, to=3, age=age[i])
 }
 }
-Ms <- do.call(rbind, rows)
-Trans <- transMat(list(c(2,3), c(3), c()), names = c("H","I","D"))
-Ms$trans <- with(ms, ifelse(from == 1 & to == 2, 1, ifelse(from == 1 & to == 3, 2, 3)))
-Fit <- mc_multistate(ms, trans = trans, formula = survival::Surv(Tstart, Tstop, status) ~ age + strata(trans))
-Cat("coxph coefficients:\n")
-Print(summary(fit$model)$coefficients)
-Cat("\nmsfit class:", class(fit$msfit)[1], "\n")
+ms <- do.call(rbind, rows)
+trans <- transMat(list(c(2,3), c(3), c()), names = c("h","i","d"))
+ms$trans <- with(ms, ifelse(from == 1 & to == 2, 1, ifelse(from == 1 & to == 3, 2, 3)))
+fit <- mc_multistate(ms, trans = trans, formula = survival::Surv(tstart, tstop, status) ~ age + survival::strata(trans))
+cat("coxph coefficients:\n")
+print(summary(fit$model)$coefficients)
+cat("\nmsfit class:", class(fit$msfit)[1], "\n")
 }
 }

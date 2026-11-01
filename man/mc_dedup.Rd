@@ -33,8 +33,8 @@ Single row. Ensure the key columns uniquely identify a record, or information
 May be lost. This matches Excel's "Remove Duplicates" semantics.
 }
 \examples{
-# removing duplicate follow-up records (deduplicate by subject ID)
-Df <- data.frame(subj = c(1, 1, 2, 2, 3), measure = c("a", "a", "b", "b", "c"), visit = 1:5)
-Mc_dedup(df, by = "subj") # keep the last row of each group
-Mc_dedup(df, by = "subj", keep = "first") # keep the first row of each group
+# removing duplicate follow-up records (deduplicate by subject iD)
+df <- data.frame(subj = c(1, 1, 2, 2, 3), measure = c("a", "a", "b", "b", "c"), visit = 1:5)
+mc_dedup(df, by = "subj") # keep the last row of each group
+mc_dedup(df, by = "subj", keep = "first") # keep the first row of each group
 }

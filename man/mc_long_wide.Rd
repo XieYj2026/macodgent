@@ -24,7 +24,7 @@ Spreads a long table back to wide. Implemented natively in base R with
 }
 \details{
 Purpose: Spread a long table back to wide by the name column; the inverse of
-Mc_wide_long(), commonly used to restore a "time-value" long table to a
+mc_wide_long(), commonly used to restore a "time-value" long table to a
 Subject x time-point wide matrix.
 Method (original, native implementation): First take the unique combinations
 Of identifier columns as the skeleton of output rows; then for each value of
@@ -43,9 +43,9 @@ Inverse of mc_wide_long().
 \examples{
 \dontrun{
 # restore a "visit-blood pressure" long table to a subject x visit wide table
-Long_df <- data.frame(id = 1:2, variable = c("t1", "t2"),
-Value = c(120, 118))
-Mc_long_wide(long_df, id_cols = "id",
-Name_from = "variable", value_from = "value")
+long_df <- data.frame(id = 1:2, variable = c("t1", "t2"),
+value = c(120, 118))
+mc_long_wide(long_df, id_cols = "id",
+name_from = "variable", value_from = "value")
 }
 }

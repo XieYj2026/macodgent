@@ -41,6 +41,6 @@ Use a multinomial or ordinal model instead.
 }
 \examples{
 # multivariable logistic regression for low birth weight
-Birthwt <- MASS::birthwt
-Mc_logistic(birthwt, low ~ age + lwt + smoke + factor(race))
+birthwt <- MASS::birthwt
+mc_logistic(birthwt, low ~ age + lwt + smoke + factor(race))
 }

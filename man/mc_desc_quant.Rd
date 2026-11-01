@@ -43,9 +43,9 @@ Differ, so mind the fairness of comparisons.
 }
 \examples{
 # low birth weight study (birthwt, MASS package)
-Birthwt <- MASS::birthwt
-Cat("==== Overall: birth weight / age / pregnancy weight ====\n")
-Print(mc_desc_quant(birthwt, vars = c("bwt","age","lwt")), row.names = FALSE)
-Cat("\n==== Grouped by mother's smoking status ====\n")
-Print(mc_desc_quant(birthwt, vars = c("bwt","age"), group = "smoke"), row.names = FALSE)
+birthwt <- MASS::birthwt
+cat("==== overall: birth weight / age / pregnancy weight ====\n")
+print(mc_desc_quant(birthwt, vars = c("bwt","age","lwt")), row.names = FALSE)
+cat("\n==== grouped by mother's smoking status ====\n")
+print(mc_desc_quant(birthwt, vars = c("bwt","age"), group = "smoke"), row.names = FALSE)
 }

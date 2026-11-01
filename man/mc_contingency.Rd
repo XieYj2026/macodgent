@@ -71,22 +71,22 @@ Is not significant.
 }
 \examples{
 # demonstrate three independence tests with birthwt
-Birthwt <- MASS::birthwt
+birthwt <- MASS::birthwt
 
-## ---- Chi-square independence test (2x2 with Fisher OR) ----
-Res <- mc_contingency(birthwt, row = "smoke", col = "low")
-Cat("---- Contingency table / table ----\n"); print(res$table)
-Cat("\n---- Chi-square test / chi-square ----\n"); print(res$test, row.names = FALSE)
-Cat("\n---- Odds ratio OR / odds ratio ----\n"); print(res$OR, row.names = FALSE)
+## ---- chi-square independence test (2x2 with fisher OR) ----
+res <- mc_contingency(birthwt, row = "smoke", col = "low")
+cat("---- contingency table / table ----\n"); print(res$table)
+cat("\n---- chi-square test / chi-square ----\n"); print(res$test, row.names = FALSE)
+cat("\n---- odds ratio OR / odds ratio ----\n"); print(res$OR, row.names = FALSE)
 
-## ---- Fisher's exact test (small samples / sparse expected counts) ----
-Res2 <- mc_contingency(birthwt, row = "smoke", col = "low", method = "fisher")
-Print(res2$test, row.names = FALSE); print(res2$OR, row.names = FALSE)
+## ---- fisher's exact test (small samples / sparse expected counts) ----
+res2 <- mc_contingency(birthwt, row = "smoke", col = "low", method = "fisher")
+print(res2$test, row.names = FALSE); print(res2$OR, row.names = FALSE)
 
-## ---- CMH stratified test: common OR of smoking & low birth weight after controlling for hypertension (ht) ----
-Res3 <- mc_contingency(birthwt, row = "smoke", col = "low",
-Method = "cmh", strata = "ht")
-Cat("\n---- CMH test / Cochran-Mantel-Haenszel ----\n")
-Print(res3$test, row.names = FALSE)
-Print(res3$commonOR, row.names = FALSE)
+## ---- cMH stratified test: common OR of smoking & low birth weight after controlling for hypertension (ht) ----
+res3 <- mc_contingency(birthwt, row = "smoke", col = "low",
+method = "cmh", strata = "ht")
+cat("\n---- cMH test / cochran-mantel-haenszel ----\n")
+print(res3$test, row.names = FALSE)
+print(res3$commonOR, row.names = FALSE)
 }

@@ -38,8 +38,8 @@ For paired two groups use the Wilcoxon signed-rank test (not covered here;
 Use stats::wilcox.test(paired = TRUE)).
 }
 \examples{
-# birth weight by smoking status (two-group Wilcoxon) and race (multi-group Kruskal-Wallis)
-Birthwt <- MASS::birthwt
-Mc_nonparam(birthwt$bwt, birthwt$smoke, method = "wilcoxon")
-Mc_nonparam(birthwt$bwt, factor(birthwt$race), method = "kruskal")
+# birth weight by smoking status (two-group wilcoxon) and race (multi-group kruskal-wallis)
+birthwt <- MASS::birthwt
+mc_nonparam(birthwt$bwt, birthwt$smoke, method = "wilcoxon")
+mc_nonparam(birthwt$bwt, factor(birthwt$race), method = "kruskal")
 }

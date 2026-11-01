@@ -46,9 +46,9 @@ On glmnet (Suggests).
 }
 \examples{
 \donttest{
-# use Lasso for variable selection among all mtcars predictors (mpg ~.)
-Xvars <- setdiff(names(mtcars), "mpg")
-Mc_lasso(mtcars, x = xvars, y = "mpg")$coefficients
+# use lasso for variable selection among all mtcars predictors (mpg ~.)
+xvars <- setdiff(names(mtcars), "mpg")
+mc_lasso(mtcars, x = xvars, y = "mpg")$coefficients
 }
 }
 \seealso{

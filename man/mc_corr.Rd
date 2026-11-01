@@ -41,15 +41,15 @@ Non-linear). Spearman suits ordinal data or clearly skewed data. Partial
 Correlation helps identify "spurious correlation" caused by a common confounder.
 }
 \examples{
-# correlation of birth weight & pregnancy weight in birthwt (Spearman)
-Birthwt <- MASS::birthwt
-Cat("==== Spearman correlation / Spearman ====\n")
-# Note: birthwt has tied observations; cor.test switches to the asymptotic
+# correlation of birth weight & pregnancy weight in birthwt (spearman)
+birthwt <- MASS::birthwt
+cat("==== spearman correlation / spearman ====\n")
+# note: birthwt has tied observations; cor.test switches to the asymptotic
 # method for p-values and warns, which is normal; we suppress the warning here
 # to simplify the example output
-SuppressWarnings(print(mc_corr(birthwt, vars = c("bwt","lwt"), method = "spearman"),
-Row.names = FALSE))
-Cat("\n==== Partial correlation after controlling for mother's age / partial on age ====\n")
-Print(mc_corr(birthwt, vars = c("bwt","lwt"), control = "age"),
-Row.names = FALSE)
+suppressWarnings(print(mc_corr(birthwt, vars = c("bwt","lwt"), method = "spearman"),
+row.names = FALSE))
+cat("\n==== partial correlation after controlling for mother's age / partial on age ====\n")
+print(mc_corr(birthwt, vars = c("bwt","lwt"), control = "age"),
+row.names = FALSE)
 }

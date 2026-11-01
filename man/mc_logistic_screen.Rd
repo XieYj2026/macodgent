@@ -49,13 +49,13 @@ It is still recommended to validate the final model with mc_logistic().
 }
 \examples{
 # : univariate screening then multivariable modelling ("screen then model")
-Birthwt <- MASS::birthwt
-Bw <- birthwt
-Bw$race <- factor(bw$race)
-Bw$smoke <- factor(bw$smoke)
-Res <- mc_logistic_screen(bw, y = "low",
-X_vars = c("age","lwt","race","smoke","ht","ui"))
-Cat("==== univariate ====\n"); print(res$univariate, row.names = FALSE)
-Cat("\n==== selected ====\n"); print(res$selected)
-Cat("\n==== multivariable ====\n"); print(as.data.frame(res$multivariable), row.names = FALSE)
+birthwt <- MASS::birthwt
+bw <- birthwt
+bw$race <- factor(bw$race)
+bw$smoke <- factor(bw$smoke)
+res <- mc_logistic_screen(bw, y = "low",
+x_vars = c("age","lwt","race","smoke","ht","ui"))
+cat("==== univariate ====\n"); print(res$univariate, row.names = FALSE)
+cat("\n==== selected ====\n"); print(res$selected)
+cat("\n==== multivariable ====\n"); print(as.data.frame(res$multivariable), row.names = FALSE)
 }

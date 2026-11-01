@@ -38,10 +38,10 @@ Relative probability of each model being the best, not an absolute
 Goodness-of-fit.
 }
 \examples{
-# comparing multiple linear models predicting birth weight (AIC/BIC/AICc/weights)
-Birthwt <- MASS::birthwt
-M1 <- lm(bwt ~ lwt, data = birthwt)
-M2 <- lm(bwt ~ lwt + age, data = birthwt)
-M3 <- lm(bwt ~ lwt + age + smoke + factor(race), data = birthwt)
-Mc_model_compare(m1, m2, m3)
+# comparing multiple linear models predicting birth weight (aIC/bIC/aICc/weights)
+birthwt <- MASS::birthwt
+m1 <- lm(bwt ~ lwt, data = birthwt)
+m2 <- lm(bwt ~ lwt + age, data = birthwt)
+m3 <- lm(bwt ~ lwt + age + smoke + factor(race), data = birthwt)
+mc_model_compare(m1, m2, m3)
 }

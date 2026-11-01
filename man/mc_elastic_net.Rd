@@ -45,8 +45,8 @@ The closer to 0, the more it favours shrinkage. Depends on glmnet (Suggests).
 \examples{
 \donttest{
 # elastic net (alpha = 0.5) balances variable selection and shrinkage
-Xvars <- setdiff(names(mtcars), "mpg")
-Mc_elastic_net(mtcars, x = xvars, y = "mpg", alpha = 0.5)$coefficients
+xvars <- setdiff(names(mtcars), "mpg")
+mc_elastic_net(mtcars, x = xvars, y = "mpg", alpha = 0.5)$coefficients
 }
 }
 \seealso{

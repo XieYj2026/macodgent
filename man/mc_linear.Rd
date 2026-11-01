@@ -56,11 +56,11 @@ First. This function depends only on base R and ggplot2, no extra packages.
 }
 \examples{
 # predict birth weight by mother's age, pregnancy weight, smoking
-Birthwt <- MASS::birthwt
-Res <- mc_linear(birthwt, bwt ~ age + lwt + smoke + factor(race),
-Bootstrap = 200)
-Res$coef # coefficient table (with bootstrap CI)
-Res$performance # R^2 / adjusted R^2 / AIC / BIC
-Res$vif # variance inflation factor (multicollinearity)
-Print(res$plot) # residuals vs fitted diagnostic plot
+birthwt <- MASS::birthwt
+res <- mc_linear(birthwt, bwt ~ age + lwt + smoke + factor(race),
+bootstrap = 200)
+res$coef # coefficient table (with bootstrap cI)
+res$performance # r^2 / adjusted r^2 / aIC / bIC
+res$vif # variance inflation factor (multicollinearity)
+print(res$plot) # residuals vs fitted diagnostic plot
 }
