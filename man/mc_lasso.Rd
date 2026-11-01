@@ -21,34 +21,34 @@ mc_lasso(data, x, y, nfolds = 10, family = "gaussian")
 A list with \code{cv}, \code{coefficients}, \code{lambda.min}.
 }
 \description{
-Corresponds to Chapter 7 "Lasso Regression" of the routine medical-data-science
-tutorial. Built on \pkg{glmnet} with \code{alpha = 1}. Returns the non-zero
+Lasso regression (L1 regularization) for prediction and embedded variable selection.
+Built on \pkg{glmnet} with \code{alpha = 1}. Returns the non-zero
 coefficient table selected by 10-fold cross-validated lambda.
 }
 \details{
 Purpose: Use Lasso (L1 regularization) for regression and variable selection; in
-high-dimensional or collinear data it automatically shrinks the coefficients of
-unimportant variables to zero, achieving embedded feature screening.
+High-dimensional or collinear data it automatically shrinks the coefficients of
+Unimportant variables to zero, achieving embedded feature screening.
 Method: Based on the glmnet package; \code{alpha = 1} is Lasso; k-fold
-cross-validation (default 10 folds) is used to select the optimal penalty
-strength lambda.
+Cross-validation (default 10 folds) is used to select the optimal penalty
+Strength lambda.
 Arguments: \code{data} is a data frame; \code{x} is a vector of predictor column
-names; \code{y} is the response column name; \code{nfolds} is the number of CV
-folds (default 10); \code{family} defaults to gaussian (continuous outcome), and
-can also be binomial, etc.
+Names; \code{y} is the response column name; \code{nfolds} is the number of CV
+Folds (default 10); \code{family} defaults to gaussian (continuous outcome), and
+Can also be binomial, etc.
 Results: Returns a list with \code{coefficients} (table of non-zero coefficients;
-variables shrunk to zero do not appear).
+Variables shrunk to zero do not appear).
 Notes: Lasso coefficients are biased (shrunken overall), so it suits prediction
-and screening but not direct statistical inference. When several variables are
-highly correlated, Lasso randomly keeps one and zeroes the rest. Larger lambda
-means stronger shrinkage; tune with cv.glmnet's lambda.min / lambda.1se. Depends
-on glmnet (Suggests).
+And screening but not direct statistical inference. When several variables are
+Highly correlated, Lasso randomly keeps one and zeroes the rest. Larger lambda
+Means stronger shrinkage; tune with cv.glmnet's lambda.min / lambda.1se. Depends
+On glmnet (Suggests).
 }
 \examples{
 \donttest{
-# Chapter 7: use Lasso for variable selection among all mtcars predictors (mpg ~ .)
-xvars <- setdiff(names(mtcars), "mpg")
-mc_lasso(mtcars, x = xvars, y = "mpg")$coefficients
+# use Lasso for variable selection among all mtcars predictors (mpg ~.)
+Xvars <- setdiff(names(mtcars), "mpg")
+Mc_lasso(mtcars, x = xvars, y = "mpg")$coefficients
 }
 }
 \seealso{
