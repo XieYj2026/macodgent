@@ -1,6 +1,6 @@
 # =============================================================================
 # 软件名称    : macodgent 医学数据科学研究工具包
-# 著作权人    : 谢耀珏（Dr.Xie）【个人，待最终确认】
+# 著作权人    : Dr.Xie
 # 版本号      : 1.0.0
 # 开发语言    : R
 # 开发完成日期: 2026-10-30
@@ -13,14 +13,14 @@
 
 #' macodgent：医学数据科学例行性分析工具箱
 #'
-#' 一套从《R 语言医学数据科学探秘》专栏第二部分「例行性分析技术」提炼出的
+#' 一套从医学数据科学例行性分析技术提炼出的
 #' 可复用分析函数集合，覆盖数据预处理、定量/定性描述统计、常规与进阶回归、
 #' 生存分析、竞争风险与多状态模型。所有导出函数均以 `mc_` 为前缀，并返回
 #' 整洁的 `data.frame`，可直接落入报告与下游流程。
 #'
 #' macodgent is a curated toolkit of reusable analysis functions distilled from
-#' Part 2 ("Routine Analysis Techniques") of the column *Exploring Medical Data
-#' Science with R*. It covers data preprocessing, quantitative and qualitative
+#' Part 2 ("Routine Analysis Techniques") of the routine medical-data-science tutorial.
+#' It covers data preprocessing, quantitative and qualitative
 #' descriptive statistics, conventional and advanced regression, survival
 #' analysis, competing-risk and multi-state models. All exported functions share
 #' the `mc_` prefix and return tidy `data.frame` objects that drop straight into
