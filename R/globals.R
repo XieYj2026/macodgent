@@ -1,14 +1,17 @@
 # =============================================================================
-# 软件名称    : macodgent 医学数据科学研究工具包
-# 著作权人    : Dr.Xie
-# 版本号      : 1.0.0
-# 开发语言    : R
-# 开发完成日期: 2026-10-30
-# 权利声明    : 本程序为著作权人独立开发，受《计算机软件保护条例》保护；
-#              未经书面许可，不得复制、发行、出租或将其用于商业目的。
+# Software name: macodgent medical data science research toolkit
+# Copyright holder: Dr.Xie
+# Version: 1.0.0
+# Language: R
+# Date completed: 2026-10-30
+# Rights: This program was independently developed by the copyright holder and is
+#         protected under the Computer Software Protection Regulations; without
+#         written permission it may not be copied, distributed, rented, or used
+#         for commercial purposes.
 # -----------------------------------------------------------------------------
-# 模块        : 全局变量声明（global variable declarations）
-# 本文件包含  : 非标准计算（NSE）引用的变量声明，避免 R CMD check 误报
+# Module: global variable declarations
+# This file contains: variable declarations referenced via non-standard
+#   evaluation (NSE), to avoid spurious R CMD check notes
 # =============================================================================
 
 #' @importFrom stats sd median IQR setNames
