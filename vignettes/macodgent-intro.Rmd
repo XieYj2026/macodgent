@@ -15,7 +15,7 @@ library(MASS)
 
 # Background
 
-Part 2 ("Routine Analysis Techniques") of the routine medical-data-science tutorial covers eight chapters: meeting the data, preprocessing,
+The Routine Analysis Techniques workflow covers eight topics: meeting the data, preprocessing,
 quantitative / qualitative description, conventional regression, survival
 analysis, advanced regression, and advanced survival analysis. Each section
 scatters reusable analysis actions. `macodgent` distils those actions into a
@@ -56,5 +56,5 @@ rcs <- mc_rcs(birthwt, x = "age", y = "bwt", nk = 3)
 rcs$plot
 ```
 
-The mapping between each function and the chapters of Part 2 is listed in the
+The mapping between each function and the analysis modules is listed in the
 module table of `README.md`.
