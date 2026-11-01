@@ -2,49 +2,53 @@
 % Please edit documentation in R/mc-advanced.R
 \name{mc_elastic_net}
 \alias{mc_elastic_net}
-\title{弹性网络回归 / Elastic Net Regression}
+\title{Elastic Net Regression}
 \usage{
 mc_elastic_net(data, x, y, alpha = 0.5, nfolds = 10, family = "gaussian")
 }
 \arguments{
-\item{data}{数据框（a \code{data.frame}）。}
+\item{data}{A \code{data.frame}.}
 
-\item{x}{预测变量列名（字符向量）（character vector of predictor column names）。}
+\item{x}{Character vector of predictor column names.}
 
-\item{y}{因变量名（response variable name）。}
+\item{y}{Response variable name.}
 
-\item{alpha}{弹性网络混合参数，默认 \code{0.5}（elastic-net mixing parameter;
-default \code{0.5}）。}
+\item{alpha}{Elastic-net mixing parameter; default \code{0.5}.}
 
-\item{nfolds}{交叉验证折数，默认 \code{10}（cross-validation folds; default \code{10}）。}
+\item{nfolds}{Cross-validation folds; default \code{10}.}
 
-\item{family}{\code{"gaussian"}（默认）或 \code{"binomial"} 等（GLM family）。}
+\item{family}{GLM family; \code{"gaussian"} (default) or \code{"binomial"}, etc.}
 }
 \value{
-列表，含 \code{cv} / \code{coefficients} / \code{lambda.min} / \code{alpha}（a list with
-\code{cv}, \code{coefficients}, \code{lambda.min}, \code{alpha}）。
+A list with \code{cv}, \code{coefficients}, \code{lambda.min}, \code{alpha}.
 }
 \description{
-对应第 7 章「弹性网络回归」。基于 \pkg{glmnet}；\code{alpha} 在岭（0）与
-Lasso（1）之间调节。
+Corresponds to Chapter 7 "Elastic Net Regression" of the routine
+medical-data-science tutorial. Built on \pkg{glmnet}; \code{alpha} tunes between
+ridge (0) and lasso (1).
 }
 \details{
-Corresponds to Chapter 7 "Elastic Net Regression" of the second part of the routine medical-data-science tutorial. Built on \pkg{glmnet}; \code{alpha} tunes between ridge (0) and
-lasso (1).
-
-用途：用弹性网络（Elastic Net）兼顾 Lasso 的稀疏性与岭回归对共线性的稳健性，是二者之间的连续调节。
-方法：基于 glmnet 包，alpha 在 0（纯岭）到 1（纯 Lasso）之间调节混合比例；alpha=0.5 是常用折中。
-参数：data 为数据框；x 为自变量列名向量；y 为因变量列名；alpha 为混合参数（默认 0.5）；nfolds 为 CV 折数；family 默认 gaussian。
-结果：返回含 coefficients（按所选 α 收缩后的系数表，部分可能为 0）的列表。
-注意：当自变量成组高度相关时，弹性网络比 Lasso 更稳健——它会把整组相关变量一起保留或一起剔除，而非随机留一个。α 越接近 1 越偏向变量选择，越接近 0 越偏向系数收缩。依赖 glmnet（Suggests）。
+Purpose: Use elastic net to combine Lasso's sparsity with ridge's robustness to
+collinearity; it is a continuous interpolation between the two.
+Method: Based on glmnet; \code{alpha} tunes the mixing ratio between 0 (pure
+ridge) and 1 (pure Lasso); \code{alpha = 0.5} is a common compromise.
+Arguments: \code{data} is a data frame; \code{x} is a vector of predictor column
+names; \code{y} is the response column name; \code{alpha} is the mixing parameter
+(default 0.5); \code{nfolds} is the number of CV folds; \code{family} defaults to gaussian.
+Results: Returns a list with \code{coefficients} (coefficients shrunk per the
+chosen alpha, some possibly zero).
+Notes: When predictors are grouped and highly correlated, elastic net is more
+robust than Lasso: it keeps or drops the whole group together rather than
+randomly keeping one. The closer alpha is to 1, the more it favours selection;
+the closer to 0, the more it favours shrinkage. Depends on glmnet (Suggests).
 }
 \examples{
 \donttest{
-# 第 7 章：弹性网络（alpha = 0.5）兼顾变量选择与系数收缩
+# Chapter 7: elastic net (alpha = 0.5) balances variable selection and shrinkage
 xvars <- setdiff(names(mtcars), "mpg")
 mc_elastic_net(mtcars, x = xvars, y = "mpg", alpha = 0.5)$coefficients
 }
 }
 \seealso{
-\code{\link{mc_lasso}}、\code{\link{mc_ridge}}。
+\code{\link{mc_lasso}}, \code{\link{mc_ridge}}.
 }
