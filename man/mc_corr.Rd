@@ -19,37 +19,37 @@ mc_corr(.data, vars = NULL, method = c("pearson", "spearman"), control = NULL)
 A long \code{data.frame} with columns \code{var1}, \code{var2}, \code{r}, \code{p.value}.
 }
 \description{
-Corresponds to Chapter 4: Pearson / Spearman correlation; optionally compute
-partial correlation by residualising all variables on the control variable(s).
+Pearson / Spearman correlation; optionally compute
+Partial correlation by residualising all variables on the control variable(s).
 }
 \details{
 Purpose: compute correlation coefficients between variables, supporting
 Pearson (linear) and Spearman (rank/monotonic), plus partial correlation
 (after controlling for confounders).
 Methods: pearson measures linear association, assumes approximate normality;
-spearman is rank-based, robust to non-linear monotonic relations and outliers;
-control specifies one or more control variables to compute partial correlation
+Spearman is rank-based, robust to non-linear monotonic relations and outliers;
+Control specifies one or more control variables to compute partial correlation
 (the net correlation after removing their effect).
 Arguments: \code{.data} is a data frame; \code{vars} is a vector of variable names to
-correlate; \code{method} selects the correlation type; \code{control} is an optional
-control variable name.
+Correlate; \code{method} selects the correlation type; \code{control} is an optional
+Control variable name.
 Result: returns a correlation matrix (coefficients); for partial correlation
-returns the controlled matrix.
+Returns the controlled matrix.
 Note: the correlation coefficient only measures association strength and
-direction, not causation; near 0 does not mean no relation (could be
-non-linear). Spearman suits ordinal data or clearly skewed data. Partial
-correlation helps identify "spurious correlation" caused by a common confounder.
+Direction, not causation; near 0 does not mean no relation (could be
+Non-linear). Spearman suits ordinal data or clearly skewed data. Partial
+Correlation helps identify "spurious correlation" caused by a common confounder.
 }
 \examples{
-# Chapter 4, Section 4.5: correlation of birth weight & pregnancy weight in birthwt (Spearman)
-birthwt <- MASS::birthwt
-cat("==== Spearman correlation / Spearman ====\n")
+# correlation of birth weight & pregnancy weight in birthwt (Spearman)
+Birthwt <- MASS::birthwt
+Cat("==== Spearman correlation / Spearman ====\n")
 # Note: birthwt has tied observations; cor.test switches to the asymptotic
 # method for p-values and warns, which is normal; we suppress the warning here
 # to simplify the example output
-suppressWarnings(print(mc_corr(birthwt, vars = c("bwt","lwt"), method = "spearman"),
-                         row.names = FALSE))
-cat("\n==== Partial correlation after controlling for mother's age / partial on age ====\n")
-print(mc_corr(birthwt, vars = c("bwt","lwt"), control = "age"),
-      row.names = FALSE)
+SuppressWarnings(print(mc_corr(birthwt, vars = c("bwt","lwt"), method = "spearman"),
+Row.names = FALSE))
+Cat("\n==== Partial correlation after controlling for mother's age / partial on age ====\n")
+Print(mc_corr(birthwt, vars = c("bwt","lwt"), control = "age"),
+Row.names = FALSE)
 }
