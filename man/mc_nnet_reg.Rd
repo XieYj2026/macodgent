@@ -21,35 +21,35 @@ mc_nnet_reg(data, formula, hidden = 5, maxit = 200, seed = NULL)
 A list with the fitted net, predictions, RMSE and the fit plot.
 }
 \description{
-Corresponds to Chapter 7 (7.9, neural-network regression). A single-hidden-layer
-feed-forward network for regression via \code{nnet::nnet()} (with \code{linout = TRUE}),
-plus a predicted-vs-observed plot and RMSE.
+A single-hidden-layer
+Feed-forward network for regression via \code{nnet::nnet()} (with \code{linout = TRUE}),
+Plus a predicted-vs-observed plot and RMSE.
 }
 \details{
 Purpose: Use a neural network to fit the non-linear relationship between predictors
-and a continuous outcome.
+And a continuous outcome.
 Dependencies: Requires the nnet package (in Suggests); a clear message is given if
-not installed.
-Method: \code{nnet::nnet(y ~ ., linout = TRUE, size = hidden)}; the number of hidden
-nodes is controlled by \code{hidden}; data are auto-standardized to speed up convergence.
+Not installed.
+Method: \code{nnet::nnet(y ~., linout = TRUE, size = hidden)}; the number of hidden
+Nodes is controlled by \code{hidden}; data are auto-standardized to speed up convergence.
 Arguments: \code{data} is a data frame; \code{formula} is of the form
-\code{y ~ x1 + x2 + ...}; \code{hidden} is the number of hidden nodes (default 5);
+\code{y ~ x1 + x2 +...}; \code{hidden} is the number of hidden nodes (default 5);
 \code{maxit} is the maximum iterations (default 200); \code{seed} is the random seed.
 Results: Returns a list -- \code{fit} (nnet object), \code{predictions} (fitted
-values), \code{rmse}, \code{plot} (predicted vs observed scatter).
+Values), \code{rmse}, \code{plot} (predicted vs observed scatter).
 Notes: Neural nets are scale-sensitive; this function standardizes predictors
-internally. Results are sensitive to random initialization, so set \code{seed} for
-reproducibility. Too many nodes overfit; compare structures with
+Internally. Results are sensitive to random initialization, so set \code{seed} for
+Reproducibility. Too many nodes overfit; compare structures with
 \code{mc_model_compare()} or cross-validation.
 }
 \examples{
 \donttest{
-# Chapter 7, Section 7.9: neural-network regression -- predict birth weight from maternal features
-birthwt <- MASS::birthwt
-bw <- birthwt
-bw$race <- factor(bw$race)
-res <- mc_nnet_reg(bw, bwt ~ age + lwt + smoke + race, hidden = 5, seed = 7)
-res$rmse
-print(res$plot)
+# neural-network regression -- predict birth weight from maternal features
+Birthwt <- MASS::birthwt
+Bw <- birthwt
+Bw$race <- factor(bw$race)
+Res <- mc_nnet_reg(bw, bwt ~ age + lwt + smoke + race, hidden = 5, seed = 7)
+Res$rmse
+Print(res$plot)
 }
 }
