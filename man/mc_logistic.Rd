@@ -19,28 +19,28 @@ A tidy \code{data.frame} with columns \code{term} / \code{estimate}
 / \code{conf.high}; \code{estimate} is the exponentiated OR.
 }
 \description{
-Corresponds to Chapter 5: based on \code{glm(family = binomial)}, returns a
-tidy coefficient table (with OR and its 95\% CI, already exponentiated).
+Based on \code{glm(family = binomial)}, returns a
+Tidy coefficient table (with OR and its 95\% CI, already exponentiated).
 }
 \details{
 Purpose: Fit a binary logistic regression to obtain the log-odds ratio and OR
-of each predictor for the outcome.
+Of each predictor for the outcome.
 Method: A binomial logit model estimated by maximum likelihood; factor/
-character variables are automatically handled as categorical.
+Character variables are automatically handled as categorical.
 Arguments: \code{data} is a data.frame; \code{formula} is of the form
-outcome ~ predictors (the outcome must be 0/1 or a two-level factor);
+Outcome ~ predictors (the outcome must be 0/1 or a two-level factor);
 \code{conf} is the confidence level for the OR, default 0.95.
 Result: Returns a tidy coefficient table with estimate (on the logit scale),
-standard error, z value, p value, and the exponentiated OR with its
-confidence interval, for direct interpretation.
+Standard error, z value, p value, and the exponentiated OR with its
+Confidence interval, for direct interpretation.
 Note: OR > 1 means the odds of the outcome increase by one unit of the
-predictor (or relative to the reference level); a CI crossing 1 indicates the
-predictor is not significant at alpha = 0.05. Check for severe
-multicollinearity and empty cells before modelling. For non-binary outcomes,
-use a multinomial or ordinal model instead.
+Predictor (or relative to the reference level); a CI crossing 1 indicates the
+Predictor is not significant at alpha = 0.05. Check for severe
+Multicollinearity and empty cells before modelling. For non-binary outcomes,
+Use a multinomial or ordinal model instead.
 }
 \examples{
-# Chapter 5, Section 5.7: multivariable logistic regression for low birth weight
-birthwt <- MASS::birthwt
-mc_logistic(birthwt, low ~ age + lwt + smoke + factor(race))
+# multivariable logistic regression for low birth weight
+Birthwt <- MASS::birthwt
+Mc_logistic(birthwt, low ~ age + lwt + smoke + factor(race))
 }
