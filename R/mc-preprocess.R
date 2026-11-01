@@ -107,7 +107,7 @@ mc_impute_knn <- function(.data, k = 5) {
 #' `...` is passed to mice::mice().
 #' Result: Returns a list containing `mids` (the raw multiple-imputation object
 #' For further analysis), `long` (the long table from
-#' Mice::complete(action = "long")), and `summary` — an **original diagnostic
+#' Mice::complete(action = "long")), and `summary`  -  an **original diagnostic
 #' Table**: per variable it gives `n_missing_original` (original missing count),
 #' `n_imputed` (count of imputed observations), and `pct_imputed` (imputation
 #' Proportion).
@@ -208,7 +208,7 @@ mc_dedup <- function(.data, by = NULL, keep = c("last", "first")) {
 #' Purpose: Scale numeric columns to remove scale differences, speed up model
 #' Convergence, or prepare data for algorithms such as KNN or regularised
 #' Regression.
-#' Method: Three scaling options — z (default; z-score: subtract mean, divide by
+#' Method: Three scaling options  -  z (default; z-score: subtract mean, divide by
 #' SD, yielding mean 0 and SD 1), minmax (linear transform to [0, 1]), and
 #' Robust (subtract median, divide by IQR; robust to outliers).
 #' Arguments: `.data` is a data.frame; `cols` names the columns to scale, NULL
