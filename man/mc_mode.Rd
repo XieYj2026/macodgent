@@ -27,7 +27,7 @@ Arguments: x accepts a numeric or factor vector; na.rm controls whether
 Missing values are removed before counting (default TRUE, so NAs are excluded
 From the frequency tally).
 Result: returns every value tied for the highest frequency, so multimodal
-Data is handled naturally — a bimodal distribution returns both modes; the
+Data is handled naturally  -  a bimodal distribution returns both modes; the
 Return type matches the input (numeric input yields a numeric vector).
 Note: if every value occurs exactly once, all values are treated as modes and
 Returned as-is, which is usually meaningless; run mc_inspect() first to
