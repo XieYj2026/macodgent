@@ -29,7 +29,7 @@ Count), pct_missing (missing percentage), n_unique (number of unique values).
 Note: n is the count of valid (non-missing) observations, so n + n_missing
 Equals the column's total length, and the missing percentage is computed
 Against that total length. This is the first "health check" of the
-Preprocessing pipeline — run it before any cleaning or modelling.
+Preprocessing pipeline  -  run it before any cleaning or modelling.
 }
 \examples{
 # data-quality check on the birthwt data frame (try injecting
