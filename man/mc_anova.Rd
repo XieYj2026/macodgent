@@ -16,27 +16,27 @@ A \code{data.frame} with columns \code{term}, \code{df}, \code{sumsq}, \code{mea
 \code{statistic}, \code{p.value}.
 }
 \description{
-Corresponds to Chapter 3 ("ANOVA"). Built on \code{stats::aov}, returns the
-degrees of freedom, sum of squares, mean square, F statistic and p-value of
-each term.
+Built on \code{stats::aov}, returns the
+Degrees of freedom, sum of squares, mean square, F statistic and p-value of
+Each term.
 }
 \details{
 Purpose: one-way ANOVA, comparing whether the means of three or more groups
-are equal overall.
+Are equal overall.
 Methods: decomposes variation via a linear model, comparing between-group and
-within-group mean squares to obtain the F statistic.
+Within-group mean squares to obtain the F statistic.
 Arguments: \code{formula} like y ~ g (response ~ grouping factor); \code{data} is the
-data frame containing both columns.
+Data frame containing both columns.
 Result: returns the degrees of freedom, sum of squares, mean square, F value
-and p-value of each term.
+And p-value of each term.
 Note: ANOVA only tells you "at least two groups differ"; which two require
-post-hoc multiple comparisons (e.g. Tukey HSD). Its assumptions are normality
-and equal variance per group—verify first with mc_norm_test() and mc_var_test().
+Post-hoc multiple comparisons (e.g. Tukey HSD). Its assumptions are normality
+And equal variance per group—verify first with mc_norm_test() and mc_var_test().
 If variances are unequal or distributions skewed, consider Kruskal-Wallis
 (see mc_nonparam).
 }
 \examples{
-# Chapter 3: do mothers of different races (race) differ in birth weight? (one-way ANOVA)
-birthwt <- MASS::birthwt
-mc_anova(bwt ~ factor(race), data = birthwt)
+# do mothers of different races (race) differ in birth weight? (one-way ANOVA)
+Birthwt <- MASS::birthwt
+Mc_anova(bwt ~ factor(race), data = birthwt)
 }
