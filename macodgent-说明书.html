@@ -29,7 +29,7 @@ Arguments: x accepts a numeric or factor vector; na.rm controls whether
 Missing values are removed before counting (default TRUE, so NAs are excluded
 From the frequency tally).
 Result: returns every value tied for the highest frequency, so multimodal
-Data is handled naturally — a bimodal distribution returns both modes; the
+Data is handled naturally  -  a bimodal distribution returns both modes; the
 Return type matches the input (numeric input yields a numeric vector).
 Note: if every value occurs exactly once, all values are treated as modes and
 Returned as-is, which is usually meaningless; run mc_inspect() first to
@@ -51,7 +51,7 @@ Count), pct_missing (missing percentage), n_unique (number of unique values).
 Note: n is the count of valid (non-missing) observations, so n + n_missing
 Equals the column's total length, and the missing percentage is computed
 Against that total length. This is the first "health check" of the
-Preprocessing pipeline — run it before any cleaning or modelling.</div><p><b>Value</b></p><div class='details'>A &lt;code&gt;data.frame&lt;/code&gt; with those six columns, one row per input column.</div><p><b>Example</b></p><pre># data-quality check on the birthwt data frame (try injecting
+Preprocessing pipeline  -  run it before any cleaning or modelling.</div><p><b>Value</b></p><div class='details'>A &lt;code&gt;data.frame&lt;/code&gt; with those six columns, one row per input column.</div><p><b>Example</b></p><pre># data-quality check on the birthwt data frame (try injecting
 # missing values to practice)
 Birthwt &lt;- MASS::birthwt
 Mc_inspect(birthwt[, c("age", "lwt", "bwt", "smoke", "low")])</pre><h2 id='fn3'>3. mc_theme</h2><div class='desc'>A light, restrained ggplot2 theme with ample whitespace, ready for direct use
@@ -93,7 +93,7 @@ Colours: primary (blue), secondary (purple), accent (green), warn (red),
 Info (cyan), muted (grey). When n is given, returns a colour vector of length
 N (gradient is unnamed by default; discrete/brand keep anchor names).
 Note: colours are generated purely algorithmically with no dependence on
-Data; interpolation is in linear RGB space — switch to HCL space later if a
+Data; interpolation is in linear RGB space  -  switch to HCL space later if a
 More perceptually uniform ramp is needed. Often paired with mc_theme() for
 Style-consistent report figures.</div><p><b>Value</b></p><div class='details'>A named character vector of the six brand colours by default, or a
 Vector of length &lt;code&gt;n&lt;/code&gt;.</div><p><b>Example</b></p><pre>Pal &lt;- mc_palette() # default: six brand colours
@@ -139,7 +139,7 @@ Arguments: &lt;code&gt;.data&lt;/code&gt; is a data.frame; &lt;code&gt;m&lt;/cod
 &lt;code&gt;...&lt;/code&gt; is passed to mice::mice().
 Result: Returns a list containing &lt;code&gt;mids&lt;/code&gt; (the raw multiple-imputation object
 For further analysis), &lt;code&gt;long&lt;/code&gt; (the long table from
-Mice::complete(action = "long")), and &lt;code&gt;summary&lt;/code&gt; — an original diagnostic
+Mice::complete(action = "long")), and &lt;code&gt;summary&lt;/code&gt;  -  an original diagnostic
 Table: per variable it gives &lt;code&gt;n_missing_original&lt;/code&gt; (original missing count),
 &lt;code&gt;n_imputed&lt;/code&gt; (count of imputed observations), and &lt;code&gt;pct_imputed&lt;/code&gt; (imputation
 Proportion).
@@ -177,7 +177,7 @@ Min-max, and robust (median/IQR based) scaling. Only numeric columns are
 Replaced.</div><div class='details'>Purpose: Scale numeric columns to remove scale differences, speed up model
 Convergence, or prepare data for algorithms such as KNN or regularised
 Regression.
-Method: Three scaling options — z (default; z-score: subtract mean, divide by
+Method: Three scaling options  -  z (default; z-score: subtract mean, divide by
 SD, yielding mean 0 and SD 1), minmax (linear transform to {0, 1}), and
 Robust (subtract median, divide by IQR; robust to outliers).
 Arguments: &lt;code&gt;.data&lt;/code&gt; is a data.frame; &lt;code&gt;cols&lt;/code&gt; names the columns to scale, NULL
@@ -264,7 +264,7 @@ Sensitive to location/scale.
 Arguments: &lt;code&gt;x&lt;/code&gt; is the numeric vector to test; &lt;code&gt;method&lt;/code&gt; selects one of the two.
 Result: returns the test statistic, p-value, etc.
 Note: with large samples normality tests easily become "significant" (tiny p)
-Even when deviation is practically harmless, so do not rely on p alone—combine
+Even when deviation is practically harmless, so do not rely on p alone - combine
 With histograms, Q-Q plots and skewness/kurtosis. The Shapiro test may be
 Unreliable or very slow for n &gt; 5000.</div><p><b>Arguments</b></p><table class='args'><tr><td><code>x</code></td><td>Numeric vector.</td></tr></table><p><b>Value</b></p><div class='details'>A &lt;code&gt;data.frame&lt;/code&gt; with columns &lt;code&gt;test&lt;/code&gt;, &lt;code&gt;statistic&lt;/code&gt;, &lt;code&gt;p.value&lt;/code&gt;.</div><p><b>Example</b></p><pre># test whether quantitative variables in birthwt are normal
 Birthwt &lt;- MASS::birthwt
@@ -318,7 +318,7 @@ Result: returns the degrees of freedom, sum of squares, mean square, F value
 And p-value of each term.
 Note: ANOVA only tells you "at least two groups differ"; which two require
 Post-hoc multiple comparisons (e.g. Tukey HSD). Its assumptions are normality
-And equal variance per group—verify first with mc_norm_test() and mc_var_test().
+And equal variance per group - verify first with mc_norm_test() and mc_var_test().
 If variances are unequal or distributions skewed, consider Kruskal-Wallis
 (see mc_nonparam).</div><p><b>Value</b></p><div class='details'>A &lt;code&gt;data.frame&lt;/code&gt; with columns &lt;code&gt;term&lt;/code&gt;, &lt;code&gt;df&lt;/code&gt;, &lt;code&gt;sumsq&lt;/code&gt;, &lt;code&gt;meansq&lt;/code&gt;,
 &lt;code&gt;statistic&lt;/code&gt;, &lt;code&gt;p.value&lt;/code&gt;.</div><p><b>Example</b></p><pre># do mothers of different races (race) differ in birth weight? (one-way ANOVA)
@@ -472,7 +472,7 @@ Confidence level.
 Result: Returns a list with &lt;code&gt;univariate&lt;/code&gt; (univariate results per variable),
 &lt;code&gt;selected&lt;/code&gt; (names of selected variables), and &lt;code&gt;multivariable&lt;/code&gt; (the tidy
 Multivariable coefficient table).
-Note: This is convenient but not a gold standard — stepwise/screening can
+Note: This is convenient but not a gold standard  -  stepwise/screening can
 Introduce selection bias and overfitting, and univariate significance does not
 Imply multivariable significance (variables may mask or amplify each other).
 Report both univariate and multivariable results and state the screening rule.
@@ -501,7 +501,7 @@ Predictors; &lt;code&gt;direction&lt;/code&gt; selects the direction; &lt;code&g
 Result: Returns a list with the final &lt;code&gt;coefficients&lt;/code&gt; (coefficient table) and
 &lt;code&gt;formula&lt;/code&gt; (the formula of finally selected variables).
 Note: Stepwise regression is convenient for exploration but has statistical
-Flaws — p values are underestimated, confidence intervals are too narrow, and
+Flaws  -  p values are underestimated, confidence intervals are too narrow, and
 Overfitting is likely; results also depend on arbitrary entry/removal
 Thresholds. Treat it as a "draft" for variable screening; important
 Conclusions still need domain knowledge and a pre-registered analysis plan.</div><p><b>Arguments</b></p><table class='args'><tr><td><code>formula</code></td><td>Full model formula.</td></tr></table><p><b>Value</b></p><div class='details'>A list with &lt;code&gt;model&lt;/code&gt; (final glm object), &lt;code&gt;coefficients&lt;/code&gt;
@@ -528,7 +528,7 @@ Consider a partial proportional-odds model or a multinomial logistic model.
 Always convert the outcome to an ordered factor first, otherwise the model is
 Meaningless. Depends on MASS (Suggests).</div><p><b>Arguments</b></p><table class='args'><tr><td><code>formula</code></td><td>Model formula; the outcome is an ordered factor.</td></tr></table><p><b>Value</b></p><div class='details'>A &lt;code&gt;data.frame&lt;/code&gt; of coefficients with columns &lt;code&gt;variable&lt;/code&gt; /
 &lt;code&gt;Value&lt;/code&gt; / &lt;code&gt;Std.Error&lt;/code&gt; / &lt;code&gt;t.value&lt;/code&gt; / &lt;code&gt;OR&lt;/code&gt; /
-&lt;code&gt;p.value&lt;/code&gt;; &lt;code&gt;OR = exp(Value)&lt;/code&gt;.</div><p><b>Example</b></p><pre># ordinal logistic — ordinal outcome of number of prenatal visits (ftv)
+&lt;code&gt;p.value&lt;/code&gt;; &lt;code&gt;OR = exp(Value)&lt;/code&gt;.</div><p><b>Example</b></p><pre># ordinal logistic  -  ordinal outcome of number of prenatal visits (ftv)
 Birthwt &lt;- MASS::birthwt
 Bw &lt;- birthwt
 Bw$ftv_ord &lt;- ordered(cut(bw$ftv, c(-1, 0, 2, Inf),
@@ -881,7 +881,7 @@ Multicollinearity checks via auxiliary regressions, and the four standard
 Regression diagnostic plots.</div><div class='details'>Purpose: fit simple or multiple linear regression and automatically produce a
 Reportable coefficient table and diagnostics.
 Methods: ordinary least squares via &lt;code&gt;stats::lm&lt;/code&gt;; on top of it, three
-Self-implemented diagnostics—
+Self-implemented diagnostics -
 (1) Bootstrap CI: resample observations with replacement and refit
 Repeatedly, taking empirical quantiles of coefficients as the interval, with
 No normality assumption (enable with &lt;code&gt;bootstrap &gt; 0&lt;/code&gt;);
@@ -895,7 +895,7 @@ Points).
 Arguments: &lt;code&gt;data&lt;/code&gt; is a data frame; &lt;code&gt;formula&lt;/code&gt; is the model formula
 (e.g. &lt;code&gt;y ~ x1 + x2&lt;/code&gt;); &lt;code&gt;bootstrap&lt;/code&gt; is the number of resamples (default 0 = no
 Bootstrap CI); &lt;code&gt;conf_level&lt;/code&gt; is the confidence level, default 0.95.
-Result: returns a list—&lt;code&gt;coef&lt;/code&gt; (coefficient table: estimate/SE/t/p/normal CI,
+Result: returns a list - &lt;code&gt;coef&lt;/code&gt; (coefficient table: estimate/SE/t/p/normal CI,
 Plus boot lower/upper if bootstrap on), &lt;code&gt;performance&lt;/code&gt; (R^2/adjusted R^2/F
 Statistic/AIC/BIC), &lt;code&gt;vif&lt;/code&gt; (VIF per predictor), &lt;code&gt;diagnostics&lt;/code&gt; (diagnostic
 Data frame), &lt;code&gt;diag_plots&lt;/code&gt; (list of four ggplot objects), &lt;code&gt;plot&lt;/code&gt; (main

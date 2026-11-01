@@ -1,5 +1,22 @@
 # macodgent NEWS
 
+## macodgent 1.0.2 (2026-11-01)
+
+- Fixed all help-page examples so they run cleanly under `example(mc_xxx)`
+  (verified: 39/39 exported functions, 0 errors).
+- Restored R constants that a prior batch edit had wrongly lower-cased inside
+  examples (`FALSE`/`TRUE`/`NA`/`Inf`/`OR`/`HR`), which caused
+  `object 'fALSE' not found` type errors when copying examples from the help page.
+- `mc_clogistic` now evaluates `survival::clogit` from within the survival
+  namespace; survival 3.8.x's `clogit` calls `coxph()` via
+  `eval(call, parent.frame())`, so it failed with "could not find function
+  coxph" unless survival was attached. The workaround keeps the package
+  namespace clean (no `library(survival)` side effect).
+- `mc_impute_knn` example corrected to use the real `iris` column names
+  (`Sepal.Length` / `Sepal.Width`) instead of the non-existent lowercase
+  `sepal.length` / `sepal.width`, which previously threw
+  "replacement has 127 rows, data has 150".
+
 ## macodgent 1.0.1 (2026-11-01)
 
 - Patch release aligning all help-page examples (`\examples`) with the teaching
