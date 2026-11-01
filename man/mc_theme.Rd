@@ -7,15 +7,34 @@
 mc_theme(base_size = 12)
 }
 \arguments{
-\item{base_size}{Base font size. Default 12.}
+\item{base_size}{Base font size; default \code{12}.}
 }
 \value{
-A ggplot2 theme object.
+A \code{ggplot2} theme object, usable with \code{+}.
 }
 \description{
-Light, restrained, with ample whitespace; ready for direct use in reports.
+A light, restrained ggplot2 theme with ample whitespace, ready for direct use
+in reports. It is the default theme returned inside the \code{plot}/\code{forest}
+components of several analysis functions (e.g. \code{mc_survfit()}, \code{mc_cox()},
+\code{mc_rcs()}).
+}
+\details{
+Purpose: a light, restrained ggplot2 theme with ample whitespace for report
+figures, matching the plot components returned by several analysis functions
+(e.g. mc_survfit(), mc_cox(), mc_rcs()).
+Arguments: base_size controls the base font size; default 12.
+Result: returns a ggplot2 theme object that can be appended to any ggplot
+with +.
+Note: this is a pure theme (no geoms), so it must be combined with layers
+such as geom_point() or geom_line(); pair it with mc_palette() to change the
+colour scheme.
 }
 \examples{
 library(ggplot2)
-ggplot(mtcars, aes(wt, mpg)) + geom_point() + mc_theme()
+# Chapter 3: maternal pregnancy weight vs. birth weight scatter
+# (coloured by smoking status)
+birthwt <- MASS::birthwt
+p <- ggplot(birthwt, aes(lwt, bwt, color = factor(smoke))) +
+  geom_point(size = 2, alpha = 0.6) + mc_theme(base_size = 13)
+print(p)
 }
