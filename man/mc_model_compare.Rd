@@ -15,33 +15,33 @@ mc_model_compare(..., n = NULL)
 A ranked comparison table sorted by Akaike weight.
 }
 \description{
-Corresponds to Chapter 5 (5.8, comparing multiple models). Computes AIC, BIC,
-a \emph{self-implemented} small-sample-corrected AICc and Akaike weights from AICc,
-then ranks models by weight.
+Computes AIC, BIC,
+A \emph{self-implemented} small-sample-corrected AICc and Akaike weights from AICc,
+Then ranks models by weight.
 }
 \details{
 Purpose: Compare candidate regression models by information criteria and
-select the relatively best one.
+Select the relatively best one.
 Method (original): AIC and BIC come from base R; AICc = AIC + 2k(k+1)/(n-k-1)
-where k is the number of parameters and n is the sample size (models with
-n < k+1 are set to NA); then delta = AICc - min is computed, and the Akaike
-weight w = exp(-0.5\emph{delta) / sum(exp(-0.5}delta)); a larger weight means a
-better model.
+Where k is the number of parameters and n is the sample size (models with
+N < k+1 are set to NA); then delta = AICc - min is computed, and the Akaike
+Weight w = exp(-0.5\emph{delta) / sum(exp(-0.5}delta)); a larger weight means a
+Better model.
 Arguments: \code{...} are several fitted model objects (e.g. lm/glm/coxph)
-that support \code{AIC()}/\code{BIC()}/\code{nobs()}; \code{n} is the sample
-size (when omitted, it is attempted from \code{nobs()}).
+That support \code{AIC()}/\code{BIC()}/\code{nobs()}; \code{n} is the sample
+Size (when omitted, it is attempted from \code{nobs()}).
 Result: Returns a model-comparison table sorted by weight descending, with k
 (number of parameters), n, AIC, BIC, AICc, delta_AICc, and weight.
 Note: Models compared must be based on the same dataset and the same response
-variable, otherwise the criteria are not comparable. The weight reflects the
-relative probability of each model being the best, not an absolute
-goodness-of-fit.
+Variable, otherwise the criteria are not comparable. The weight reflects the
+Relative probability of each model being the best, not an absolute
+Goodness-of-fit.
 }
 \examples{
-# Chapter 5, Section 5.8: comparing multiple linear models predicting birth weight (AIC/BIC/AICc/weights)
-birthwt <- MASS::birthwt
-m1 <- lm(bwt ~ lwt, data = birthwt)
-m2 <- lm(bwt ~ lwt + age, data = birthwt)
-m3 <- lm(bwt ~ lwt + age + smoke + factor(race), data = birthwt)
-mc_model_compare(m1, m2, m3)
+# comparing multiple linear models predicting birth weight (AIC/BIC/AICc/weights)
+Birthwt <- MASS::birthwt
+M1 <- lm(bwt ~ lwt, data = birthwt)
+M2 <- lm(bwt ~ lwt + age, data = birthwt)
+M3 <- lm(bwt ~ lwt + age + smoke + factor(race), data = birthwt)
+Mc_model_compare(m1, m2, m3)
 }
