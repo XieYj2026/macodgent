@@ -46,8 +46,8 @@
 #' / \code{conf.high}; \code{estimate} is the exponentiated OR.
 #' @examples
 #' # multivariable logistic regression for low birth weight
-#' Birthwt <- MASS::birthwt
-#' Mc_logistic(birthwt, low ~ age + lwt + smoke + factor(race))
+#' birthwt <- MASS::birthwt
+#' mc_logistic(birthwt, low ~ age + lwt + smoke + factor(race))
 #' @export
 mc_logistic <- function(data, formula, conf = 0.95) {
  fit <- eval(substitute(stats::glm(formula, data = DATA,
@@ -92,15 +92,15 @@ mc_logistic <- function(data, formula, conf = 0.95) {
 #' Table; \code{NULL} if no variables were selected).
 #' @examples
 #' # : univariate screening then multivariable modelling ("screen then model")
-#' Birthwt <- MASS::birthwt
-#' Bw <- birthwt
-#' Bw$race <- factor(bw$race)
-#' Bw$smoke <- factor(bw$smoke)
-#' Res <- mc_logistic_screen(bw, y = "low",
-#' X_vars = c("age","lwt","race","smoke","ht","ui"))
-#' Cat("==== univariate ====\n"); print(res$univariate, row.names = FALSE)
-#' Cat("\n==== selected ====\n"); print(res$selected)
-#' Cat("\n==== multivariable ====\n"); print(as.data.frame(res$multivariable), row.names = FALSE)
+#' birthwt <- MASS::birthwt
+#' bw <- birthwt
+#' bw$race <- factor(bw$race)
+#' bw$smoke <- factor(bw$smoke)
+#' res <- mc_logistic_screen(bw, y = "low",
+#' x_vars = c("age","lwt","race","smoke","ht","ui"))
+#' cat("==== univariate ====\n"); print(res$univariate, row.names = FALSE)
+#' cat("\n==== selected ====\n"); print(res$selected)
+#' cat("\n==== multivariable ====\n"); print(as.data.frame(res$multivariable), row.names = FALSE)
 #' @export
 mc_logistic_screen <- function(data, y, x_vars, alpha = 0.05, conf = 0.95) {
  univ <- list()
@@ -164,12 +164,12 @@ mc_logistic_screen <- function(data, y, x_vars, alpha = 0.05, conf = 0.95) {
 #' @return A list with \code{model} (final glm object), \code{coefficients}
 #' (coefficient table), and \code{formula} (final formula).
 #' @examples
-#' # AIC-based stepwise variable selection
-#' Birthwt <- MASS::birthwt
-#' Bw <- birthwt
-#' Bw$race <- factor(bw$race)
-#' Bw$smoke <- factor(bw$smoke)
-#' Mc_stepwise(bw, low ~ age + lwt + race + smoke + ht + ui)$coefficients
+#' # aIC-based stepwise variable selection
+#' birthwt <- MASS::birthwt
+#' bw <- birthwt
+#' bw$race <- factor(bw$race)
+#' bw$smoke <- factor(bw$smoke)
+#' mc_stepwise(bw, low ~ age + lwt + race + smoke + ht + ui)$coefficients
 #' @export
 mc_stepwise <- function(data, formula, direction = c("both", "backward", "forward"),
  k = 2) {
@@ -213,12 +213,12 @@ mc_stepwise <- function(data, formula, direction = c("both", "backward", "forwar
 #' @examples
 #' \donttest{
 #' # ordinal logistic  -  ordinal outcome of number of prenatal visits (ftv)
-#' Birthwt <- MASS::birthwt
-#' Bw <- birthwt
-#' Bw$ftv_ord <- ordered(cut(bw$ftv, c(-1, 0, 2, Inf),
-#' Labels = c("0", "1-2", "3+")))
-#' Bw$smoke <- factor(bw$smoke)
-#' Mc_ordinal_logistic(bw, ftv_ord ~ age + lwt + smoke)
+#' birthwt <- MASS::birthwt
+#' bw <- birthwt
+#' bw$ftv_ord <- ordered(cut(bw$ftv, c(-1, 0, 2, Inf),
+#' labels = c("0", "1-2", "3+")))
+#' bw$smoke <- factor(bw$smoke)
+#' mc_ordinal_logistic(bw, ftv_ord ~ age + lwt + smoke)
 #' }
 #' @export
 mc_ordinal_logistic <- function(data, formula) {
@@ -265,14 +265,20 @@ mc_ordinal_logistic <- function(data, formula) {
 #' @examples
 #' # demonstrating conditional logistic regression with the built-in matched case-control dataset infert
 #' # case: infertility status (1 = case); stratum: matched set; spontaneous/induced: miscarriage history
-#' Infert <- datasets::infert
-#' Mc_clogistic(infert, case ~ spontaneous + induced + strata(stratum))
+#' infert <- datasets::infert
+#' mc_clogistic(infert, case ~ spontaneous + induced + survival::strata(stratum))
 #' @export
 mc_clogistic <- function(data, formula) {
  if (!requireNamespace("survival", quietly = TRUE)) {
  stop("`mc_clogistic` requires the survival package; please install.packages('survival').")
  }
- fit <- survival::clogit(formula, data = data)
+ # survival::clogit internally calls coxph() via eval(call, parent.frame()),
+ # so it fails unless survival is on the search path. Evaluate it from within a
+ # child environment of the survival namespace so coxph resolves correctly.
+ e <- new.env(parent = asNamespace("survival"))
+ e$formula <- formula
+ e$data <- data
+ fit <- eval(call("clogit", formula = formula, data = data), envir = e)
  beta <- as.numeric(fit$coefficients)
  nam <- names(fit$coefficients)
  se <- sqrt(diag(as.matrix(fit$var)))
@@ -312,12 +318,12 @@ mc_clogistic <- function(data, formula) {
 #' @param n Sample size; auto-detected from the model if NULL.
 #' @return A ranked comparison table sorted by Akaike weight.
 #' @examples
-#' # comparing multiple linear models predicting birth weight (AIC/BIC/AICc/weights)
-#' Birthwt <- MASS::birthwt
-#' M1 <- lm(bwt ~ lwt, data = birthwt)
-#' M2 <- lm(bwt ~ lwt + age, data = birthwt)
-#' M3 <- lm(bwt ~ lwt + age + smoke + factor(race), data = birthwt)
-#' Mc_model_compare(m1, m2, m3)
+#' # comparing multiple linear models predicting birth weight (aIC/bIC/aICc/weights)
+#' birthwt <- MASS::birthwt
+#' m1 <- lm(bwt ~ lwt, data = birthwt)
+#' m2 <- lm(bwt ~ lwt + age, data = birthwt)
+#' m3 <- lm(bwt ~ lwt + age + smoke + factor(race), data = birthwt)
+#' mc_model_compare(m1, m2, m3)
 #' @export
 mc_model_compare <- function(..., n = NULL) {
  models <- list(...)

@@ -35,19 +35,19 @@
 #' Result: Returns an imputed data.frame with the same structure as the input.
 #' Note: KNN is sensitive to scale, so standardisation is done internally;
 #' However, if columns differ greatly in range, it is still recommended to run
-#' Mc_scale() first. Categorical variables are not used in KNN and must be
+#' mc_scale() first. Categorical variables are not used in KNN and must be
 #' Handled separately (e.g. mode imputation or category merging).
 #' @param.data A \code{data.frame}.
 #' @param k Number of neighbours; default `5`.
 #' @return The imputed \code{data.frame} (same structure as the input).
 #' @examples
-#' # demonstrating KNN missing-value imputation with iris
-#' Data(iris)
-#' Set.seed(105)
-#' Iris_na <- iris
-#' Iris_na$Sepal.Length[sample(150, 15)] <- NA
-#' Iris_na$Sepal.Width[sample(150, 15)] <- NA
-#' Head(mc_impute_knn(iris_na, k = 3))
+#' # demonstrating kNN missing-value imputation with iris
+#' data(iris)
+#' set.seed(105)
+#' iris_na <- iris
+#' iris_na$Sepal.Length[sample(150, 15)] <- NA
+#' iris_na$Sepal.Width[sample(150, 15)] <- NA
+#' head(mc_impute_knn(iris_na, k = 3))
 #' @export
 mc_impute_knn <- function(.data, k = 5) {
  if (!is.data.frame(.data)) stop("`.data` must be a data.frame.")
@@ -126,16 +126,16 @@ mc_impute_knn <- function(.data, k = 5) {
 #' Imputation diagnostic table.
 #' @examples
 #' \dontrun{
-#' # multiple imputation by chained equations (MICE) with per-variable diagnostic
-#' Set.seed(106)
-#' N <- 44
-#' Df <- data.frame(
-#' Age = c(rnorm(n - 4, 50), NA, NA, rnorm(2, 55)),
-#' Bili = c(NA, rnorm(n - 4, 1.2), NA, rnorm(2, 1.5)),
-#' Chol = rnorm(n, 200, 40), stringsAsFactors = FALSE)
-#' Res <- mc_impute_mice(df, m = 3)
-#' Head(res$long)
-#' Print(res$summary) # original: per-variable imputation diagnostic
+#' # multiple imputation by chained equations (mICE) with per-variable diagnostic
+#' set.seed(106)
+#' n <- 44
+#' df <- data.frame(
+#' age = c(rnorm(n - 4, 50), NA, NA, rnorm(2, 55)),
+#' bili = c(NA, rnorm(n - 4, 1.2), NA, rnorm(2, 1.5)),
+#' chol = rnorm(n, 200, 40), stringsAsFactors = FALSE)
+#' res <- mc_impute_mice(df, m = 3)
+#' head(res$long)
+#' print(res$summary) # original: per-variable imputation diagnostic
 #' }
 #' @export
 mc_impute_mice <- function(.data, m = 5, method = NULL,...) {
@@ -184,10 +184,10 @@ mc_impute_mice <- function(.data, m = 5, method = NULL,...) {
 #' @param keep Whether to keep \code{"first"} or \code{"last"}; default \code{"last"}.
 #' @return The deduplicated \code{data.frame}.
 #' @examples
-#' # removing duplicate follow-up records (deduplicate by subject ID)
-#' Df <- data.frame(subj = c(1, 1, 2, 2, 3), measure = c("a", "a", "b", "b", "c"), visit = 1:5)
-#' Mc_dedup(df, by = "subj") # keep the last row of each group
-#' Mc_dedup(df, by = "subj", keep = "first") # keep the first row of each group
+#' # removing duplicate follow-up records (deduplicate by subject iD)
+#' df <- data.frame(subj = c(1, 1, 2, 2, 3), measure = c("a", "a", "b", "b", "c"), visit = 1:5)
+#' mc_dedup(df, by = "subj") # keep the last row of each group
+#' mc_dedup(df, by = "subj", keep = "first") # keep the first row of each group
 #' @export
 mc_dedup <- function(.data, by = NULL, keep = c("last", "first")) {
  keep <- match.arg(keep)
@@ -225,9 +225,9 @@ mc_dedup <- function(.data, by = NULL, keep = c("last", "first")) {
 #' @return The scaled \code{data.frame}; only numeric columns are replaced.
 #' @examples
 #' # scaling numeric columns of iris (removing scale differences)
-#' Mc_scale(iris[, 1:4], method = "z") # z-score standardisation
-#' Mc_scale(iris[, 1:4], method = "minmax") # normalise to [0, 1]
-#' Mc_scale(iris[, 1:4], method = "robust") # robust scaling
+#' mc_scale(iris[, 1:4], method = "z") # z-score standardisation
+#' mc_scale(iris[, 1:4], method = "minmax") # normalise to [0, 1]
+#' mc_scale(iris[, 1:4], method = "robust") # robust scaling
 #' @export
 mc_scale <- function(.data, cols = NULL, method = c("z", "minmax", "robust")) {
  method <- match.arg(method)
@@ -284,9 +284,9 @@ mc_scale <- function(.data, cols = NULL, method = c("z", "minmax", "robust")) {
 #' @return The long \code{data.frame}.
 #' @examples
 #' # convert wide table of longitudinal blood-pressure measurements to long (t1/t2/t3 visits)
-#' Wide <- data.frame(id = 1:4,
-#' T1 = rnorm(4, 120), t2 = rnorm(4, 122), t3 = rnorm(4, 118))
-#' Mc_wide_long(wide, id_cols = "id", measure_vars = c("t1", "t2", "t3"))
+#' wide <- data.frame(id = 1:4,
+#' t1 = rnorm(4, 120), t2 = rnorm(4, 122), t3 = rnorm(4, 118))
+#' mc_wide_long(wide, id_cols = "id", measure_vars = c("t1", "t2", "t3"))
 #' @export
 mc_wide_long <- function(.data, id_cols, measure_vars,
  name_to = "variable", value_to = "value") {
@@ -318,7 +318,7 @@ mc_wide_long <- function(.data, id_cols, measure_vars,
 #'
 #' @details
 #' Purpose: Spread a long table back to wide by the name column; the inverse of
-#' Mc_wide_long(), commonly used to restore a "time-value" long table to a
+#' mc_wide_long(), commonly used to restore a "time-value" long table to a
 #' Subject x time-point wide matrix.
 #' Method (original, native implementation): First take the unique combinations
 #' Of identifier columns as the skeleton of output rows; then for each value of
@@ -341,10 +341,10 @@ mc_wide_long <- function(.data, id_cols, measure_vars,
 #' @examples
 #' \dontrun{
 #' # restore a "visit-blood pressure" long table to a subject x visit wide table
-#' Long_df <- data.frame(id = 1:2, variable = c("t1", "t2"),
-#' Value = c(120, 118))
-#' Mc_long_wide(long_df, id_cols = "id",
-#' Name_from = "variable", value_from = "value")
+#' long_df <- data.frame(id = 1:2, variable = c("t1", "t2"),
+#' value = c(120, 118))
+#' mc_long_wide(long_df, id_cols = "id",
+#' name_from = "variable", value_from = "value")
 #' }
 #' @export
 mc_long_wide <- function(.data, id_cols, name_from, value_from) {

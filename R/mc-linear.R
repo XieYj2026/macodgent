@@ -26,7 +26,7 @@
 #' Purpose: fit simple or multiple linear regression and automatically produce a
 #' Reportable coefficient table and diagnostics.
 #' Methods: ordinary least squares via `stats::lm`; on top of it, three
-#' Self-implemented diagnostics—
+#' Self-implemented diagnostics - 
 #' (1) *Bootstrap CI*: resample observations with replacement and refit
 #' Repeatedly, taking empirical quantiles of coefficients as the interval, with
 #' No normality assumption (enable with `bootstrap > 0`);
@@ -40,7 +40,7 @@
 #' Arguments: `data` is a data frame; `formula` is the model formula
 #' (e.g. `y ~ x1 + x2`); `bootstrap` is the number of resamples (default 0 = no
 #' Bootstrap CI); `conf_level` is the confidence level, default 0.95.
-#' Result: returns a list—`coef` (coefficient table: estimate/SE/t/p/normal CI,
+#' Result: returns a list - `coef` (coefficient table: estimate/SE/t/p/normal CI,
 #' Plus boot lower/upper if bootstrap on), `performance` (R^2/adjusted R^2/F
 #' Statistic/AIC/BIC), `vif` (VIF per predictor), `diagnostics` (diagnostic
 #' Data frame), `diag_plots` (list of four ggplot objects), `plot` (main
@@ -57,13 +57,13 @@
 #' Diagnostics, diagnostic plots and the main residual plot).
 #' @examples
 #' # predict birth weight by mother's age, pregnancy weight, smoking
-#' Birthwt <- MASS::birthwt
-#' Res <- mc_linear(birthwt, bwt ~ age + lwt + smoke + factor(race),
-#' Bootstrap = 200)
-#' Res$coef # coefficient table (with bootstrap CI)
-#' Res$performance # R^2 / adjusted R^2 / AIC / BIC
-#' Res$vif # variance inflation factor (multicollinearity)
-#' Print(res$plot) # residuals vs fitted diagnostic plot
+#' birthwt <- MASS::birthwt
+#' res <- mc_linear(birthwt, bwt ~ age + lwt + smoke + factor(race),
+#' bootstrap = 200)
+#' res$coef # coefficient table (with bootstrap cI)
+#' res$performance # r^2 / adjusted r^2 / aIC / bIC
+#' res$vif # variance inflation factor (multicollinearity)
+#' print(res$plot) # residuals vs fitted diagnostic plot
 #' @export
 mc_linear <- function(data, formula, bootstrap = 0L, conf_level = 0.95) {
  if (!inherits(data, "data.frame"))

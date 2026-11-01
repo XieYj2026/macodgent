@@ -45,13 +45,13 @@
 #' @return A list with \code{fit} (survfit object), \code{logrank} (test data frame:
 #' Test/chisq/p.value; `NULL` when ungrouped), \code{plot} (ggplot KM plot).
 #' @examples
-#' # demonstrate KM curve and log-rank test with the ovarian cancer prognostic dataset
-#' Ovarian <- survival::ovarian
-#' Ov <- ovarian
-#' Ov$status <- ifelse(ov$fustat == 2, 0, 1) # 2 = censored -> 0, 1 = death -> 1
-#' Res <- mc_survfit(ov, time = "futime", status = "status", group = "rx")
-#' Cat("---- log-rank test ----\n"); print(res$logrank, row.names = FALSE)
-#' Print(res$plot)
+#' # demonstrate kM curve and log-rank test with the ovarian cancer prognostic dataset
+#' ovarian <- survival::ovarian
+#' ov <- ovarian
+#' ov$status <- ifelse(ov$fustat == 2, 0, 1) # 2 = censored -> 0, 1 = death -> 1
+#' res <- mc_survfit(ov, time = "futime", status = "status", group = "rx")
+#' cat("---- log-rank test ----\n"); print(res$logrank, row.names = FALSE)
+#' print(res$plot)
 #' @export
 mc_survfit <- function(data, time, status, group = NULL) {
  if (!requireNamespace("survival", quietly = TRUE)) stop("The survival package is required.")
@@ -113,14 +113,14 @@ mc_survfit <- function(data, time, status, group = NULL) {
 #' Term/estimate/conf.low/conf.high/p.value), \code{ph_test} (PH test table),
 #' \code{forest} (ggplot forest plot).
 #' @examples
-#' # Cox proportional-hazards model -- ovarian-cancer survival prognosis
-#' Ovarian <- survival::ovarian
-#' Ov <- ovarian
-#' Ov$status <- ifelse(ov$fustat == 2, 0, 1)
-#' Res <- mc_cox(ov, survival::Surv(futime, status) ~ age + rx + resid.ds + ecog.ps)
-#' Cat("---- HR table / coefficients ----\n"); print(as.data.frame(res$coefficients), row.names = FALSE)
-#' Cat("\n---- PH assumption test ----\n"); print(res$ph_test)
-#' Print(res$forest)
+#' # cox proportional-hazards model -- ovarian-cancer survival prognosis
+#' ovarian <- survival::ovarian
+#' ov <- ovarian
+#' ov$status <- ifelse(ov$fustat == 2, 0, 1)
+#' res <- mc_cox(ov, survival::Surv(futime, status) ~ age + rx + resid.ds + ecog.ps)
+#' cat("---- HR table / coefficients ----\n"); print(as.data.frame(res$coefficients), row.names = FALSE)
+#' cat("\n---- pH assumption test ----\n"); print(res$ph_test)
+#' print(res$forest)
 #' @export
 mc_cox <- function(data, formula, conf = 0.95) {
  if (!requireNamespace("survival", quietly = TRUE)) stop("The survival package is required.")
@@ -172,15 +172,15 @@ mc_cox <- function(data, formula, conf = 0.95) {
 #' @examples
 #' \donttest{
 #' # competing risks of leukemia relapse (1) and death (2)
-#' # Event of interest cause = 1 (relapse); death is a competing event and must not be treated as censored
-#' Set.seed(126)
-#' N <- 300
-#' Trt <- sample(c(0,1), n, TRUE)
-#' Ftime <- rexp(n,.05)
-#' Fstatus <- sample(0:2, n, TRUE, c(.4,.35,.25)) # 0 censored, 1 relapse, 2 death (competing)
-#' Df <- data.frame(ftime = ftime, fstatus = fstatus, trt = trt)
-#' Res <- mc_competing_risk(df, time = "ftime", status = "fstatus", group = "trt", cause = 1)
-#' Print(res$coefficients)
+#' # event of interest cause = 1 (relapse); death is a competing event and must not be treated as censored
+#' set.seed(126)
+#' n <- 300
+#' trt <- sample(c(0,1), n, TRUE)
+#' ftime <- rexp(n,.05)
+#' fstatus <- sample(0:2, n, TRUE, c(.4,.35,.25)) # 0 censored, 1 relapse, 2 death (competing)
+#' df <- data.frame(ftime = ftime, fstatus = fstatus, trt = trt)
+#' res <- mc_competing_risk(df, time = "ftime", status = "fstatus", group = "trt", cause = 1)
+#' print(res$coefficients)
 #' }
 #' @export
 mc_competing_risk <- function(data, time, status, group, cause = 1) {
@@ -236,28 +236,28 @@ mc_competing_risk <- function(data, time, status, group, cause = 1) {
 #' @return A list with \code{model} (coxph object), \code{msfit} (mstate::msfit object).
 #' @examples
 #' \donttest{
-#' # three-state model (Healthy H -> Complication I / direct Death D)
-#' Set.seed(127)
-#' Library(mstate)
-#' N <- 150
-#' Age <- rnorm(n, 55, 8)
-#' T12 <- rexp(n,.15); t23 <- rexp(n,.20); t13 <- rexp(n,.10)
-#' Rows <- list()
-#' For (i in 1:n) {
-#' If (runif(1) <.6) {
-#' Rows[[length(rows)+1]] <- data.frame(id=i, Tstart=0, Tstop=t12[i], status=1, from=1, to=2, age=age[i])
-#' Rows[[length(rows)+1]] <- data.frame(id=i, Tstart=t12[i], Tstop=t12[i]+t23[i], status=1, from=2, to=3, age=age[i])
+#' # three-state model (healthy h -> complication i / direct death d)
+#' set.seed(127)
+#' library(mstate)
+#' n <- 150
+#' age <- rnorm(n, 55, 8)
+#' t12 <- rexp(n,.15); t23 <- rexp(n,.20); t13 <- rexp(n,.10)
+#' rows <- list()
+#' for (i in 1:n) {
+#' if (runif(1) <.6) {
+#' rows[[length(rows)+1]] <- data.frame(id=i, tstart=0, tstop=t12[i], status=1, from=1, to=2, age=age[i])
+#' rows[[length(rows)+1]] <- data.frame(id=i, tstart=t12[i], tstop=t12[i]+t23[i], status=1, from=2, to=3, age=age[i])
 #' } else {
-#' Rows[[length(rows)+1]] <- data.frame(id=i, Tstart=0, Tstop=t13[i], status=1, from=1, to=3, age=age[i])
+#' rows[[length(rows)+1]] <- data.frame(id=i, tstart=0, tstop=t13[i], status=1, from=1, to=3, age=age[i])
 #' }
 #' }
-#' Ms <- do.call(rbind, rows)
-#' Trans <- transMat(list(c(2,3), c(3), c()), names = c("H","I","D"))
-#' Ms$trans <- with(ms, ifelse(from == 1 & to == 2, 1, ifelse(from == 1 & to == 3, 2, 3)))
-#' Fit <- mc_multistate(ms, trans = trans, formula = survival::Surv(Tstart, Tstop, status) ~ age + strata(trans))
-#' Cat("coxph coefficients:\n")
-#' Print(summary(fit$model)$coefficients)
-#' Cat("\nmsfit class:", class(fit$msfit)[1], "\n")
+#' ms <- do.call(rbind, rows)
+#' trans <- transMat(list(c(2,3), c(3), c()), names = c("h","i","d"))
+#' ms$trans <- with(ms, ifelse(from == 1 & to == 2, 1, ifelse(from == 1 & to == 3, 2, 3)))
+#' fit <- mc_multistate(ms, trans = trans, formula = survival::Surv(tstart, tstop, status) ~ age + survival::strata(trans))
+#' cat("coxph coefficients:\n")
+#' print(summary(fit$model)$coefficients)
+#' cat("\nmsfit class:", class(fit$msfit)[1], "\n")
 #' }
 #' @export
 mc_multistate <- function(data, trans, formula,...) {
@@ -305,14 +305,14 @@ mc_multistate <- function(data, trans, formula,...) {
 #' @param transform Time transformation; default `"km"` (Kaplan-Meier).
 #' @return A list with the test table and residual plot.
 #' @examples
-#' # test the proportional-hazards assumption of an ovarian-cancer Cox model
-#' Ovarian <- survival::ovarian
-#' Ov <- ovarian
-#' Ov$status <- ifelse(ov$fustat == 2, 0, 1)
-#' Fit <- survival::coxph(survival::Surv(futime, status) ~ age + rx + resid.ds, data = ov)
-#' R <- mc_ph_test(fit)
-#' Print(r$test) # PH test table for each covariate
-#' Print(r$plot) # scaled Schoenfeld residuals vs time
+#' # test the proportional-hazards assumption of an ovarian-cancer cox model
+#' ovarian <- survival::ovarian
+#' ov <- ovarian
+#' ov$status <- ifelse(ov$fustat == 2, 0, 1)
+#' fit <- survival::coxph(survival::Surv(futime, status) ~ age + rx + resid.ds, data = ov)
+#' r <- mc_ph_test(fit)
+#' print(r$test) # pH test table for each covariate
+#' print(r$plot) # scaled schoenfeld residuals vs time
 #' @export
 mc_ph_test <- function(fit = NULL, data = NULL, formula = NULL,
  which = NULL, transform = "km") {

@@ -46,11 +46,11 @@
 #' @return A list with \code{model} and \code{terms}.
 #' @examples
 #' \donttest{
-#' # use GAM to capture the non-linear effect of pregnancy weight (lwt) on birth weight
-#' Birthwt <- MASS::birthwt
-#' Res <- mc_gam(birthwt, bwt ~ s(lwt) + smoke)
-#' Cat("smooth terms:\n")
-#' Print(as.data.frame(res$terms), row.names = FALSE)
+#' # use gAM to capture the non-linear effect of pregnancy weight (lwt) on birth weight
+#' birthwt <- MASS::birthwt
+#' res <- mc_gam(birthwt, bwt ~ s(lwt) + smoke)
+#' cat("smooth terms:\n")
+#' print(as.data.frame(res$terms), row.names = FALSE)
 #' }
 #' @seealso \code{\link{mc_rcs}} (restricted cubic spline with self-implemented basis).
 #' @export
@@ -111,9 +111,9 @@ mc_gam <- function(data, formula,...) {
 #' @return A list with \code{cv}, \code{coefficients}, \code{lambda.min}.
 #' @examples
 #' \donttest{
-#' # use Lasso for variable selection among all mtcars predictors (mpg ~.)
-#' Xvars <- setdiff(names(mtcars), "mpg")
-#' Mc_lasso(mtcars, x = xvars, y = "mpg")$coefficients
+#' # use lasso for variable selection among all mtcars predictors (mpg ~.)
+#' xvars <- setdiff(names(mtcars), "mpg")
+#' mc_lasso(mtcars, x = xvars, y = "mpg")$coefficients
 #' }
 #' @seealso \code{\link{mc_ridge}}, \code{\link{mc_elastic_net}}.
 #' @export
@@ -150,8 +150,8 @@ mc_lasso <- function(data, x, y, nfolds = 10, family = "gaussian") {
 #' @examples
 #' \donttest{
 #' # ridge regression for multicollinearity among mtcars predictors
-#' Xvars <- setdiff(names(mtcars), "mpg")
-#' Mc_ridge(mtcars, x = xvars, y = "mpg")$coefficients
+#' xvars <- setdiff(names(mtcars), "mpg")
+#' mc_ridge(mtcars, x = xvars, y = "mpg")$coefficients
 #' }
 #' @seealso \code{\link{mc_lasso}}, \code{\link{mc_elastic_net}}.
 #' @export
@@ -189,8 +189,8 @@ mc_ridge <- function(data, x, y, nfolds = 10, family = "gaussian") {
 #' @examples
 #' \donttest{
 #' # elastic net (alpha = 0.5) balances variable selection and shrinkage
-#' Xvars <- setdiff(names(mtcars), "mpg")
-#' Mc_elastic_net(mtcars, x = xvars, y = "mpg", alpha = 0.5)$coefficients
+#' xvars <- setdiff(names(mtcars), "mpg")
+#' mc_elastic_net(mtcars, x = xvars, y = "mpg", alpha = 0.5)$coefficients
 #' }
 #' @seealso \code{\link{mc_lasso}}, \code{\link{mc_ridge}}.
 #' @export
@@ -252,10 +252,10 @@ mc_elastic_net <- function(data, x, y, alpha = 0.5, nfolds = 10, family = "gauss
 #' @return A list with \code{model}, \code{coefficients}, \code{plot}, \code{knots}.
 #' @examples
 #' # dose-response curve of maternal age vs low-birth-weight risk (non-linear)
-#' Birthwt <- MASS::birthwt
-#' Res <- mc_rcs(birthwt, x = "age", y = "low", nk = 4, family = "binomial")
-#' Cat("knots:", round(res$knots, 2), "\n")
-#' Print(res$plot)
+#' birthwt <- MASS::birthwt
+#' res <- mc_rcs(birthwt, x = "age", y = "low", nk = 4, family = "binomial")
+#' cat("knots:", round(res$knots, 2), "\n")
+#' print(res$plot)
 #' @seealso \code{\link{mc_gam}} (smooth terms are also used for non-linear relationship modeling).
 #' @export
 mc_rcs <- function(data, x, y, nk = 3, knots = NULL, family = "gaussian") {
@@ -315,8 +315,8 @@ mc_rcs <- function(data, x, y, nk = 3, knots = NULL, family = "gaussian") {
 #' @examples
 #' \donttest{
 #' # conditional quantile regression of birth weight (slope of pregnancy weight lwt across quantiles)
-#' Birthwt <- MASS::birthwt
-#' Mc_quantile_reg(birthwt, bwt ~ lwt + age, taus = c(0.25, 0.5, 0.75))
+#' birthwt <- MASS::birthwt
+#' mc_quantile_reg(birthwt, bwt ~ lwt + age, taus = c(0.25, 0.5, 0.75))
 #' }
 #' @export
 mc_quantile_reg <- function(data, formula, taus = c(0.25, 0.5, 0.75)) {
@@ -366,15 +366,15 @@ mc_quantile_reg <- function(data, formula, taus = c(0.25, 0.5, 0.75)) {
 #' @return A list with chosen components, CV table, original-scale coefficients,
 #' Performance and the CV plot.
 #' @examples
-#' # predict birth weight from several correlated predictors (PCR removes collinearity)
-#' # Note: PCR requires all predictors to be numeric, so the categorical variable race is
+#' # predict birth weight from several correlated predictors (pCR removes collinearity)
+#' # note: pCR requires all predictors to be numeric, so the categorical variable race is
 #' # excluded (dummy-coding is discussed elsewhere)
-#' Birthwt <- MASS::birthwt
-#' Bw <- birthwt
-#' Res <- mc_pcr(bw, bwt ~ age + lwt + smoke + ht + ui + ptl, k = 5, seed = 1)
-#' Res$best_ncomp
-#' Res$coef_original
-#' Print(res$plot)
+#' birthwt <- MASS::birthwt
+#' bw <- birthwt
+#' res <- mc_pcr(bw, bwt ~ age + lwt + smoke + ht + ui + ptl, k = 5, seed = 1)
+#' res$best_ncomp
+#' res$coef_original
+#' print(res$plot)
 #' @export
 mc_pcr <- function(data, formula, ncomp = NULL, k = 5L, seed = NULL) {
  if (!inherits(data, "data.frame") || !inherits(formula, "formula"))
@@ -470,12 +470,12 @@ mc_pcr <- function(data, formula, ncomp = NULL, k = 5L, seed = NULL) {
 #' @examples
 #' \donttest{
 #' # neural-network regression -- predict birth weight from maternal features
-#' Birthwt <- MASS::birthwt
-#' Bw <- birthwt
-#' Bw$race <- factor(bw$race)
-#' Res <- mc_nnet_reg(bw, bwt ~ age + lwt + smoke + race, hidden = 5, seed = 7)
-#' Res$rmse
-#' Print(res$plot)
+#' birthwt <- MASS::birthwt
+#' bw <- birthwt
+#' bw$race <- factor(bw$race)
+#' res <- mc_nnet_reg(bw, bwt ~ age + lwt + smoke + race, hidden = 5, seed = 7)
+#' res$rmse
+#' print(res$plot)
 #' }
 #' @export
 mc_nnet_reg <- function(data, formula, hidden = 5, maxit = 200, seed = NULL) {

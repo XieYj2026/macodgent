@@ -66,24 +66,24 @@
 #' `commonOR` (common odds ratio and its CI).
 #' @examples
 #' # demonstrate three independence tests with birthwt
-#' Birthwt <- MASS::birthwt
+#' birthwt <- MASS::birthwt
 #'
-#' ## ---- Chi-square independence test (2x2 with Fisher OR) ----
-#' Res <- mc_contingency(birthwt, row = "smoke", col = "low")
-#' Cat("---- Contingency table / table ----\n"); print(res$table)
-#' Cat("\n---- Chi-square test / chi-square ----\n"); print(res$test, row.names = FALSE)
-#' Cat("\n---- Odds ratio OR / odds ratio ----\n"); print(res$OR, row.names = FALSE)
+#' ## ---- chi-square independence test (2x2 with fisher OR) ----
+#' res <- mc_contingency(birthwt, row = "smoke", col = "low")
+#' cat("---- contingency table / table ----\n"); print(res$table)
+#' cat("\n---- chi-square test / chi-square ----\n"); print(res$test, row.names = FALSE)
+#' cat("\n---- odds ratio OR / odds ratio ----\n"); print(res$OR, row.names = FALSE)
 #'
-#' ## ---- Fisher's exact test (small samples / sparse expected counts) ----
-#' Res2 <- mc_contingency(birthwt, row = "smoke", col = "low", method = "fisher")
-#' Print(res2$test, row.names = FALSE); print(res2$OR, row.names = FALSE)
+#' ## ---- fisher's exact test (small samples / sparse expected counts) ----
+#' res2 <- mc_contingency(birthwt, row = "smoke", col = "low", method = "fisher")
+#' print(res2$test, row.names = FALSE); print(res2$OR, row.names = FALSE)
 #'
-#' ## ---- CMH stratified test: common OR of smoking & low birth weight after controlling for hypertension (ht) ----
-#' Res3 <- mc_contingency(birthwt, row = "smoke", col = "low",
-#' Method = "cmh", strata = "ht")
-#' Cat("\n---- CMH test / Cochran-Mantel-Haenszel ----\n")
-#' Print(res3$test, row.names = FALSE)
-#' Print(res3$commonOR, row.names = FALSE)
+#' ## ---- cMH stratified test: common OR of smoking & low birth weight after controlling for hypertension (ht) ----
+#' res3 <- mc_contingency(birthwt, row = "smoke", col = "low",
+#' method = "cmh", strata = "ht")
+#' cat("\n---- cMH test / cochran-mantel-haenszel ----\n")
+#' print(res3$test, row.names = FALSE)
+#' print(res3$commonOR, row.names = FALSE)
 #' @export
 mc_contingency <- function(.data, row, col, correct = TRUE,
  method = c("chisq", "fisher", "cmh"),
@@ -204,17 +204,17 @@ mc_contingency <- function(.data, row, col, correct = TRUE,
 #' @param control Optional control variable names for partial correlation.
 #' @return A long `data.frame` with columns `var1`, `var2`, `r`, `p.value`.
 #' @examples
-#' # correlation of birth weight & pregnancy weight in birthwt (Spearman)
-#' Birthwt <- MASS::birthwt
-#' Cat("==== Spearman correlation / Spearman ====\n")
-#' # Note: birthwt has tied observations; cor.test switches to the asymptotic
+#' # correlation of birth weight & pregnancy weight in birthwt (spearman)
+#' birthwt <- MASS::birthwt
+#' cat("==== spearman correlation / spearman ====\n")
+#' # note: birthwt has tied observations; cor.test switches to the asymptotic
 #' # method for p-values and warns, which is normal; we suppress the warning here
 #' # to simplify the example output
-#' SuppressWarnings(print(mc_corr(birthwt, vars = c("bwt","lwt"), method = "spearman"),
-#' Row.names = FALSE))
-#' Cat("\n==== Partial correlation after controlling for mother's age / partial on age ====\n")
-#' Print(mc_corr(birthwt, vars = c("bwt","lwt"), control = "age"),
-#' Row.names = FALSE)
+#' suppressWarnings(print(mc_corr(birthwt, vars = c("bwt","lwt"), method = "spearman"),
+#' row.names = FALSE))
+#' cat("\n==== partial correlation after controlling for mother's age / partial on age ====\n")
+#' print(mc_corr(birthwt, vars = c("bwt","lwt"), control = "age"),
+#' row.names = FALSE)
 #' @export
 mc_corr <- function(.data, vars = NULL, method = c("pearson", "spearman"),
  control = NULL) {
@@ -259,7 +259,7 @@ mc_corr <- function(.data, vars = NULL, method = c("pearson", "spearman"),
 #' `group` is an optional grouping column (e.g. treatment), summarising per group;
 #' `digits` controls decimal places, default 2.
 #' Result: returns a tidy data frame, directly usable with knitr::kable() or
-#' Print() to make a table.
+#' print() to make a table.
 #' Note: p-values for group comparisons are usually not in this table (compute
 #' Separately with mc_ttest/mc_nonparam/mc_contingency). Too many levels for a
 #' Categorical variable widens the table; consider merging rare categories first.
@@ -271,12 +271,12 @@ mc_corr <- function(.data, vars = NULL, method = c("pearson", "spearman"),
 #' @return A `data.frame` with columns `variable`, `level`, `stratum`, `value`.
 #' @examples
 #' # birthwt baseline characteristics table (grouped by low birth weight)
-#' Birthwt <- MASS::birthwt
-#' Bw <- birthwt
-#' Bw$race <- factor(bw$race, levels = 1:3, labels = c("White","Black","Other"))
-#' Bw$smoke <- factor(bw$smoke, levels = 0:1, labels = c("No","Yes"))
-#' Bw$low <- factor(bw$low, levels = 0:1, labels = c("Normal","Low"))
-#' Mc_tableone(bw, vars = c("age","lwt","race","smoke","bwt"), group = "low")
+#' birthwt <- MASS::birthwt
+#' bw <- birthwt
+#' bw$race <- factor(bw$race, levels = 1:3, labels = c("white","black","other"))
+#' bw$smoke <- factor(bw$smoke, levels = 0:1, labels = c("no","yes"))
+#' bw$low <- factor(bw$low, levels = 0:1, labels = c("normal","low"))
+#' mc_tableone(bw, vars = c("age","lwt","race","smoke","bwt"), group = "low")
 #' @export
 mc_tableone <- function(.data, vars, group = NULL, digits = 2) {
  rows <- list()

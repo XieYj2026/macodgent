@@ -39,10 +39,10 @@
 #' There are no non-missing values.
 #' @examples
 #' # low birthweight study dataset (birthwt, MASS)
-#' Birthwt <- MASS::birthwt
-#' Mc_mode(factor(birthwt$race)) # most common race category (1 = white)
-#' Mc_mode(factor(birthwt$smoke)) # mode of smoking status (0 = non-smoker)
-#' Mc_mode(c(NA, NA, 1, 2), na.rm = FALSE) # returns "NA" when NA present
+#' birthwt <- MASS::birthwt
+#' mc_mode(factor(birthwt$race)) # most common race category (1 = white)
+#' mc_mode(factor(birthwt$smoke)) # mode of smoking status (0 = non-smoker)
+#' mc_mode(c(NA, NA, 1, 2), na.rm = FALSE) # returns "NA" when NA present
 #' @export
 mc_mode <- function(x, na.rm = TRUE) {
  if (na.rm) x <- x[!is.na(x)]
@@ -79,8 +79,8 @@ mc_mode <- function(x, na.rm = TRUE) {
 #' @examples
 #' # data-quality check on the birthwt data frame (try injecting
 #' # missing values to practice)
-#' Birthwt <- MASS::birthwt
-#' Mc_inspect(birthwt[, c("age", "lwt", "bwt", "smoke", "low")])
+#' birthwt <- MASS::birthwt
+#' mc_inspect(birthwt[, c("age", "lwt", "bwt", "smoke", "low")])
 #' @export
 mc_inspect <- function(.data) {
  if (!is.data.frame(.data)) stop("`.data` must be a data.frame or tibble.")
@@ -120,13 +120,13 @@ mc_inspect <- function(.data) {
 #' @param base_size Base font size; default `12`.
 #' @return A `ggplot2` theme object, usable with `+`.
 #' @examples
-#' Library(ggplot2)
+#' library(ggplot2)
 #' # maternal pregnancy weight vs. birth weight scatter
 #' # (coloured by smoking status)
-#' Birthwt <- MASS::birthwt
-#' P <- ggplot(birthwt, aes(lwt, bwt, color = factor(smoke))) +
-#' Geom_point(size = 2, alpha = 0.6) + mc_theme(base_size = 13)
-#' Print(p)
+#' birthwt <- MASS::birthwt
+#' p <- ggplot(birthwt, aes(lwt, bwt, color = factor(smoke))) +
+#' geom_point(size = 2, alpha = 0.6) + mc_theme(base_size = 13)
+#' print(p)
 #' @export
 mc_theme <- function(base_size = 12) {
  ggplot2::theme_minimal(base_size = base_size) +
@@ -176,15 +176,15 @@ mc_theme <- function(base_size = 12) {
 #' @return A named character vector of the six brand colours by default, or a
 #' Vector of length `n`.
 #' @examples
-#' Pal <- mc_palette() # default: six brand colours
-#' Print(pal)
-#' Grad <- mc_palette(n = 20, type = "gradient") # 20-colour continuous gradient
-#' Print(head(grad))
-#' Library(ggplot2)
-#' Df <- data.frame(name = factor(names(pal), names(pal)), col = pal)
-#' P <- ggplot(df, aes(name, fill = name)) + geom_bar() +
-#' Scale_fill_manual(values = pal) + theme_void()
-#' Print(p)
+#' pal <- mc_palette() # default: six brand colours
+#' print(pal)
+#' grad <- mc_palette(n = 20, type = "gradient") # 20-colour continuous gradient
+#' print(head(grad))
+#' library(ggplot2)
+#' df <- data.frame(name = factor(names(pal), names(pal)), col = pal)
+#' p <- ggplot(df, aes(name, fill = name)) + geom_bar() +
+#' scale_fill_manual(values = pal) + theme_void()
+#' print(p)
 #' @export
 mc_palette <- function(n = NULL, type = c("brand", "gradient", "discrete")) {
  brand <- c(primary = "#1A439C",

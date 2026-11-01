@@ -79,11 +79,11 @@
 #' Statistic columns.
 #' @examples
 #' # low birth weight study (birthwt, MASS package)
-#' Birthwt <- MASS::birthwt
-#' Cat("==== Overall: birth weight / age / pregnancy weight ====\n")
-#' Print(mc_desc_quant(birthwt, vars = c("bwt","age","lwt")), row.names = FALSE)
-#' Cat("\n==== Grouped by mother's smoking status ====\n")
-#' Print(mc_desc_quant(birthwt, vars = c("bwt","age"), group = "smoke"), row.names = FALSE)
+#' birthwt <- MASS::birthwt
+#' cat("==== overall: birth weight / age / pregnancy weight ====\n")
+#' print(mc_desc_quant(birthwt, vars = c("bwt","age","lwt")), row.names = FALSE)
+#' cat("\n==== grouped by mother's smoking status ====\n")
+#' print(mc_desc_quant(birthwt, vars = c("bwt","age"), group = "smoke"), row.names = FALSE)
 #' @export
 mc_desc_quant <- function(.data, vars = NULL, group = NULL, conf = 0.95) {
  if (!is.data.frame(.data)) stop("`.data` must be a data.frame.")
@@ -137,9 +137,9 @@ mc_desc_quant <- function(.data, vars = NULL, group = NULL, conf = 0.95) {
 #' @return A `data.frame` with columns `test`, `statistic`, `p.value`.
 #' @examples
 #' # test whether quantitative variables in birthwt are normal
-#' Birthwt <- MASS::birthwt
-#' Mc_norm_test(birthwt$bwt) # birth weight
-#' Mc_norm_test(birthwt$age) # mother's age
+#' birthwt <- MASS::birthwt
+#' mc_norm_test(birthwt$bwt) # birth weight
+#' mc_norm_test(birthwt$age) # mother's age
 #' @export
 mc_norm_test <- function(x, method = c("shapiro", "ks"),...) {
  method <- match.arg(method)
@@ -181,9 +181,9 @@ mc_norm_test <- function(x, method = c("shapiro", "ks"),...) {
 #' @return A `data.frame` with columns `test`, `statistic`, `p.value`.
 #' @examples
 #' # test variance homogeneity of birth weight across races (race)
-#' Birthwt <- MASS::birthwt
-#' Mc_var_test(birthwt$bwt, birthwt$race, method = "bartlett")
-#' Mc_var_test(birthwt$bwt, birthwt$race, method = "levene")
+#' birthwt <- MASS::birthwt
+#' mc_var_test(birthwt$bwt, birthwt$race, method = "bartlett")
+#' mc_var_test(birthwt$bwt, birthwt$race, method = "levene")
 #' @export
 mc_var_test <- function(x, g, method = c("bartlett", "fligner", "levene")) {
  method <- match.arg(method)
@@ -238,11 +238,11 @@ mc_var_test <- function(x, g, method = c("bartlett", "fligner", "levene")) {
 #' `conf.high`, `statistic`, `p.value`.
 #' @examples
 #' #
-#' Birthwt <- MASS::birthwt
-#' # One-sample: is the average birth weight equal to 3000 g?
-#' Mc_ttest(birthwt$bwt, mu = 3000)
-#' # Independent two-sample (Welch correction): smoking vs non-smoking mothers' birth weight
-#' Mc_ttest(birthwt$bwt[birthwt$smoke == 1], birthwt$bwt[birthwt$smoke == 0])
+#' birthwt <- MASS::birthwt
+#' # one-sample: is the average birth weight equal to 3000 g?
+#' mc_ttest(birthwt$bwt, mu = 3000)
+#' # independent two-sample (welch correction): smoking vs non-smoking mothers' birth weight
+#' mc_ttest(birthwt$bwt[birthwt$smoke == 1], birthwt$bwt[birthwt$smoke == 0])
 #' @export
 mc_ttest <- function(x, y = NULL, paired = FALSE, mu = 0, conf = 0.95,
  alternative = "two.sided") {
@@ -285,9 +285,9 @@ mc_ttest <- function(x, y = NULL, paired = FALSE, mu = 0, conf = 0.95,
 #' @return A `data.frame` with columns `term`, `df`, `sumsq`, `meansq`,
 #' `statistic`, `p.value`.
 #' @examples
-#' # do mothers of different races (race) differ in birth weight? (one-way ANOVA)
-#' Birthwt <- MASS::birthwt
-#' Mc_anova(bwt ~ factor(race), data = birthwt)
+#' # do mothers of different races (race) differ in birth weight? (one-way aNOVA)
+#' birthwt <- MASS::birthwt
+#' mc_anova(bwt ~ factor(race), data = birthwt)
 #' @export
 mc_anova <- function(formula, data) {
  a <- stats::aov(formula, data = data)
@@ -323,10 +323,10 @@ mc_anova <- function(formula, data) {
 #' @param method `"wilcoxon"` (default) or `"kruskal"` (test method).
 #' @return A `data.frame` with columns `test`, `statistic`, `p.value`.
 #' @examples
-#' # birth weight by smoking status (two-group Wilcoxon) and race (multi-group Kruskal-Wallis)
-#' Birthwt <- MASS::birthwt
-#' Mc_nonparam(birthwt$bwt, birthwt$smoke, method = "wilcoxon")
-#' Mc_nonparam(birthwt$bwt, factor(birthwt$race), method = "kruskal")
+#' # birth weight by smoking status (two-group wilcoxon) and race (multi-group kruskal-wallis)
+#' birthwt <- MASS::birthwt
+#' mc_nonparam(birthwt$bwt, birthwt$smoke, method = "wilcoxon")
+#' mc_nonparam(birthwt$bwt, factor(birthwt$race), method = "kruskal")
 #' @export
 mc_nonparam <- function(x, g, method = c("wilcoxon", "kruskal")) {
  method <- match.arg(method)
