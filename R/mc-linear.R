@@ -1,65 +1,69 @@
 # =============================================================================
-# 软件名称    : macodgent 医学数据科学研究工具包
-# 著作权人    : Dr.Xie
-# 版本号      : 1.0.0
-# 开发语言    : R
-# 开发完成日期: 2026-10-30
-# 权利声明    : 本程序为著作权人独立开发，受《计算机软件保护条例》保护；
-#              未经书面许可，不得复制、发行、出租或将其用于商业目的。
+# Software name : macodgent medical data-science research toolkit
+# Copyright holder : Dr.Xie
+# Version : 1.0.0
+# Language : R
+# Completion date : 2026-10-30
+# Copyright notice : This program is independently developed by the copyright
+#                   holder and protected under the Software Protection
+#                   Regulations; without written permission it may not be
+#                   copied, distributed, rented, or used for commercial purposes.
 # -----------------------------------------------------------------------------
-# 模块        : 线性回归（第 5 章 常见类型回归分析的补充）
-# 本文件包含  : mc_linear（一元/多元线性回归，含自研诊断模块）
+# Module : linear regression (supplement to Chapter 5, common regression types)
+# This file contains : mc_linear (simple/multiple linear regression, with
+#              self-implemented diagnostics module)
 # =============================================================================
 
-#' 线性回归（含自研诊断模块）/ Linear regression with self-implemented diagnostics
-#'
-#' 对应第 5 章「常见类型回归分析」（5.2 一元/多元线性回归、5.6 模型诊断绘图）。
-#' 在基础 \code{stats::lm} 之上，额外提供三项**自研**诊断：① 基于重抽样的
-#' 自助法（bootstrap）系数置信区间；② 基于辅助回归的方差膨胀因子（VIF）多重
-#' 共线性诊断；③ 四张标准回归诊断图（残差 vs 拟合、正态 Q-Q、尺度-位置、
-#' Cook 距离）。所有结果整理为整洁 \code{data.frame}，便于直接入报告。
+#' Linear regression with self-implemented diagnostics
 #'
 #' Corresponds to Chapter 5 ("Linear regression", 5.2 & 5.6). Wraps
-#' \code{stats::lm} and adds three *self-implemented* diagnostics: a bootstrap
+#' `stats::lm` and adds three *self-implemented* diagnostics: a bootstrap
 #' confidence interval for coefficients, variance-inflation-factor (VIF)
 #' multicollinearity checks via auxiliary regressions, and the four standard
 #' regression diagnostic plots.
 #'
 #' @details
-#' 用途：拟合一元或多元线性回归，并自动产出可报告的系数表与诊断结果。
-#' 方法：以 \code{stats::lm} 做最小二乘拟合；在此之上自研实现三项诊断——
-#' （1）\strong{自助法 CI}：对观测行做有放回重抽样、反复重拟合，取系数经验
-#' 分位数作为区间，不依赖任何正态假设（设置 \code{bootstrap > 0} 开启）；
-#' （2）\strong{VIF}：对每个预测变量以其余预测变量做辅助线性回归，取
-#' 1/(1-R²) 作为该变量的方差膨胀因子，VIF>5 通常提示多重共线性；
-#' （3）\strong{四张诊断图}：残差 vs 拟合（看非线性/异方差）、正态 Q-Q（看残差
-#' 正态性）、尺度-位置（看离散度是否随拟合值变化）、Cook 距离（看强影响点）。
-#' 参数：\code{data} 为数据框；\code{formula} 为模型公式（如 \code{y ~ x1 + x2}）；
-#' \code{bootstrap} 为重抽样次数（默认 0 即不计算自助法 CI）；\code{conf_level}
-#' 为置信水平，默认 0.95。
-#' 结果：返回列表——\code{coef}（系数表：估计/标准误/t 值/p 值/正态 CI，若开启
-#' 自助法另含 boot 下限/上限）、\code{performance}（R²/调整 R²/F 统计量/AIC/BIC）、
-#' \code{vif}（各预测变量 VIF）、\code{diagnostics}（诊断用数据框）、
-#' \code{diag_plots}（四张 ggplot 对象列表）、\code{plot}（残差诊断主图）。
-#' 注意：VIF 仅对数值型预测变量计算；自助法会显著增加运行时间，样本量很大时
-#' 建议先用少量（如 200）试探。本函数仅依赖基础 R 与 ggplot2，无需额外安装包。
-#' @param data 数据框（a `data.frame`）。
-#' @param formula 回归公式，如 `y ~ x1 + x2`（a model `formula`）。
-#' @param bootstrap 自助法重抽样次数；`0` 表示不计算自助法置信区间
-#'   （number of bootstrap resamples; `0` = skip bootstrap CI）。
-#' @param conf_level 置信水平，默认 `0.95`（confidence level; default `0.95`）。
-#' @return 列表，含 `coef` / `performance` / `vif` / `diagnostics` /
-#'   `diag_plots` / `plot`（a list with coefficient table, performance metrics,
-#'   VIF, diagnostics, diagnostic plots and the main residual plot）。
+#' Purpose: fit simple or multiple linear regression and automatically produce a
+#' reportable coefficient table and diagnostics.
+#' Methods: ordinary least squares via `stats::lm`; on top of it, three
+#' self-implemented diagnostics—
+#' (1) *Bootstrap CI*: resample observations with replacement and refit
+#' repeatedly, taking empirical quantiles of coefficients as the interval, with
+#' no normality assumption (enable with `bootstrap > 0`);
+#' (2) *VIF*: for each predictor, fit an auxiliary linear regression on the
+#' remaining predictors and take 1/(1-R^2) as its variance inflation factor;
+#' VIF > 5 usually signals multicollinearity;
+#' (3) *Four diagnostic plots*: residuals vs fitted (non-linearity /
+#' heteroscedasticity), normal Q-Q (residual normality), scale-location
+#' (whether spread changes with fitted values), Cook's distance (influential
+#' points).
+#' Arguments: `data` is a data frame; `formula` is the model formula
+#' (e.g. `y ~ x1 + x2`); `bootstrap` is the number of resamples (default 0 = no
+#' bootstrap CI); `conf_level` is the confidence level, default 0.95.
+#' Result: returns a list—`coef` (coefficient table: estimate/SE/t/p/normal CI,
+#' plus boot lower/upper if bootstrap on), `performance` (R^2/adjusted R^2/F
+#' statistic/AIC/BIC), `vif` (VIF per predictor), `diagnostics` (diagnostic
+#' data frame), `diag_plots` (list of four ggplot objects), `plot` (main
+#' residual diagnostic plot).
+#' Note: VIF is computed only for numeric predictors; bootstrap significantly
+#' increases runtime, so for very large samples try a small number (e.g. 200)
+#' first. This function depends only on base R and ggplot2, no extra packages.
+#' @param data A `data.frame`.
+#' @param formula A model `formula`, e.g. `y ~ x1 + x2`.
+#' @param bootstrap Number of bootstrap resamples; `0` = skip bootstrap CI.
+#' @param conf_level Confidence level; default `0.95`.
+#' @return A list with `coef`, `performance`, `vif`, `diagnostics`,
+#'   `diag_plots`, `plot` (coefficient table, performance metrics, VIF,
+#'   diagnostics, diagnostic plots and the main residual plot).
 #' @examples
-#' # 第 5 章 5.2/5.6 节：以母亲年龄、孕期体重、吸烟预测出生体重
+#' # Chapter 5, Sections 5.2/5.6: predict birth weight by mother's age, pregnancy weight, smoking
 #' birthwt <- MASS::birthwt
 #' res <- mc_linear(birthwt, bwt ~ age + lwt + smoke + factor(race),
 #'                  bootstrap = 200)
-#' res$coef                       # 系数表（含自助法置信区间）
-#' res$performance                # R² / 调整 R² / AIC / BIC
-#' res$vif                        # 方差膨胀因子（多重共线性诊断）
-#' print(res$plot)                # 残差 vs 拟合诊断图
+#' res$coef                       # coefficient table (with bootstrap CI)
+#' res$performance                # R^2 / adjusted R^2 / AIC / BIC
+#' res$vif                        # variance inflation factor (multicollinearity)
+#' print(res$plot)                # residuals vs fitted diagnostic plot
 #' @export
 mc_linear <- function(data, formula, bootstrap = 0L, conf_level = 0.95) {
   if (!inherits(data, "data.frame"))
@@ -78,7 +82,7 @@ mc_linear <- function(data, formula, bootstrap = 0L, conf_level = 0.95) {
   cf$ci_lower <- ci[, 1]
   cf$ci_upper <- ci[, 2]
 
-  ## ---- 自研：自助法系数 CI ----
+  ## ---- self-implemented: bootstrap coefficient CI ----
   boot_ci <- NULL
   if (bootstrap > 0L) {
     n <- nrow(data)
@@ -104,7 +108,7 @@ mc_linear <- function(data, formula, bootstrap = 0L, conf_level = 0.95) {
                "ci_lower", "ci_upper",
                if (bootstrap > 0L) c("boot_lower", "boot_upper") else NULL)]
 
-  ## ---- 自研：VIF（基于辅助回归 1/(1-R^2)）----
+  ## ---- self-implemented: VIF (auxiliary regression 1/(1-R^2)) ----
   mm <- stats::model.matrix(formula, data = data)
   preds <- colnames(mm)[colnames(mm) != "(Intercept)"]
   vif <- data.frame(term = preds, VIF = NA_real_, stringsAsFactors = FALSE)
@@ -118,14 +122,14 @@ mc_linear <- function(data, formula, bootstrap = 0L, conf_level = 0.95) {
     vif$VIF[i] <- if (is.na(r2) || r2 >= 1) NA_real_ else 1 / (1 - r2)
   }
 
-  ## ---- 性能量 ----
+  ## ---- performance metrics ----
   performance <- data.frame(
     metric = c("r_squared", "adj_r_squared", "f_statistic", "aic", "bic"),
     value  = c(sm$r.squared, sm$adj.r.squared,
                sm$fstatistic["value"], stats::AIC(fit), stats::BIC(fit)),
     stringsAsFactors = FALSE)
 
-  ## ---- 诊断数据 ----
+  ## ---- diagnostic data ----
   fitted <- as.numeric(fit$fitted.values)
   resid  <- as.numeric(fit$residuals)
   stdres <- as.numeric(stats::rstandard(fit))
@@ -134,7 +138,7 @@ mc_linear <- function(data, formula, bootstrap = 0L, conf_level = 0.95) {
                         std_resid = stdres, cooks = cooks,
                         stringsAsFactors = FALSE)
 
-  ## ---- 四张诊断图（ggplot2）----
+  ## ---- four diagnostic plots (ggplot2) ----
   p1 <- ggplot2::ggplot(diag_df, ggplot2::aes(fitted, resid)) +
     ggplot2::geom_point(size = 1.2, alpha = 0.6) +
     ggplot2::geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
