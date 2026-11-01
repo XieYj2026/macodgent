@@ -2,34 +2,57 @@
 % Please edit documentation in R/mc-advanced.R
 \name{mc_rcs}
 \alias{mc_rcs}
-\title{Restricted Cubic Spline Regression (Self-implemented Spline Basis)}
+\title{Restricted Cubic Spline Regression}
 \usage{
 mc_rcs(data, x, y, nk = 3, knots = NULL, family = "gaussian")
 }
 \arguments{
-\item{data}{A data.frame.}
+\item{data}{A \code{data.frame}.}
 
 \item{x}{Numeric predictor name.}
 
 \item{y}{Response variable name.}
 
-\item{nk}{Number of interior knots, default 3.}
+\item{nk}{Number of interior knots; default \code{3}.}
 
-\item{knots}{Full knot vector (including boundaries); NULL uses automatic
-quantile-based knots.}
+\item{knots}{Full knot vector including boundaries; \code{NULL} = automatic quantile knots.}
 
-\item{family}{"gaussian" (default) or "binomial", etc.}
+\item{family}{GLM family; \code{"gaussian"} (default) or \code{"binomial"}, etc.}
 }
 \value{
-A list with \code{model}, \code{coefficients} (coefficient table),
-\code{plot} (prediction curve), and \code{knots}.
+A list with \code{model}, \code{coefficients}, \code{plot}, \code{knots}.
 }
 \description{
 Corresponds to Chapter 7 "Restricted Cubic Spline Regression Models" of the
-second part of the column. Without depending on \pkg{rms}, it builds a
+routine medical-data-science tutorial. Without depending on \pkg{rms}, it builds a
 restricted cubic spline basis and fits a linear / generalized linear model,
 returning the prediction curve.
 }
+\details{
+Purpose: Use restricted cubic splines (RCS) to describe the non-linear
+dose-response relationship between a predictor and the outcome, and to visualize
+the curve; a common approach in epidemiology for presenting exposure-effect curves.
+Method: A self-implemented spline basis (no extra dependencies) applies linear
+constraints at both ends of the predictor ("restricted") to avoid wild swings at
+the boundaries; default interior knots \code{nk = 3}.
+Arguments: \code{data} is a data frame; \code{x} is the predictor column name;
+\code{y} is the response column name; \code{nk} is the number of knots (default 3,
+larger = more flexible); \code{knots} can manually set knot positions (default
+auto-selected by quantiles); \code{family} defaults to gaussian and also supports
+binomial (then it describes how the log-odds change with x).
+Results: Returns a list with \code{knots} (knot positions), \code{coefficients}
+(spline basis coefficients), and \code{plot} (prediction-curve ggplot object).
+Notes: More knots make the curve wigglier and more prone to overfitting; usually
+3-5 knots suffice. RCS does not assume monotonicity and can show U-shaped or
+inverted-U relationships. View the result with \code{print(res$plot)}.
+}
 \examples{
-mc_rcs(MASS::birthwt, x = "age", y = "bwt", nk = 3)
+# Chapter 7: dose-response curve of maternal age vs low-birth-weight risk (non-linear)
+birthwt <- MASS::birthwt
+res <- mc_rcs(birthwt, x = "age", y = "low", nk = 4, family = "binomial")
+cat("knots:", round(res$knots, 2), "\n")
+print(res$plot)
+}
+\seealso{
+\code{\link{mc_gam}} (smooth terms are also used for non-linear relationship modeling).
 }
