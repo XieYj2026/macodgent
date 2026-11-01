@@ -1,6 +1,6 @@
 # =============================================================================
 # 软件名称    : macodgent 医学数据科学研究工具包
-# 著作权人    : 谢耀珏（Dr.Xie）【个人，待最终确认】
+# 著作权人    : Dr.Xie
 # 版本号      : 1.0.0
 # 开发语言    : R
 # 开发完成日期: 2026-10-30
@@ -16,11 +16,11 @@
 
 #' 广义可加模型（GAM）/ Generalized Additive Model (GAM)
 #'
-#' 对应专栏第 7 章「广义可加回归模型」。基于 \code{\link[mgcv]{gam}}，返回每个
+#' 对应第 7 章「广义可加回归模型」。基于 \code{\link[mgcv]{gam}}，返回每个
 #' 平滑项的自由度与显著性。
 #'
 #' Corresponds to Chapter 7 "Generalized Additive Regression Models" of the
-#' second part of the column. Built on \code{\link[mgcv]{gam}}, it returns the
+#' second part of the routine medical-data-science tutorial. Built on \code{\link[mgcv]{gam}}, it returns the
 #' degrees of freedom and significance of each smooth term.
 #'
 #' @details
@@ -38,7 +38,7 @@
 #'   （a list with \code{model} and \code{terms}）。
 #' @examples
 #' \donttest{
-#' # 专栏第 7 章：用 GAM 刻画孕期体重(lwt)对出生体重的非线性效应
+#' # 第 7 章：用 GAM 刻画孕期体重(lwt)对出生体重的非线性效应
 #' birthwt <- MASS::birthwt
 #' res <- mc_gam(birthwt, bwt ~ s(lwt) + smoke)
 #' cat("平滑项表 / smooth terms:\n")
@@ -73,7 +73,7 @@ mc_gam <- function(data, formula, ...) {
 
 #' Lasso 回归 / Lasso Regression
 #'
-#' 对应专栏第 7 章「Lasso 回归」。基于 \pkg{glmnet}，\code{alpha = 1}。通过
+#' 对应第 7 章「Lasso 回归」。基于 \pkg{glmnet}，\code{alpha = 1}。通过
 #' 10 折交叉验证选 λ，返回非零系数表。
 #'
 #' Corresponds to Chapter 7 "Lasso Regression" of the second part of the
@@ -95,7 +95,7 @@ mc_gam <- function(data, formula, ...) {
 #'   `lambda.min`（a list with \code{cv}, \code{coefficients}, \code{lambda.min}）。
 #' @examples
 #' \donttest{
-#' # 专栏第 7 章：用 Lasso 在 mtcars 的全部预测变量中做变量选择（mpg ~ .）
+#' # 第 7 章：用 Lasso 在 mtcars 的全部预测变量中做变量选择（mpg ~ .）
 #' xvars <- setdiff(names(mtcars), "mpg")
 #' mc_lasso(mtcars, x = xvars, y = "mpg")$coefficients
 #' }
@@ -107,7 +107,7 @@ mc_lasso <- function(data, x, y, nfolds = 10, family = "gaussian") {
 
 #' 岭回归 / Ridge Regression
 #'
-#' 对应专栏第 7 章「岭回归」。基于 \pkg{glmnet}，\code{alpha = 0}。返回系数表
+#' 对应第 7 章「岭回归」。基于 \pkg{glmnet}，\code{alpha = 0}。返回系数表
 #' （岭回归系数通常不稀疏）。
 #'
 #' Corresponds to Chapter 7 "Ridge Regression" of the second part of the
@@ -129,7 +129,7 @@ mc_lasso <- function(data, x, y, nfolds = 10, family = "gaussian") {
 #'   \code{cv}, \code{coefficients}, \code{lambda.min}）。
 #' @examples
 #' \donttest{
-#' # 专栏第 7 章：岭回归处理 mtcars 预测变量的多重共线性
+#' # 第 7 章：岭回归处理 mtcars 预测变量的多重共线性
 #' xvars <- setdiff(names(mtcars), "mpg")
 #' mc_ridge(mtcars, x = xvars, y = "mpg")$coefficients
 #' }
@@ -141,7 +141,7 @@ mc_ridge <- function(data, x, y, nfolds = 10, family = "gaussian") {
 
 #' 弹性网络回归 / Elastic Net Regression
 #'
-#' 对应专栏第 7 章「弹性网络回归」。基于 \pkg{glmnet}；`alpha` 在岭（0）与
+#' 对应第 7 章「弹性网络回归」。基于 \pkg{glmnet}；`alpha` 在岭（0）与
 #' Lasso（1）之间调节。
 #'
 #' Corresponds to Chapter 7 "Elastic Net Regression" of the second part of the
@@ -165,7 +165,7 @@ mc_ridge <- function(data, x, y, nfolds = 10, family = "gaussian") {
 #'   \code{cv}, \code{coefficients}, \code{lambda.min}, \code{alpha}）。
 #' @examples
 #' \donttest{
-#' # 专栏第 7 章：弹性网络（alpha = 0.5）兼顾变量选择与系数收缩
+#' # 第 7 章：弹性网络（alpha = 0.5）兼顾变量选择与系数收缩
 #' xvars <- setdiff(names(mtcars), "mpg")
 #' mc_elastic_net(mtcars, x = xvars, y = "mpg", alpha = 0.5)$coefficients
 #' }
@@ -198,11 +198,11 @@ mc_elastic_net <- function(data, x, y, alpha = 0.5, nfolds = 10, family = "gauss
 
 #' 受限立方样条回归（自实现样条基）/ Restricted Cubic Spline Regression
 #'
-#' 对应专栏第 7 章「受限立方样条回归模型」。不依赖 \pkg{rms}，自行构建受限立方
+#' 对应第 7 章「受限立方样条回归模型」。不依赖 \pkg{rms}，自行构建受限立方
 #' 样条基并拟合线性/广义线性模型，返回预测曲线。
 #'
 #' Corresponds to Chapter 7 "Restricted Cubic Spline Regression Models" of the
-#' second part of the column. Without depending on \pkg{rms}, it builds a
+#' second part of the routine medical-data-science tutorial. Without depending on \pkg{rms}, it builds a
 #' restricted cubic spline basis and fits a linear / generalized linear model,
 #' returning the prediction curve.
 #'
@@ -223,7 +223,7 @@ mc_elastic_net <- function(data, x, y, alpha = 0.5, nfolds = 10, family = "gauss
 #'   `knots`（节点位置）（a list with \code{model}, \code{coefficients},
 #'   \code{plot}, \code{knots}）。
 #' @examples
-#' # 专栏第 7 章：母亲年龄对低出生体重风险的「剂量-反应」曲线（非线性）
+#' # 第 7 章：母亲年龄对低出生体重风险的「剂量-反应」曲线（非线性）
 #' birthwt <- MASS::birthwt
 #' res <- mc_rcs(birthwt, x = "age", y = "low", nk = 4, family = "binomial")
 #' cat("节点位置 / knots:", round(res$knots, 2), "\n")
@@ -259,11 +259,11 @@ mc_rcs <- function(data, x, y, nk = 3, knots = NULL, family = "gaussian") {
 
 #' 分位数回归 / Quantile Regression
 #'
-#' 对应专栏第 7 章「分位数回归原理与应用场景」。基于
+#' 对应第 7 章「分位数回归原理与应用场景」。基于
 #' \code{\link[quantreg]{rq}}，一次性返回多个分位点的系数。
 #'
 #' Corresponds to Chapter 7 "Principles and Application Scenarios of Quantile
-#' Regression" of the second part of the column. Built on
+#' Regression" of the second part of the routine medical-data-science tutorial. Built on
 #' \code{\link[quantreg]{rq}}, it returns coefficients for multiple quantiles
 #' at once.
 #'
@@ -281,7 +281,7 @@ mc_rcs <- function(data, x, y, nk = 3, knots = NULL, family = "gaussian") {
 #'   `p.value` / `tau`（a `data.frame` with those columns, stacked over taus）。
 #' @examples
 #' \donttest{
-#' # 专栏第 7 章：出生体重的条件分位数回归（不同分位下孕期体重 lwt 的斜率）
+#' # 第 7 章：出生体重的条件分位数回归（不同分位下孕期体重 lwt 的斜率）
 #' birthwt <- MASS::birthwt
 #' mc_quantile_reg(birthwt, bwt ~ lwt + age, taus = c(0.25, 0.5, 0.75))
 #' }
@@ -302,7 +302,7 @@ mc_quantile_reg <- function(data, formula, taus = c(0.25, 0.5, 0.75)) {
 
 #' 主成分回归（PCR，自研管线）/ Principal Components Regression
 #'
-#' 对应专栏第 7 章「主成分回归的原理和应用场景」（7.8）。将多个相关预测变量
+#' 对应第 7 章「主成分回归的原理和应用场景」（7.8）。将多个相关预测变量
 #' 先做主成分分析（PCA），取前若干主成分再做线性回归，从而消除多重共线性。
 #' 整条管线**自研**实现：基于 \code{stats::prcomp} 计算主成分，并以**自研 k 折
 #' 交叉验证**选择最优主成分个数，最后把系数反变换回原始变量尺度。
@@ -336,7 +336,7 @@ mc_quantile_reg <- function(data, formula, taus = c(0.25, 0.5, 0.75)) {
 #'   （a list with chosen components, CV table, original-scale coefficients,
 #'   performance and the CV plot）。
 #' @examples
-#' # 专栏第 7 章 7.8 节：多个相关预测变量预测出生体重（主成分回归消除共线性）
+#' # 第 7 章 7.8 节：多个相关预测变量预测出生体重（主成分回归消除共线性）
 #' # 注：PCR 要求全部预测变量为数值型，故不纳入分类变量 race（哑变量化另述）
 #' birthwt <- MASS::birthwt
 #' bw <- birthwt
@@ -410,7 +410,7 @@ mc_pcr <- function(data, formula, ncomp = NULL, k = 5L, seed = NULL) {
 
 #' 神经网络回归（nnet 封装）/ Neural-network regression
 #'
-#' 对应专栏第 7 章「神经网络回归的原理和应用场景」（7.9）。用单隐藏层前馈神经
+#' 对应第 7 章「神经网络回归的原理和应用场景」（7.9）。用单隐藏层前馈神经
 #' 网络拟合回归，适合捕捉预测变量与结局间的非线性关系。基于 \code{nnet::nnet()}
 #' （\code{linout = TRUE} 做回归），并额外给出预测 vs 实测散点图与 RMSE。
 #'
@@ -440,7 +440,7 @@ mc_pcr <- function(data, formula, ncomp = NULL, k = 5L, seed = NULL) {
 #'   （a list with the fitted net, predictions, RMSE and the fit plot）。
 #' @examples
 #' \donttest{
-#' # 专栏第 7 章 7.9 节：神经网络回归——用母亲特征预测出生体重
+#' # 第 7 章 7.9 节：神经网络回归——用母亲特征预测出生体重
 #' birthwt <- MASS::birthwt
 #' bw <- birthwt
 #' bw$race <- factor(bw$race)
