@@ -2,27 +2,48 @@
 % Please edit documentation in R/mc-desc-qual.R
 \name{mc_tableone}
 \alias{mc_tableone}
-\title{Baseline characteristics table (Table One)}
+\title{Baseline characteristics table}
 \usage{
 mc_tableone(.data, vars, group = NULL, digits = 2)
 }
 \arguments{
-\item{.data}{A data.frame.}
+\item{.data}{A \code{data.frame}.}
 
 \item{vars}{Variable names to include.}
 
 \item{group}{Optional grouping variable name.}
 
-\item{digits}{Number of decimals. Default 2.}
+\item{digits}{Number of decimals; default \code{2}.}
 }
 \value{
-A data.frame: variable / level / stratum / value
+A \code{data.frame} with columns \code{variable}, \code{level}, \code{stratum}, \code{value}.
 }
 \description{
 Corresponds to Chapter 4 ("Table One"). Numeric variables are summarised as
 mean +/- SD; categorical variables as counts and percentages; can be
 stratified by a grouping variable.
 }
+\details{
+Purpose: generate the common "Table 1" baseline characteristics table, one row
+per variable, shown by exposure/group column, ready for the manuscript.
+Methods: numeric variables summarised as "mean +/- SD" (when approximately
+normal); categorical variables as counts and percentages.
+Arguments: \code{.data} is a data frame; \code{vars} are the variable names to include;
+\code{group} is an optional grouping column (e.g. treatment), summarising per group;
+\code{digits} controls decimal places, default 2.
+Result: returns a tidy data frame, directly usable with knitr::kable() or
+print() to make a table.
+Note: p-values for group comparisons are usually not in this table (compute
+separately with mc_ttest/mc_nonparam/mc_contingency). Too many levels for a
+categorical variable widens the table; consider merging rare categories first.
+This is a descriptive table, not a substitute for statistical inference.
+}
 \examples{
-mc_tableone(MASS::birthwt, vars = c("age", "lwt", "smoke", "low"), group = "smoke")
+# Chapter 4: birthwt baseline characteristics table (grouped by low birth weight)
+birthwt <- MASS::birthwt
+bw <- birthwt
+bw$race  <- factor(bw$race, levels = 1:3, labels = c("White","Black","Other"))
+bw$smoke <- factor(bw$smoke, levels = 0:1, labels = c("No","Yes"))
+bw$low   <- factor(bw$low, levels = 0:1, labels = c("Normal","Low"))
+mc_tableone(bw, vars = c("age","lwt","race","smoke","bwt"), group = "low")
 }
