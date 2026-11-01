@@ -14,25 +14,48 @@ mc_ttest(
 )
 }
 \arguments{
-\item{x}{A numeric vector.}
+\item{x}{Numeric vector.}
 
-\item{y}{A second vector (for independent/paired); NULL for one-sample.}
+\item{y}{A second vector (for independent/paired); \code{NULL} for one-sample.}
 
-\item{paired}{Logical; paired? Default FALSE.}
+\item{paired}{Logical; paired? default \code{FALSE}.}
 
-\item{mu}{Hypothesised mean for one-sample test. Default 0.}
+\item{mu}{Hypothesised mean for one-sample; default \code{0}.}
 
-\item{conf}{Confidence level. Default 0.95.}
+\item{conf}{Confidence level; default \code{0.95}.}
 
-\item{alternative}{"two.sided" (default), "less" or "greater".}
+\item{alternative}{\code{"two.sided"} (default) / \code{"less"} / \code{"greater"}.}
 }
 \value{
-A data.frame: method / estimate / conf.low / conf.high / statistic / p.value
+A \code{data.frame} with columns \code{method}, \code{estimate}, \code{conf.low},
+\code{conf.high}, \code{statistic}, \code{p.value}.
 }
 \description{
-Corresponds to Chapter 3: one-sample, independent two-sample, and
-paired t-tests through a single entry point.
+Corresponds to Chapter 3: one-sample, independent two-sample, and paired
+t-tests through a single entry point.
+}
+\details{
+Purpose: a unified entry point for t-tests covering three common cases:
+one-sample (vs a known constant), independent two-sample, and paired.
+Methods: two independent samples use Welch's corrected t-test by default (no
+equal-variance assumption), closer to practice; can switch to Student's t.
+Arguments: \code{x} is the first group or one-sample vector; \code{y} is the second
+vector (for independent/paired; left NULL for one-sample); \code{paired = TRUE}
+runs a paired t-test; \code{mu} is the reference value for the one-sample test,
+default 0; \code{conf}/\code{alternative} control confidence level and the alternative
+direction.
+Result: returns the mean difference (or sample mean), standard error, t
+statistic, degrees of freedom, p-value and confidence interval.
+Note: paired tests require x, y to be paired (e.g. same person measured
+before/after); using an independent test when groups are not independent
+understates error. For clearly skewed or small samples, consider mc_nonparam()'s
+Wilcoxon test.
 }
 \examples{
-set.seed(1); mc_ttest(rnorm(30, mean = 1), mu = 0)
+# Chapter 3
+birthwt <- MASS::birthwt
+# One-sample: is the average birth weight equal to 3000 g?
+mc_ttest(birthwt$bwt, mu = 3000)
+# Independent two-sample (Welch correction): smoking vs non-smoking mothers' birth weight
+mc_ttest(birthwt$bwt[birthwt$smoke == 1], birthwt$bwt[birthwt$smoke == 0])
 }
