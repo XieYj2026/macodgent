@@ -32,28 +32,28 @@ Implemented natively in base R with \strong{no external pivoting dependency}.
 }
 \details{
 Purpose: Convert a wide table (multiple measurements of one subject in
-different columns) to a long table (one row per measurement); a core step in
-data processing.
+Different columns) to a long table (one row per measurement); a core step in
+Data processing.
 Method (original, native implementation): First verify that \code{id_cols} and
 \code{measure_vars} exist in the data.frame; then for each measure column, replicate
-and stack the identifier columns by the number of measure columns, and merge
-each measure column name as the "variable" and its values as the "value",
-producing a tidy long table. Uses only base R with no external dependency.
+And stack the identifier columns by the number of measure columns, and merge
+Each measure column name as the "variable" and its values as the "value",
+Producing a tidy long table. Uses only base R with no external dependency.
 Arguments: \code{.data} is a data.frame; \code{id_cols} are the identifier columns to
-keep (e.g. ID, group); \code{measure_vars} are the measure columns to lengthen;
+Keep (e.g. ID, group); \code{measure_vars} are the measure columns to lengthen;
 \code{name_to}/\code{value_to} are the output column names for "variable" and "value",
-defaulting to variable / value.
+Defaulting to variable / value.
 Result: Returns a long-format data.frame.
 Note: After conversion, rows = original rows x number of measure columns; this
-is the inverse of mc_long_wide(). If measure columns carry time suffixes
+Is the inverse of mc_long_wide(). If measure columns carry time suffixes
 (e.g. t1/t2/t3), the result is a tidy "time-value" pair of columns, convenient
-for repeated-measures analysis. Identifier columns that are factors are
-preserved as factors; measure columns should share a common type, otherwise
-the "value" column is coerced to a common type.
+For repeated-measures analysis. Identifier columns that are factors are
+Preserved as factors; measure columns should share a common type, otherwise
+The "value" column is coerced to a common type.
 }
 \examples{
-# Chapter 2: convert wide table of longitudinal blood-pressure measurements to long (t1/t2/t3 visits)
-wide <- data.frame(id = 1:4,
-  t1 = rnorm(4, 120), t2 = rnorm(4, 122), t3 = rnorm(4, 118))
-mc_wide_long(wide, id_cols = "id", measure_vars = c("t1", "t2", "t3"))
+# convert wide table of longitudinal blood-pressure measurements to long (t1/t2/t3 visits)
+Wide <- data.frame(id = 1:4,
+T1 = rnorm(4, 120), t2 = rnorm(4, 122), t3 = rnorm(4, 118))
+Mc_wide_long(wide, id_cols = "id", measure_vars = c("t1", "t2", "t3"))
 }
