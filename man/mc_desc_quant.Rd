@@ -17,35 +17,35 @@ mc_desc_quant(.data, vars = NULL, group = NULL, conf = 0.95)
 }
 \value{
 A wide \code{data.frame}, one row per variable (one row per group level
-when grouped), with columns \code{variable}, \code{group} (when grouped), and the 18
-statistic columns.
+When grouped), with columns \code{variable}, \code{group} (when grouped), and the 18
+Statistic columns.
 }
 \description{
-Corresponds to Chapter 3 of Part 2: produces about 20 descriptive statistics
-in one call (n, n missing, mean, median, sd, variance, min, max, range, IQR,
+Produces about 20 descriptive statistics
+In one call (n, n missing, mean, median, sd, variance, min, max, range, IQR,
 SE, 95\% CI, CV, skewness, kurtosis, Shapiro-Wilk normality). Supports grouped
-computation.
+Computation.
 }
 \details{
 Purpose: one-call descriptive statistics for quantitative variables, covering
-about 20 common metrics; the main function for baseline tables and pre-modeling
-exploration.
+About 20 common metrics; the main function for baseline tables and pre-modeling
+Exploration.
 Arguments: \code{.data} is a data frame; \code{vars} selects the numeric columns to
-describe (all numeric columns by default); \code{group} optionally specifies a
-grouping column for per-group output; \code{conf} is the confidence level for the
-mean, default 0.95.
+Describe (all numeric columns by default); \code{group} optionally specifies a
+Grouping column for per-group output; \code{conf} is the confidence level for the
+Mean, default 0.95.
 Result: returns a data frame with sample size, mean, sd, median, IQR, min, max,
-skewness, kurtosis, normality-test statistics, and the mean confidence interval.
+Skewness, kurtosis, normality-test statistics, and the mean confidence interval.
 Note: skewness/kurtosis help judge distribution shape (skewness far from 0 or
-kurtosis much greater than 3 suggests non-normality); if planning t-tests/ANOVA,
-check normality and variance homogeneity first. When grouping, group sizes may
-differ, so mind the fairness of comparisons.
+Kurtosis much greater than 3 suggests non-normality); if planning t-tests/ANOVA,
+Check normality and variance homogeneity first. When grouping, group sizes may
+Differ, so mind the fairness of comparisons.
 }
 \examples{
-# Chapter 3: low birth weight study (birthwt, MASS package)
-birthwt <- MASS::birthwt
-cat("==== Overall: birth weight / age / pregnancy weight ====\n")
-print(mc_desc_quant(birthwt, vars = c("bwt","age","lwt")), row.names = FALSE)
-cat("\n==== Grouped by mother's smoking status ====\n")
-print(mc_desc_quant(birthwt, vars = c("bwt","age"), group = "smoke"), row.names = FALSE)
+# low birth weight study (birthwt, MASS package)
+Birthwt <- MASS::birthwt
+Cat("==== Overall: birth weight / age / pregnancy weight ====\n")
+Print(mc_desc_quant(birthwt, vars = c("bwt","age","lwt")), row.names = FALSE)
+Cat("\n==== Grouped by mother's smoking status ====\n")
+Print(mc_desc_quant(birthwt, vars = c("bwt","age"), group = "smoke"), row.names = FALSE)
 }
