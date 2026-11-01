@@ -17,35 +17,35 @@ A \code{data.frame} of coefficients with columns \code{variable} /
 \code{p.value}; \code{OR = exp(Value)}.
 }
 \description{
-Corresponds to Chapter 5 ("ordinal logistic regression"). Based on
+Based on
 \pkg{MASS}'s \code{polr}; the outcome must be an ordered factor. Returns a
-coefficient table with OR.
+Coefficient table with OR.
 }
 \details{
 Purpose: Fit an ordinal logistic regression (proportional-odds model),
-suitable when the outcome is an ordered multicategory variable
+Suitable when the outcome is an ordered multicategory variable
 (e.g. mild/moderate/severe).
 Method: Based on MASS's polr(), which assumes the predictor effects are the
-same across all cut points (proportional-odds assumption).
+Same across all cut points (proportional-odds assumption).
 Arguments: \code{data} is a data.frame; \code{formula} is of the form
-ordered_outcome ~ predictors, where the outcome must be an ordered factor
+Ordered_outcome ~ predictors, where the outcome must be an ordered factor
 (ordered()).
 Result: Returns a coefficient table with coefficients (on the logit scale),
-standard errors, and the exponentiated OR (odds ratio).
+Standard errors, and the exponentiated OR (odds ratio).
 Note: If the proportional-odds assumption fails (check via MASS::polr-based
-tests or large stratum-specific OR differences), interpret results cautiously;
-consider a partial proportional-odds model or a multinomial logistic model.
+Tests or large stratum-specific OR differences), interpret results cautiously;
+Consider a partial proportional-odds model or a multinomial logistic model.
 Always convert the outcome to an ordered factor first, otherwise the model is
-meaningless. Depends on MASS (Suggests).
+Meaningless. Depends on MASS (Suggests).
 }
 \examples{
 \donttest{
-# Chapter 5: ordinal logistic — ordinal outcome of number of prenatal visits (ftv)
-birthwt <- MASS::birthwt
-bw <- birthwt
-bw$ftv_ord <- ordered(cut(bw$ftv, c(-1, 0, 2, Inf),
-                         labels = c("0", "1-2", "3+")))
-bw$smoke <- factor(bw$smoke)
-mc_ordinal_logistic(bw, ftv_ord ~ age + lwt + smoke)
+# ordinal logistic — ordinal outcome of number of prenatal visits (ftv)
+Birthwt <- MASS::birthwt
+Bw <- birthwt
+Bw$ftv_ord <- ordered(cut(bw$ftv, c(-1, 0, 2, Inf),
+Labels = c("0", "1-2", "3+")))
+Bw$smoke <- factor(bw$smoke)
+Mc_ordinal_logistic(bw, ftv_ord ~ age + lwt + smoke)
 }
 }
