@@ -20,42 +20,42 @@ mc_logistic_screen(data, y, x_vars, alpha = 0.05, conf = 0.95)
 \value{
 A list with \code{univariate} (univariate table), \code{selected}
 (selected variables), and \code{multivariable} (multivariable coefficient
-table; \code{NULL} if no variables were selected).
+Table; \code{NULL} if no variables were selected).
 }
 \description{
-Corresponds to Chapter 5 (extended reading): run a univariate logistic
-regression for each candidate variable, screen significant ones at \code{alpha},
-then build a multivariable model from the selected variables.
+Run a univariate logistic
+Regression for each candidate variable, screen significant ones at \code{alpha},
+Then build a multivariable model from the selected variables.
 }
 \details{
 Purpose: One-step implementation of the classic epidemiological workflow
 "univariate screening then multivariable modelling", removing the need for
-manual stepwise work.
+Manual stepwise work.
 Method: First run a univariate logistic regression for each candidate
 \code{x_vars}, screen significant variables at the \code{alpha} threshold (default 0.05),
-then fit a multivariable model with the selected variables.
+Then fit a multivariable model with the selected variables.
 Arguments: \code{data} is a data.frame; \code{y} is the binary outcome column name
 (character); \code{x_vars} is a vector of candidate predictor column names;
 \code{alpha} is the significance threshold for univariate screening; \code{conf} is the
-confidence level.
+Confidence level.
 Result: Returns a list with \code{univariate} (univariate results per variable),
 \code{selected} (names of selected variables), and \code{multivariable} (the tidy
-multivariable coefficient table).
+Multivariable coefficient table).
 Note: This is convenient but not a gold standard — stepwise/screening can
-introduce selection bias and overfitting, and univariate significance does not
-imply multivariable significance (variables may mask or amplify each other).
+Introduce selection bias and overfitting, and univariate significance does not
+Imply multivariable significance (variables may mask or amplify each other).
 Report both univariate and multivariable results and state the screening rule.
 It is still recommended to validate the final model with mc_logistic().
 }
 \examples{
-# Chapter 5 (extended reading): univariate screening then multivariable modelling ("screen then model")
-birthwt <- MASS::birthwt
-bw <- birthwt
-bw$race  <- factor(bw$race)
-bw$smoke <- factor(bw$smoke)
-res <- mc_logistic_screen(bw, y = "low",
-                          x_vars = c("age","lwt","race","smoke","ht","ui"))
-cat("==== univariate ====\n"); print(res$univariate, row.names = FALSE)
-cat("\n==== selected ====\n"); print(res$selected)
-cat("\n==== multivariable ====\n"); print(as.data.frame(res$multivariable), row.names = FALSE)
+# : univariate screening then multivariable modelling ("screen then model")
+Birthwt <- MASS::birthwt
+Bw <- birthwt
+Bw$race <- factor(bw$race)
+Bw$smoke <- factor(bw$smoke)
+Res <- mc_logistic_screen(bw, y = "low",
+X_vars = c("age","lwt","race","smoke","ht","ui"))
+Cat("==== univariate ====\n"); print(res$univariate, row.names = FALSE)
+Cat("\n==== selected ====\n"); print(res$selected)
+Cat("\n==== multivariable ====\n"); print(as.data.frame(res$multivariable), row.names = FALSE)
 }
