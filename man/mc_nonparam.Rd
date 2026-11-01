@@ -17,29 +17,29 @@ mc_nonparam(x, g, method = c("wilcoxon", "kruskal"))
 A \code{data.frame} with columns \code{test}, \code{statistic}, \code{p.value}.
 }
 \description{
-Corresponds to Chapter 3 ("non-parametric tests between groups"): Wilcoxon
-rank-sum (two groups) or Kruskal-Wallis (multiple groups). Returns the test
-name, statistic and p-value.
+Wilcoxon
+Rank-sum (two groups) or Kruskal-Wallis (multiple groups). Returns the test
+Name, statistic and p-value.
 }
 \details{
 Purpose: when data violate normality/equal-variance assumptions, or are merely
-ordinal, use non-parametric methods to compare groups.
+Ordinal, use non-parametric methods to compare groups.
 Methods: \code{wilcoxon} is the Wilcoxon rank-sum test (Mann-Whitney U) for two
-independent samples; \code{kruskal} is the Kruskal-Wallis test for three or more
-groups. They compare distribution location (ranks), not means.
+Independent samples; \code{kruskal} is the Kruskal-Wallis test for three or more
+Groups. They compare distribution location (ranks), not means.
 Arguments: \code{x} is a numeric vector; \code{g} is the grouping vector (wilcoxon for
-two groups, kruskal for multiple); \code{method} selects the test.
+Two groups, kruskal for multiple); \code{method} selects the test.
 Result: returns the test statistic and p-value (Kruskal also includes df).
 Note: non-parametric tests usually have lower power than their parametric
-counterparts (when data are truly normal) but are more robust; they test
+Counterparts (when data are truly normal) but are more robust; they test
 "whether distributions are identical / locations shifted", so conclusions
-should be phrased as "median/distribution difference" not "mean difference".
+Should be phrased as "median/distribution difference" not "mean difference".
 For paired two groups use the Wilcoxon signed-rank test (not covered here;
-use stats::wilcox.test(paired = TRUE)).
+Use stats::wilcox.test(paired = TRUE)).
 }
 \examples{
-# Chapter 3: birth weight by smoking status (two-group Wilcoxon) and race (multi-group Kruskal-Wallis)
-birthwt <- MASS::birthwt
-mc_nonparam(birthwt$bwt, birthwt$smoke, method = "wilcoxon")
-mc_nonparam(birthwt$bwt, factor(birthwt$race), method = "kruskal")
+# birth weight by smoking status (two-group Wilcoxon) and race (multi-group Kruskal-Wallis)
+Birthwt <- MASS::birthwt
+Mc_nonparam(birthwt$bwt, birthwt$smoke, method = "wilcoxon")
+Mc_nonparam(birthwt$bwt, factor(birthwt$race), method = "kruskal")
 }
