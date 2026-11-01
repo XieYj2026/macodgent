@@ -2,27 +2,48 @@
 % Please edit documentation in R/mc-desc-qual.R
 \name{mc_corr}
 \alias{mc_corr}
-\title{Correlation analysis (with partial correlation)}
+\title{相关分析（含偏相关）/ Correlation analysis (with partial correlation)}
 \usage{
 mc_corr(.data, vars = NULL, method = c("pearson", "spearman"), control = NULL)
 }
 \arguments{
-\item{.data}{A data.frame.}
+\item{.data}{数据框（a \code{data.frame}）。}
 
-\item{vars}{Variable names; NULL means all numeric columns.}
+\item{vars}{变量名；\code{NULL} 表示全部数值列（variable names; \code{NULL} = all
+numeric columns）。}
 
-\item{method}{"pearson" (default) or "spearman".}
+\item{method}{\code{"pearson"}（默认）或 \code{"spearman"}（correlation method）。}
 
-\item{control}{Optional control variable names (for partial correlation).}
+\item{control}{可选控制变量名（用于偏相关）（optional control variable names
+for partial correlation）。}
 }
 \value{
-A long data.frame: var1 / var2 / r / p.value
+长格式数据框，列为 \code{var1} / \code{var2} / \code{r} / \code{p.value}（a long
+\code{data.frame} with columns \code{var1}, \code{var2}, \code{r}, \code{p.value}）。
 }
 \description{
+对应第 4 章：Pearson / Spearman 相关；可通过 \code{control} 指定控制变量，
+对所有变量先就控制变量做回归取残差，从而得到偏相关。
+}
+\details{
 Corresponds to Chapter 4: Pearson / Spearman correlation; optionally compute
 partial correlation by residualising all variables on the control variable(s).
+
+用途：计算变量间的相关系数，支持 Pearson（线性）与 Spearman（秩/单调），并可计算偏相关（控制混杂变量后）。
+方法：pearson 衡量线性关联，假设近似正态；spearman 基于秩，对非线性单调关系与异常值更稳健；control 指定一个或多个控制变量，计算偏相关（剔除这些变量影响后的净相关）。
+参数：.data 为数据框；vars 为参与相关的变量名向量；method 选择相关类型；control 为可选的控制变量名。
+结果：返回相关矩阵（含相关系数），偏相关时返回控制后的矩阵。
+注意：相关系数只衡量关联强度与方向，不等于因果；接近 0 不代表无关（可能是非线性）。Spearman 更适合 ordinal 数据或明显偏态。偏相关能帮助识别「虚假相关」（由共同混杂变量造成）。
 }
 \examples{
-mc_corr(MASS::birthwt, vars = c("age", "lwt", "bwt"))
-mc_corr(MASS::birthwt, vars = c("age", "lwt", "bwt"), control = "race")
+# 第 4 章 4.5 节：birthwt 中出生体重、孕期体重的相关（Spearman）
+birthwt <- MASS::birthwt
+cat("==== Spearman 相关 / Spearman ====\n")
+# 注：birthwt 含相同观测值（ties），cor.test 会以渐近法替代精确 p 值并提示，
+# 属正常统计说明；此处抑制该提示以简化示例输出
+suppressWarnings(print(mc_corr(birthwt, vars = c("bwt","lwt"), method = "spearman"),
+                         row.names = FALSE))
+cat("\n==== 控制母亲年龄后的偏相关 / partial on age ====\n")
+print(mc_corr(birthwt, vars = c("bwt","lwt"), control = "age"),
+      row.names = FALSE)
 }
