@@ -2,46 +2,50 @@
 % Please edit documentation in R/mc-desc-quant.R
 \name{mc_desc_quant}
 \alias{mc_desc_quant}
-\title{一站式定量描述（旗舰函数）/ One-shot quantitative description}
+\title{One-shot quantitative description}
 \usage{
 mc_desc_quant(.data, vars = NULL, group = NULL, conf = 0.95)
 }
 \arguments{
-\item{.data}{数据框（a \code{data.frame}）。}
+\item{.data}{A \code{data.frame}.}
 
-\item{vars}{数值变量名；\code{NULL} 表示全部数值列（numeric variable names;
-\code{NULL} = all numeric columns）。}
+\item{vars}{Numeric variable names; \code{NULL} = all numeric columns.}
 
-\item{group}{可选的分组变量名（optional grouping variable name）。}
+\item{group}{Optional grouping variable name.}
 
-\item{conf}{置信水平，默认 \code{0.95}（confidence level; default \code{0.95}）。}
+\item{conf}{Confidence level; default \code{0.95}.}
 }
 \value{
-宽格式数据框，每行一个变量（分组时每组一行）。列包含 \code{variable}、
-（分组时的 \code{group}）、以及上述 18 个统计量（a wide \code{data.frame}, one row
-per variable, one row per group level when grouped; 18 statistic columns）。
+A wide \code{data.frame}, one row per variable (one row per group level
+when grouped), with columns \code{variable}, \code{group} (when grouped), and the 18
+statistic columns.
 }
 \description{
-对应第 3 章：一次调用产出约 20 个描述统计量（n、缺失数、均值、中位数、标准差、
-方差、最小值、最大值、极差、IQR、均值标准误、95\% 置信区间、变异系数、偏度、
-峰度、Shapiro-Wilk 正态性检验 W 与 p 值）。支持按分组变量分别计算。
-}
-\details{
 Corresponds to Chapter 3 of Part 2: produces about 20 descriptive statistics
 in one call (n, n missing, mean, median, sd, variance, min, max, range, IQR,
 SE, 95\% CI, CV, skewness, kurtosis, Shapiro-Wilk normality). Supports grouped
 computation.
-
-用途：一键生成定量变量的描述性统计，覆盖约 20 个常用指标，是论文「基线表」和建模前探索的主力函数。
-参数：.data 为数据框；vars 指定要描述的数值列（默认全部数值列）；group 可指定分组列，按组分别输出；conf 为均值的置信水平，默认 0.95。
-结果：返回数据框，含样本量、均值、标准差、中位数、四分位距、最小值、最大值、偏度、峰度、正态性检验统计量等，以及均值置信区间。
-注意：偏度/峰度用于判断分布形态（偏度远偏离 0、峰度远大于 3 提示非正态）；若计划做 t 检验/方差分析，应先看正态性与方差齐性。分组时各组样本量可能不同，注意比较的公平性。
+}
+\details{
+Purpose: one-call descriptive statistics for quantitative variables, covering
+about 20 common metrics; the main function for baseline tables and pre-modeling
+exploration.
+Arguments: \code{.data} is a data frame; \code{vars} selects the numeric columns to
+describe (all numeric columns by default); \code{group} optionally specifies a
+grouping column for per-group output; \code{conf} is the confidence level for the
+mean, default 0.95.
+Result: returns a data frame with sample size, mean, sd, median, IQR, min, max,
+skewness, kurtosis, normality-test statistics, and the mean confidence interval.
+Note: skewness/kurtosis help judge distribution shape (skewness far from 0 or
+kurtosis much greater than 3 suggests non-normality); if planning t-tests/ANOVA,
+check normality and variance homogeneity first. When grouping, group sizes may
+differ, so mind the fairness of comparisons.
 }
 \examples{
-# 第 3 章：低出生体重研究（birthwt，MASS 包）
+# Chapter 3: low birth weight study (birthwt, MASS package)
 birthwt <- MASS::birthwt
-cat("==== 总体描述：出生体重/年龄/孕期体重 ====\n")
+cat("==== Overall: birth weight / age / pregnancy weight ====\n")
 print(mc_desc_quant(birthwt, vars = c("bwt","age","lwt")), row.names = FALSE)
-cat("\n==== 按母亲是否吸烟分组 ====\n")
+cat("\n==== Grouped by mother's smoking status ====\n")
 print(mc_desc_quant(birthwt, vars = c("bwt","age"), group = "smoke"), row.names = FALSE)
 }
