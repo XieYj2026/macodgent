@@ -30,7 +30,7 @@ Sensitive to location/scale.
 Arguments: \code{x} is the numeric vector to test; \code{method} selects one of the two.
 Result: returns the test statistic, p-value, etc.
 Note: with large samples normality tests easily become "significant" (tiny p)
-Even when deviation is practically harmless, so do not rely on p alone—combine
+Even when deviation is practically harmless, so do not rely on p alone - combine
 With histograms, Q-Q plots and skewness/kurtosis. The Shapiro test may be
 Unreliable or very slow for n > 5000.
 }
