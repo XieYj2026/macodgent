@@ -7,26 +7,46 @@
 mc_ridge(data, x, y, nfolds = 10, family = "gaussian")
 }
 \arguments{
-\item{data}{A data.frame.}
+\item{data}{A \code{data.frame}.}
 
 \item{x}{Character vector of predictor column names.}
 
-\item{y}{Name of the response variable.}
+\item{y}{Response variable name.}
 
-\item{nfolds}{Number of cross-validation folds, default 10.}
+\item{nfolds}{Cross-validation folds; default \code{10}.}
 
-\item{family}{"gaussian" (default) or "binomial", etc.}
+\item{family}{GLM family; \code{"gaussian"} (default) or \code{"binomial"}, etc.}
 }
 \value{
-A list with \code{cv}, \code{coefficients} (coefficient table), and
-\code{lambda.min}.
+A list with \code{cv}, \code{coefficients}, \code{lambda.min}.
 }
 \description{
-Corresponds to Chapter 7 "Ridge Regression" of the second part of the
-column. Built on \pkg{glmnet} with \code{alpha = 0}.
+Corresponds to Chapter 7 "Ridge Regression" of the routine medical-data-science
+tutorial. Built on \pkg{glmnet} with \code{alpha = 0}. Returns the coefficient
+table (ridge coefficients are typically non-sparse).
+}
+\details{
+Purpose: Use ridge regression (L2 regularization) to handle multicollinearity and
+stabilize coefficient estimates, suited to cases where all variables matter and
+you do not want to drop any.
+Method: Based on glmnet; \code{alpha = 0} is ridge; it shrinks all coefficients
+proportionally (without zeroing) and keeps every variable.
+Arguments: \code{data} is a data frame; \code{x} is a vector of predictor column
+names; \code{y} is the response column name; \code{nfolds} is the number of CV
+folds (default 10); \code{family} defaults to gaussian.
+Results: Returns a list with \code{coefficients} (shrunk but all non-zero coefficients).
+Notes: Unlike Lasso, ridge coefficients are never exactly zero, so it performs no
+variable selection, only shrinkage. It is robust to collinearity (spreading
+variance across correlated variables), but all variables remain in the
+interpretation. Larger lambda means stronger shrinkage. Depends on glmnet (Suggests).
 }
 \examples{
-\dontrun{
-mc_ridge(mtcars, x = c("hp", "wt", "disp"), y = "mpg")
+\donttest{
+# Chapter 7: ridge regression for multicollinearity among mtcars predictors
+xvars <- setdiff(names(mtcars), "mpg")
+mc_ridge(mtcars, x = xvars, y = "mpg")$coefficients
 }
+}
+\seealso{
+\code{\link{mc_lasso}}, \code{\link{mc_elastic_net}}.
 }
