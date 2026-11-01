@@ -7,24 +7,42 @@
 mc_quantile_reg(data, formula, taus = c(0.25, 0.5, 0.75))
 }
 \arguments{
-\item{data}{A data.frame.}
+\item{data}{A \code{data.frame}.}
 
 \item{formula}{A regression formula.}
 
-\item{taus}{Vector of quantile points, default c(0.25, 0.5, 0.75).}
+\item{taus}{Vector of quantile points; default \code{c(0.25, 0.5, 0.75)}.}
 }
 \value{
-A data.frame with columns term / estimate / std.error / statistic /
-p.value / tau.
+A \code{data.frame} with columns \code{term}, \code{estimate}, \code{std.error}, \code{statistic},
+\code{p.value}, \code{tau} (stacked over taus).
 }
 \description{
 Corresponds to Chapter 7 "Principles and Application Scenarios of Quantile
-Regression" of the second part of the column. Built on
+Regression" of the routine medical-data-science tutorial. Built on
 \code{\link[quantreg]{rq}}, it returns coefficients for multiple quantiles
 at once.
 }
+\details{
+Purpose: Use quantile regression to describe how a predictor affects different
+quantiles of the outcome (e.g. median, upper/lower quartiles); especially useful
+under heteroscedasticity or when focusing on extreme quantiles (e.g. low income,
+high death risk).
+Method: Based on quantreg's \code{rq()}, minimizing weighted absolute residuals;
+it can estimate coefficients for multiple quantiles at once.
+Arguments: \code{data} is a data frame; \code{formula} is of the form \code{y ~ x};
+\code{taus} is the vector of quantiles to estimate, default \code{c(0.25, 0.5, 0.75)}.
+Results: Returns a data frame of coefficients at each quantile (including intercept
+and predictor slope), allowing comparison of slopes across quantiles.
+Notes: If the predictor slope differs markedly across quantiles (e.g. under
+heteroscedasticity), the conditional distribution shape changes with x -- information
+invisible to ordinary mean regression (OLS). Quantile regression is robust to
+outliers. Depends on quantreg (Suggests).
+}
 \examples{
-\dontrun{
-mc_quantile_reg(MASS::birthwt, bwt ~ age + lwt, taus = c(0.25, 0.5, 0.75))
+\donttest{
+# Chapter 7: conditional quantile regression of birth weight (slope of pregnancy weight lwt across quantiles)
+birthwt <- MASS::birthwt
+mc_quantile_reg(birthwt, bwt ~ lwt + age, taus = c(0.25, 0.5, 0.75))
 }
 }
