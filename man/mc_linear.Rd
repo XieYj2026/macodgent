@@ -18,49 +18,49 @@ mc_linear(data, formula, bootstrap = 0L, conf_level = 0.95)
 \value{
 A list with \code{coef}, \code{performance}, \code{vif}, \code{diagnostics},
 \code{diag_plots}, \code{plot} (coefficient table, performance metrics, VIF,
-diagnostics, diagnostic plots and the main residual plot).
+Diagnostics, diagnostic plots and the main residual plot).
 }
 \description{
-Corresponds to Chapter 5 ("Linear regression", 5.2 & 5.6). Wraps
+Wraps
 \code{stats::lm} and adds three \emph{self-implemented} diagnostics: a bootstrap
-confidence interval for coefficients, variance-inflation-factor (VIF)
-multicollinearity checks via auxiliary regressions, and the four standard
-regression diagnostic plots.
+Confidence interval for coefficients, variance-inflation-factor (VIF)
+Multicollinearity checks via auxiliary regressions, and the four standard
+Regression diagnostic plots.
 }
 \details{
 Purpose: fit simple or multiple linear regression and automatically produce a
-reportable coefficient table and diagnostics.
+Reportable coefficient table and diagnostics.
 Methods: ordinary least squares via \code{stats::lm}; on top of it, three
-self-implemented diagnostics—
+Self-implemented diagnostics—
 (1) \emph{Bootstrap CI}: resample observations with replacement and refit
-repeatedly, taking empirical quantiles of coefficients as the interval, with
-no normality assumption (enable with \code{bootstrap > 0});
+Repeatedly, taking empirical quantiles of coefficients as the interval, with
+No normality assumption (enable with \code{bootstrap > 0});
 (2) \emph{VIF}: for each predictor, fit an auxiliary linear regression on the
-remaining predictors and take 1/(1-R^2) as its variance inflation factor;
+Remaining predictors and take 1/(1-R^2) as its variance inflation factor;
 VIF > 5 usually signals multicollinearity;
 (3) \emph{Four diagnostic plots}: residuals vs fitted (non-linearity /
-heteroscedasticity), normal Q-Q (residual normality), scale-location
+Heteroscedasticity), normal Q-Q (residual normality), scale-location
 (whether spread changes with fitted values), Cook's distance (influential
-points).
+Points).
 Arguments: \code{data} is a data frame; \code{formula} is the model formula
 (e.g. \code{y ~ x1 + x2}); \code{bootstrap} is the number of resamples (default 0 = no
-bootstrap CI); \code{conf_level} is the confidence level, default 0.95.
+Bootstrap CI); \code{conf_level} is the confidence level, default 0.95.
 Result: returns a list—\code{coef} (coefficient table: estimate/SE/t/p/normal CI,
-plus boot lower/upper if bootstrap on), \code{performance} (R^2/adjusted R^2/F
-statistic/AIC/BIC), \code{vif} (VIF per predictor), \code{diagnostics} (diagnostic
-data frame), \code{diag_plots} (list of four ggplot objects), \code{plot} (main
-residual diagnostic plot).
+Plus boot lower/upper if bootstrap on), \code{performance} (R^2/adjusted R^2/F
+Statistic/AIC/BIC), \code{vif} (VIF per predictor), \code{diagnostics} (diagnostic
+Data frame), \code{diag_plots} (list of four ggplot objects), \code{plot} (main
+Residual diagnostic plot).
 Note: VIF is computed only for numeric predictors; bootstrap significantly
-increases runtime, so for very large samples try a small number (e.g. 200)
-first. This function depends only on base R and ggplot2, no extra packages.
+Increases runtime, so for very large samples try a small number (e.g. 200)
+First. This function depends only on base R and ggplot2, no extra packages.
 }
 \examples{
-# Chapter 5, Sections 5.2/5.6: predict birth weight by mother's age, pregnancy weight, smoking
-birthwt <- MASS::birthwt
-res <- mc_linear(birthwt, bwt ~ age + lwt + smoke + factor(race),
-                 bootstrap = 200)
-res$coef                       # coefficient table (with bootstrap CI)
-res$performance                # R^2 / adjusted R^2 / AIC / BIC
-res$vif                        # variance inflation factor (multicollinearity)
-print(res$plot)                # residuals vs fitted diagnostic plot
+# predict birth weight by mother's age, pregnancy weight, smoking
+Birthwt <- MASS::birthwt
+Res <- mc_linear(birthwt, bwt ~ age + lwt + smoke + factor(race),
+Bootstrap = 200)
+Res$coef # coefficient table (with bootstrap CI)
+Res$performance # R^2 / adjusted R^2 / AIC / BIC
+Res$vif # variance inflation factor (multicollinearity)
+Print(res$plot) # residuals vs fitted diagnostic plot
 }
