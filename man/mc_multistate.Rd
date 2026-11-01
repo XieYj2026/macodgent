@@ -7,26 +7,63 @@
 mc_multistate(data, trans, formula, ...)
 }
 \arguments{
-\item{data}{mstate expanded long-format data.frame.}
+\item{data}{mstate expanded long-format \code{data.frame}.}
 
 \item{trans}{Transition matrix.}
 
-\item{formula}{A formula like \code{Surv(time, status) ~ cov} (time/status are
-columns in data).}
+\item{formula}{A formula, e.g. \code{Surv(time, status) ~ cov} (time/status are columns in data).}
 
 \item{...}{Extra arguments passed to \code{survival::coxph}.}
 }
 \value{
-A list: \code{model} (coxph object), \code{msfit} (mstate::msfit object).
+A list with \code{model} (coxph object), \code{msfit} (mstate::msfit object).
 }
 \description{
 Corresponds to Chapter 8 ("multi-state survival model"). Requires \code{data}
 to be in \pkg{mstate}'s expanded long format (with Tstart, Tstop, status,
-from, to and covariates); \code{trans} is the transition matrix. Returns the
-Cox fit and \code{msfit} results.
+from, to and covariates); \code{trans} is the transition matrix.
+}
+\details{
+Purpose: Fit a multi-state survival model to study the transition risk between
+several health states (e.g. healthy -> complication -> death), which is closer to
+the clinical process than a single endpoint.
+Method: Based on the mstate package; first expand follow-up data into a from-to
+transition long table, then model each transition separately with \code{coxph()}.
+Arguments: \code{data} is the already-expanded multi-state long table (with columns
+id, Tstart, Tstop, status, from, to, ...); \code{trans} is the transition matrix
+(built by \code{mstate::transMat()}, defining which transitions between states are
+allowed); \code{formula} contains the survival object and covariates, and may use
+\code{strata(trans)} to stratify by transition type.
+Results: Returns a list with \code{model} (coxph fit per transition) and
+\code{msfit} (an msfit object for predicting cumulative transition probabilities).
+Notes: The input must already be in mstate's required long format (not the raw wide
+table), and the \code{trans} codes must match the from/to columns and
+\code{strata(trans)}; a wrong construction leads to "all observations in one group"
+or no estimable transitions. Depends on mstate (Suggests).
 }
 \examples{
-\dontrun{
-mc_multistate(mstate_data, trans = trans_mat, formula = Surv(time, status) ~ age)
+\donttest{
+# Chapter 8: three-state model (Healthy H -> Complication I / direct Death D)
+set.seed(127)
+library(mstate)
+n <- 150
+age <- rnorm(n, 55, 8)
+t12 <- rexp(n, .15); t23 <- rexp(n, .20); t13 <- rexp(n, .10)
+rows <- list()
+for (i in 1:n) {
+  if (runif(1) < .6) {
+    rows[[length(rows)+1]] <- data.frame(id=i, Tstart=0,      Tstop=t12[i],        status=1, from=1, to=2, age=age[i])
+    rows[[length(rows)+1]] <- data.frame(id=i, Tstart=t12[i], Tstop=t12[i]+t23[i], status=1, from=2, to=3, age=age[i])
+  } else {
+    rows[[length(rows)+1]] <- data.frame(id=i, Tstart=0, Tstop=t13[i], status=1, from=1, to=3, age=age[i])
+  }
+}
+ms <- do.call(rbind, rows)
+trans <- transMat(list(c(2,3), c(3), c()), names = c("H","I","D"))
+ms$trans <- with(ms, ifelse(from == 1 & to == 2, 1, ifelse(from == 1 & to == 3, 2, 3)))
+fit <- mc_multistate(ms, trans = trans, formula = survival::Surv(Tstart, Tstop, status) ~ age + strata(trans))
+cat("coxph coefficients:\n")
+print(summary(fit$model)$coefficients)
+cat("\nmsfit class:", class(fit$msfit)[1], "\n")
 }
 }
