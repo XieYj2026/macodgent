@@ -17,26 +17,26 @@ mc_norm_test(x, method = c("shapiro", "ks"), ...)
 A \code{data.frame} with columns \code{test}, \code{statistic}, \code{p.value}.
 }
 \description{
-Corresponds to Chapter 3: Shapiro-Wilk (default, robust for n <= 5000) or
+Shapiro-Wilk (default, robust for n <= 5000) or
 Kolmogorov-Smirnov. Returns the test name, statistic and p-value.
 }
 \details{
 Purpose: test whether a quantitative variable follows a normal distribution;
-a prerequisite for choosing parametric vs non-parametric methods.
+A prerequisite for choosing parametric vs non-parametric methods.
 Methods: \code{shapiro} (default) is the Shapiro-Wilk test, sensitive and powerful
-for small-to-moderate samples (typically n < 5000); \code{ks} is the
+For small-to-moderate samples (typically n < 5000); \code{ks} is the
 Kolmogorov-Smirnov test, by default compared against the standard normal,
-sensitive to location/scale.
+Sensitive to location/scale.
 Arguments: \code{x} is the numeric vector to test; \code{method} selects one of the two.
 Result: returns the test statistic, p-value, etc.
 Note: with large samples normality tests easily become "significant" (tiny p)
-even when deviation is practically harmless, so do not rely on p alone—combine
-with histograms, Q-Q plots and skewness/kurtosis. The Shapiro test may be
-unreliable or very slow for n > 5000.
+Even when deviation is practically harmless, so do not rely on p alone—combine
+With histograms, Q-Q plots and skewness/kurtosis. The Shapiro test may be
+Unreliable or very slow for n > 5000.
 }
 \examples{
-# Chapter 3: test whether quantitative variables in birthwt are normal
-birthwt <- MASS::birthwt
-mc_norm_test(birthwt$bwt)         # birth weight
-mc_norm_test(birthwt$age)         # mother's age
+# test whether quantitative variables in birthwt are normal
+Birthwt <- MASS::birthwt
+Mc_norm_test(birthwt$bwt) # birth weight
+Mc_norm_test(birthwt$age) # mother's age
 }
