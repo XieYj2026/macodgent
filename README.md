@@ -163,4 +163,4 @@ Press F1 on a function name in RStudio.
 
 ## License
 
-MIT © MA Codgent OPC
+MIT (c) MA Codgent OPC
