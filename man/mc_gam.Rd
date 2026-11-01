@@ -17,34 +17,34 @@ mc_gam(data, formula, ...)
 A list with \code{model} and \code{terms}.
 }
 \description{
-Corresponds to Chapter 7 "Generalized Additive Regression Models" of the
-second part of the routine medical-data-science tutorial. Built on \code{\link[mgcv]{gam}}, it returns the
+Generalized additive regression models (GAM) capture non-linear relationships while keeping interpretability.
+Built on \code{\link[mgcv]{gam}}, it returns the
 degrees of freedom and significance of each smooth term.
 }
 \details{
 Purpose: Fit a generalized additive model (GAM) that, while keeping the
-interpretability of a linear model, lets predictors enter the model as smooth
+Interpretability of a linear model, lets predictors enter the model as smooth
 (non-linear) terms, automatically capturing curved relationships.
 Method: Built on mgcv's \code{gam()}, using splines (e.g. \code{s(x)}) for the
-smooth terms; it auto-selects the smoothing degrees of freedom and reports
-significance.
+Smooth terms; it auto-selects the smoothing degrees of freedom and reports
+Significance.
 Arguments: \code{data} is a data frame; \code{formula} is of the form
 \code{y ~ s(x1) + x2}, where \code{s()}-wrapped terms are smooth and the rest are linear.
 Results: Returns a list with \code{model} (a gam object; use \code{plot()} to view
-the smooth curves) and \code{terms} (edf, reference df, F value and p value of
-each smooth term, used to judge whether the variable has a non-linear effect).
+The smooth curves) and \code{terms} (edf, reference df, F value and p value of
+Each smooth term, used to judge whether the variable has a non-linear effect).
 Notes: If \code{edf} is near 1 and not significant, the variable is approximately
-linear and smoothing is unnecessary; a very large \code{edf} may overfit. Smooth
-terms need sufficient sample size for stable estimation. Depends on mgcv (Suggests).
+Linear and smoothing is unnecessary; a very large \code{edf} may overfit. Smooth
+Terms need sufficient sample size for stable estimation. Depends on mgcv (Suggests).
 To view the effect plot, use \code{plot(res$model, pages = 1, shade = TRUE)}.
 }
 \examples{
 \donttest{
-# Chapter 7: use GAM to capture the non-linear effect of pregnancy weight (lwt) on birth weight
-birthwt <- MASS::birthwt
-res <- mc_gam(birthwt, bwt ~ s(lwt) + smoke)
-cat("smooth terms:\n")
-print(as.data.frame(res$terms), row.names = FALSE)
+# use GAM to capture the non-linear effect of pregnancy weight (lwt) on birth weight
+Birthwt <- MASS::birthwt
+Res <- mc_gam(birthwt, bwt ~ s(lwt) + smoke)
+Cat("smooth terms:\n")
+Print(as.data.frame(res$terms), row.names = FALSE)
 }
 }
 \seealso{
