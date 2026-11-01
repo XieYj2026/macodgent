@@ -15,31 +15,31 @@ mc_impute_knn(.data, k = 5)
 The imputed \code{data.frame} (same structure as the input).
 }
 \description{
-Corresponds to Chapter 2 ("KNN imputation"). Imputes only numeric columns
-using standardised Euclidean distance; missing values in non-numeric columns
-are left untouched with a warning. No extra dependency is required.
+Imputes only numeric columns
+Using standardised Euclidean distance; missing values in non-numeric columns
+Are left untouched with a warning. No extra dependency is required.
 }
 \details{
 Purpose: Impute missing values in numeric columns using K-nearest neighbours,
-suitable when missingness is low and variables are correlated.
+Suitable when missingness is low and variables are correlated.
 Method: Only numeric columns are processed. Columns are standardised
 (mean-centred, divided by SD), then for each missing point the k nearest
-non-missing observations are found by Euclidean distance and their mean is
-used to impute; columns with zero SD fall back to column-mean imputation.
+Non-missing observations are found by Euclidean distance and their mean is
+Used to impute; columns with zero SD fall back to column-mean imputation.
 Missing values in non-numeric columns are left untouched with a warning.
 Arguments: \code{.data} is a data.frame; \code{k} is the number of neighbours, default 5.
 Result: Returns an imputed data.frame with the same structure as the input.
 Note: KNN is sensitive to scale, so standardisation is done internally;
-however, if columns differ greatly in range, it is still recommended to run
-mc_scale() first. Categorical variables are not used in KNN and must be
-handled separately (e.g. mode imputation or category merging).
+However, if columns differ greatly in range, it is still recommended to run
+Mc_scale() first. Categorical variables are not used in KNN and must be
+Handled separately (e.g. mode imputation or category merging).
 }
 \examples{
-# Chapter 2: demonstrating KNN missing-value imputation with iris
-data(iris)
-set.seed(105)
-iris_na <- iris
-iris_na$Sepal.Length[sample(150, 15)] <- NA
-iris_na$Sepal.Width[sample(150, 15)] <- NA
-head(mc_impute_knn(iris_na, k = 3))
+# demonstrating KNN missing-value imputation with iris
+Data(iris)
+Set.seed(105)
+Iris_na <- iris
+Iris_na$Sepal.Length[sample(150, 15)] <- NA
+Iris_na$Sepal.Width[sample(150, 15)] <- NA
+Head(mc_impute_knn(iris_na, k = 3))
 }
