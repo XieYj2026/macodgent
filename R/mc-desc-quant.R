@@ -128,7 +128,7 @@ mc_desc_quant <- function(.data, vars = NULL, group = NULL, conf = 0.95) {
 #' Arguments: `x` is the numeric vector to test; `method` selects one of the two.
 #' Result: returns the test statistic, p-value, etc.
 #' Note: with large samples normality tests easily become "significant" (tiny p)
-#' Even when deviation is practically harmless, so do not rely on p alone—combine
+#' Even when deviation is practically harmless, so do not rely on p alone - combine
 #' With histograms, Q-Q plots and skewness/kurtosis. The Shapiro test may be
 #' Unreliable or very slow for n > 5000.
 #' @param x Numeric vector.
@@ -277,7 +277,7 @@ mc_ttest <- function(x, y = NULL, paired = FALSE, mu = 0, conf = 0.95,
 #' And p-value of each term.
 #' Note: ANOVA only tells you "at least two groups differ"; which two require
 #' Post-hoc multiple comparisons (e.g. Tukey HSD). Its assumptions are normality
-#' And equal variance per group—verify first with mc_norm_test() and mc_var_test().
+#' And equal variance per group - verify first with mc_norm_test() and mc_var_test().
 #' If variances are unequal or distributions skewed, consider Kruskal-Wallis
 #' (see mc_nonparam).
 #' @param formula A formula like `y ~ group`.
