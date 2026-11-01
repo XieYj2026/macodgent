@@ -2,29 +2,46 @@
 % Please edit documentation in R/mc-desc-quant.R
 \name{mc_desc_quant}
 \alias{mc_desc_quant}
-\title{One-shot quantitative description (flagship function)}
+\title{一站式定量描述（旗舰函数）/ One-shot quantitative description}
 \usage{
 mc_desc_quant(.data, vars = NULL, group = NULL, conf = 0.95)
 }
 \arguments{
-\item{.data}{A data.frame.}
+\item{.data}{数据框（a \code{data.frame}）。}
 
-\item{vars}{Numeric variable names; NULL means all numeric columns.}
+\item{vars}{数值变量名；\code{NULL} 表示全部数值列（numeric variable names;
+\code{NULL} = all numeric columns）。}
 
-\item{group}{Optional grouping variable name.}
+\item{group}{可选的分组变量名（optional grouping variable name）。}
 
-\item{conf}{Confidence level. Default 0.95.}
+\item{conf}{置信水平，默认 \code{0.95}（confidence level; default \code{0.95}）。}
 }
 \value{
-A wide data.frame, one row per variable (one row per group if grouped).
+宽格式数据框，每行一个变量（分组时每组一行）。列包含 \code{variable}、
+（分组时的 \code{group}）、以及上述 18 个统计量（a wide \code{data.frame}, one row
+per variable, one row per group level when grouped; 18 statistic columns）。
 }
 \description{
-Corresponds to Chapter 3 of Part 2: produces about 20 descriptive
-statistics in one call (n, n missing, mean, median, sd, variance, min,
-max, range, IQR, SE, 95\% CI, CV, skewness, kurtosis, Shapiro-Wilk
-normality). Supports grouped computation.
+对应第 3 章：一次调用产出约 20 个描述统计量（n、缺失数、均值、中位数、标准差、
+方差、最小值、最大值、极差、IQR、均值标准误、95\% 置信区间、变异系数、偏度、
+峰度、Shapiro-Wilk 正态性检验 W 与 p 值）。支持按分组变量分别计算。
+}
+\details{
+Corresponds to Chapter 3 of Part 2: produces about 20 descriptive statistics
+in one call (n, n missing, mean, median, sd, variance, min, max, range, IQR,
+SE, 95\% CI, CV, skewness, kurtosis, Shapiro-Wilk normality). Supports grouped
+computation.
+
+用途：一键生成定量变量的描述性统计，覆盖约 20 个常用指标，是论文「基线表」和建模前探索的主力函数。
+参数：.data 为数据框；vars 指定要描述的数值列（默认全部数值列）；group 可指定分组列，按组分别输出；conf 为均值的置信水平，默认 0.95。
+结果：返回数据框，含样本量、均值、标准差、中位数、四分位距、最小值、最大值、偏度、峰度、正态性检验统计量等，以及均值置信区间。
+注意：偏度/峰度用于判断分布形态（偏度远偏离 0、峰度远大于 3 提示非正态）；若计划做 t 检验/方差分析，应先看正态性与方差齐性。分组时各组样本量可能不同，注意比较的公平性。
 }
 \examples{
-mc_desc_quant(MASS::birthwt, vars = c("age", "lwt", "bwt"))
-mc_desc_quant(MASS::birthwt, vars = c("age", "lwt"), group = "smoke")
+# 第 3 章：低出生体重研究（birthwt，MASS 包）
+birthwt <- MASS::birthwt
+cat("==== 总体描述：出生体重/年龄/孕期体重 ====\n")
+print(mc_desc_quant(birthwt, vars = c("bwt","age","lwt")), row.names = FALSE)
+cat("\n==== 按母亲是否吸烟分组 ====\n")
+print(mc_desc_quant(birthwt, vars = c("bwt","age"), group = "smoke"), row.names = FALSE)
 }
