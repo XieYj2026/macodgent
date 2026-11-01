@@ -41,7 +41,7 @@ Confidence level.
 Result: Returns a list with \code{univariate} (univariate results per variable),
 \code{selected} (names of selected variables), and \code{multivariable} (the tidy
 Multivariable coefficient table).
-Note: This is convenient but not a gold standard — stepwise/screening can
+Note: This is convenient but not a gold standard  -  stepwise/screening can
 Introduce selection bias and overfitting, and univariate significance does not
 Imply multivariable significance (variables may mask or amplify each other).
 Report both univariate and multivariable results and state the screening rule.
