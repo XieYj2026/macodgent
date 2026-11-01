@@ -21,7 +21,7 @@ mc_contingency(
 \item{col}{Column variable name, categorical.}
 
 \item{correct}{Continuity correction for chi-square; default \code{TRUE} (only
-applies to \code{method = "chisq"}).}
+Applies to \code{method = "chisq"}).}
 
 \item{method}{Test type: \code{"chisq"} (default), \code{"fisher"}, or \code{"cmh"}.}
 
@@ -29,64 +29,64 @@ applies to \code{method = "chisq"}).}
 }
 \value{
 A list with \code{table} (contingency table), \code{test} (a data frame:
-test/statistic/df/p.value); for \code{method = "chisq"} with a 2x2 table it also
-returns \code{OR} (OR/CI.low/CI.high/fisher.p), for \code{method = "fisher"} it
-returns \code{OR} (with 95\% CI and p), and for \code{method = "cmh"} it returns
+Test/statistic/df/p.value); for \code{method = "chisq"} with a 2x2 table it also
+Returns \code{OR} (OR/CI.low/CI.high/fisher.p), for \code{method = "fisher"} it
+Returns \code{OR} (with 95\% CI and p), and for \code{method = "cmh"} it returns
 \code{commonOR} (common odds ratio and its CI).
 }
 \description{
-Corresponds to Chapter 4, Section 4.3 (chi-square, Fisher's exact, and the
+Corresponds to (chi-square, Fisher's exact, and the
 Cochran-Mantel-Haenszel test). Builds a contingency table and runs one of
-three independence tests selected by \code{method}.
+Three independence tests selected by \code{method}.
 }
 \details{
 Purpose: build contingency tables for categorical variables and run
-independence/association tests; the first step in analyzing categorical
-associations, covering the three methods required by Section 4.3.
+Independence/association tests; the first step in analyzing categorical
+Associations, covering the three methods required by Section 4.3.
 Methods:
 \itemize{
 \item \code{"chisq"} (default): chi-square independence test for 2x2 and
-larger tables; \code{correct = TRUE} applies Yates' continuity correction to
+Larger tables; \code{correct = TRUE} applies Yates' continuity correction to
 2x2 tables to avoid overstating significance in small samples. For 2x2
-tables, Fisher's exact method additionally gives the OR and its 95\% CI.
+Tables, Fisher's exact method additionally gives the OR and its 95\% CI.
 \item \code{"fisher"}: \code{stats::fisher.test} exact test for any r x c
-table (suitable for small samples or sparse expected counts).
+Table (suitable for small samples or sparse expected counts).
 \item \code{"cmh"}: requires a \code{strata} variable; builds a 3-way
-contingency table and runs \code{stats::mantelhaen.test} (Cochran-Mantel-
+Contingency table and runs \code{stats::mantelhaen.test} (Cochran-Mantel-
 Haenszel) to judge whether the row-column association persists after
-controlling for the stratifying factor, returning the common OR.
+Controlling for the stratifying factor, returning the common OR.
 }
 Arguments: \code{.data} is a data frame; \code{row}/\code{col} are the row/column variable
-names; \code{correct} controls chi-square continuity correction; \code{method} selects
-the test type; \code{strata} is the layer variable name for CMH.
+Names; \code{correct} controls chi-square continuity correction; \code{method} selects
+The test type; \code{strata} is the layer variable name for CMH.
 Result: returns a list with table (contingency table, stratified when 3-way),
-test (a data frame: test/statistic/df/p.value), and method-specific OR /
-commonOR.
+Test (a data frame: test/statistic/df/p.value), and method-specific OR /
+CommonOR.
 Note: chi-square requires sufficiently large expected counts (generally a
-sufficient proportion of cells with expected > 5), otherwise use
+Sufficient proportion of cells with expected > 5), otherwise use
 \code{method = "fisher"}. CMH is suitable for estimating "adjusted"
-association when there is a confounding stratum (e.g. multi-center studies).
+Association when there is a confounding stratum (e.g. multi-center studies).
 OR > 1 suggests a positive association; a CI crossing 1 means the association
-is not significant.
+Is not significant.
 }
 \examples{
-# Chapter 4, Section 4.3: demonstrate three independence tests with birthwt
-birthwt <- MASS::birthwt
+# demonstrate three independence tests with birthwt
+Birthwt <- MASS::birthwt
 
 ## ---- Chi-square independence test (2x2 with Fisher OR) ----
-res <- mc_contingency(birthwt, row = "smoke", col = "low")
-cat("---- Contingency table / table ----\n"); print(res$table)
-cat("\n---- Chi-square test / chi-square ----\n"); print(res$test, row.names = FALSE)
-cat("\n---- Odds ratio OR / odds ratio ----\n"); print(res$OR, row.names = FALSE)
+Res <- mc_contingency(birthwt, row = "smoke", col = "low")
+Cat("---- Contingency table / table ----\n"); print(res$table)
+Cat("\n---- Chi-square test / chi-square ----\n"); print(res$test, row.names = FALSE)
+Cat("\n---- Odds ratio OR / odds ratio ----\n"); print(res$OR, row.names = FALSE)
 
 ## ---- Fisher's exact test (small samples / sparse expected counts) ----
-res2 <- mc_contingency(birthwt, row = "smoke", col = "low", method = "fisher")
-print(res2$test, row.names = FALSE); print(res2$OR, row.names = FALSE)
+Res2 <- mc_contingency(birthwt, row = "smoke", col = "low", method = "fisher")
+Print(res2$test, row.names = FALSE); print(res2$OR, row.names = FALSE)
 
 ## ---- CMH stratified test: common OR of smoking & low birth weight after controlling for hypertension (ht) ----
-res3 <- mc_contingency(birthwt, row = "smoke", col = "low",
-                       method = "cmh", strata = "ht")
-cat("\n---- CMH test / Cochran-Mantel-Haenszel ----\n")
-print(res3$test, row.names = FALSE)
-print(res3$commonOR, row.names = FALSE)
+Res3 <- mc_contingency(birthwt, row = "smoke", col = "low",
+Method = "cmh", strata = "ht")
+Cat("\n---- CMH test / Cochran-Mantel-Haenszel ----\n")
+Print(res3$test, row.names = FALSE)
+Print(res3$commonOR, row.names = FALSE)
 }
