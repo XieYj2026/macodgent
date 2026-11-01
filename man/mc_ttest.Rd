@@ -2,7 +2,7 @@
 % Please edit documentation in R/mc-desc-quant.R
 \name{mc_ttest}
 \alias{mc_ttest}
-\title{t-test (unified interface)}
+\title{T-test (unified interface)}
 \usage{
 mc_ttest(
   x,
@@ -31,31 +31,31 @@ A \code{data.frame} with columns \code{method}, \code{estimate}, \code{conf.low}
 \code{conf.high}, \code{statistic}, \code{p.value}.
 }
 \description{
-Corresponds to Chapter 3: one-sample, independent two-sample, and paired
-t-tests through a single entry point.
+One-sample, independent two-sample, and paired
+T-tests through a single entry point.
 }
 \details{
 Purpose: a unified entry point for t-tests covering three common cases:
-one-sample (vs a known constant), independent two-sample, and paired.
+One-sample (vs a known constant), independent two-sample, and paired.
 Methods: two independent samples use Welch's corrected t-test by default (no
-equal-variance assumption), closer to practice; can switch to Student's t.
+Equal-variance assumption), closer to practice; can switch to Student's t.
 Arguments: \code{x} is the first group or one-sample vector; \code{y} is the second
-vector (for independent/paired; left NULL for one-sample); \code{paired = TRUE}
-runs a paired t-test; \code{mu} is the reference value for the one-sample test,
-default 0; \code{conf}/\code{alternative} control confidence level and the alternative
-direction.
+Vector (for independent/paired; left NULL for one-sample); \code{paired = TRUE}
+Runs a paired t-test; \code{mu} is the reference value for the one-sample test,
+Default 0; \code{conf}/\code{alternative} control confidence level and the alternative
+Direction.
 Result: returns the mean difference (or sample mean), standard error, t
-statistic, degrees of freedom, p-value and confidence interval.
+Statistic, degrees of freedom, p-value and confidence interval.
 Note: paired tests require x, y to be paired (e.g. same person measured
-before/after); using an independent test when groups are not independent
-understates error. For clearly skewed or small samples, consider mc_nonparam()'s
+Before/after); using an independent test when groups are not independent
+Understates error. For clearly skewed or small samples, consider mc_nonparam()'s
 Wilcoxon test.
 }
 \examples{
-# Chapter 3
-birthwt <- MASS::birthwt
+#
+Birthwt <- MASS::birthwt
 # One-sample: is the average birth weight equal to 3000 g?
-mc_ttest(birthwt$bwt, mu = 3000)
+Mc_ttest(birthwt$bwt, mu = 3000)
 # Independent two-sample (Welch correction): smoking vs non-smoking mothers' birth weight
-mc_ttest(birthwt$bwt[birthwt$smoke == 1], birthwt$bwt[birthwt$smoke == 0])
+Mc_ttest(birthwt$bwt[birthwt$smoke == 1], birthwt$bwt[birthwt$smoke == 0])
 }
