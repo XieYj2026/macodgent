@@ -1,0 +1,1249 @@
+<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'>
+<title>macodgent Reference Manual</title>
+<style>
+ body{font-family:-apple-system,'Segoe UI','Helvetica Neue',Arial,sans-serif;color:#1a2b4a;max-width:1000px;margin:auto;padding:24px;background:#fafbfd}
+ h1{color:#1A439C;border-bottom:3px solid #1A439C;padding-bottom:8px}
+ h2{color:#511B78;margin-top:36px;border-left:6px solid #511B78;padding-left:10px}
+ h3{color:#1A439C;font-size:14px;margin:14px 0 4px}
+ .desc{background:#eef2f8;border-radius:8px;padding:12px 16px;color:#33415c;font-size:14px;line-height:1.7;white-space:pre-wrap}
+ .details{background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:12px 16px;font-size:13.5px;line-height:1.7;white-space:pre-wrap;color:#33415c}
+ pre{background:#0f172a;color:#e2e8f0;padding:14px 16px;border-radius:8px;overflow:auto;font-size:12.5px;line-height:1.5}
+ .tag{display:inline-block;background:#1A439C;color:#fff;font-size:12px;padding:2px 8px;border-radius:10px;margin-bottom:6px}
+ .toc{background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:14px 18px;columns:2;font-size:13px}
+ .toc a{color:#1A439C;text-decoration:none}
+ table.args{border-collapse:collapse;width:100%;font-size:13px;margin:6px 0 4px}
+ table.args td{border:1px solid #e2e8f0;padding:6px 10px;vertical-align:top}
+ table.args td:first-child{white-space:nowrap;color:#1A439C;font-weight:600}
+ code{background:#eef2f8;padding:1px 5px;border-radius:4px;color:#1A439C;font-size:12.5px}
+</style></head><body>
+<h1>macodgent &middot; Medical Data Science Routine Analysis Toolkit (Reference Manual)</h1>
+<p class='tag'>Version 1.0.2 &middot; 39 exported functions in 8 modules &middot; MIT (c) MA Codgent OPC</p>
+<p>Every exported function is prefixed with <code>mc_</code>. Descriptive and hypothesis-testing functions return a tidy <code>data.frame</code>; modelling functions return a <code>list</code> holding the fitted model, a tidy coefficient table and, where applicable, a <code>ggplot</code> object.</p>
+<p>All examples use the teaching datasets shipped with R: <b>birthwt</b> (low birth weight, MASS), <b>lung</b> and <b>ovarian</b> (survival), <b>mtcars</b>, <b>infert</b> (matched case-control) and <b>iris</b>. Methods that need an optional package sit in <code>Suggests</code> and raise a clear message when that package is missing.</p>
+<h2>Contents</h2><div class='toc'><a href='#fn1'>1. mc_mode</a><br><a href='#fn2'>2. mc_inspect</a><br><a href='#fn3'>3. mc_theme</a><br><a href='#fn4'>4. mc_palette</a><br><a href='#fn5'>5. mc_impute_knn</a><br><a href='#fn6'>6. mc_impute_mice</a><br><a href='#fn7'>7. mc_dedup</a><br><a href='#fn8'>8. mc_scale</a><br><a href='#fn9'>9. mc_wide_long</a><br><a href='#fn10'>10. mc_long_wide</a><br><a href='#fn11'>11. mc_desc_quant</a><br><a href='#fn12'>12. mc_norm_test</a><br><a href='#fn13'>13. mc_var_test</a><br><a href='#fn14'>14. mc_ttest</a><br><a href='#fn15'>15. mc_anova</a><br><a href='#fn16'>16. mc_nonparam</a><br><a href='#fn17'>17. mc_contingency</a><br><a href='#fn18'>18. mc_corr</a><br><a href='#fn19'>19. mc_tableone</a><br><a href='#fn20'>20. mc_linear</a><br><a href='#fn21'>21. mc_logistic</a><br><a href='#fn22'>22. mc_logistic_screen</a><br><a href='#fn23'>23. mc_stepwise</a><br><a href='#fn24'>24. mc_ordinal_logistic</a><br><a href='#fn25'>25. mc_clogistic</a><br><a href='#fn26'>26. mc_model_compare</a><br><a href='#fn27'>27. mc_survfit</a><br><a href='#fn28'>28. mc_cox</a><br><a href='#fn29'>29. mc_ph_test</a><br><a href='#fn30'>30. mc_gam</a><br><a href='#fn31'>31. mc_lasso</a><br><a href='#fn32'>32. mc_ridge</a><br><a href='#fn33'>33. mc_elastic_net</a><br><a href='#fn34'>34. mc_rcs</a><br><a href='#fn35'>35. mc_quantile_reg</a><br><a href='#fn36'>36. mc_pcr</a><br><a href='#fn37'>37. mc_nnet_reg</a><br><a href='#fn38'>38. mc_competing_risk</a><br><a href='#fn39'>39. mc_multistate</a><br></div>
+<h2 id='fn1'>1. mc_mode</h2>
+<span class='tag'>Meet the data</span>
+<div class='desc'><code>mc_mode()</code> is a teaching implementation of the mode, which base R does
+Not provide. It returns *every* value tied for the highest frequency, so
+Data with several modes is handled correctly instead of returning only one.</div>
+<h3>Usage</h3><pre>mc_mode(x, na.rm = TRUE)</pre>
+<h3>Details</h3><div class='details'>Purpose: find the value(s) with the highest frequency (the mode). Base R has
+No built-in mode function, so this is a teaching-oriented reimplementation.
+Arguments: x accepts a numeric or factor vector; na.rm controls whether
+Missing values are removed before counting (default TRUE, so NAs are excluded
+From the frequency tally).
+Result: returns every value tied for the highest frequency, so multimodal
+Data is handled naturally  -  a bimodal distribution returns both modes; the
+Return type matches the input (numeric input yields a numeric vector).
+Note: if every value occurs exactly once, all values are treated as modes and
+Returned as-is, which is usually meaningless; run mc_inspect() first to
+Understand the distribution. Returns NULL when all observations are missing.</div>
+<h3>Arguments</h3><table class='args'><tr><td><code>x</code></td><td>A numeric or factor vector.</td></tr><tr><td><code>na.rm</code></td><td>Remove missing values first? Default <code>TRUE</code> (logical).</td></tr></table>
+<h3>Value</h3><div class='details'>A vector of all mode(s), coerced back to the input type; <code>NULL</code> when
+There are no non-missing values.</div>
+<h3>Examples</h3><pre># low birthweight study dataset (birthwt, MASS)
+birthwt &lt;- MASS::birthwt
+mc_mode(factor(birthwt$race)) # most common race category (1 = white)
+mc_mode(factor(birthwt$smoke)) # mode of smoking status (0 = non-smoker)
+mc_mode(c(NA, NA, 1, 2), na.rm = FALSE) # returns "NA" when NA present</pre>
+<h2 id='fn2'>2. mc_inspect</h2>
+<span class='tag'>Meet the data</span>
+<div class='desc'>One row per column: the column <code>class</code>, number of observations <code>n</code>,
+Count of missing values <code>n_missing</code>, missing percentage <code>pct_missing</code>, and
+Number of unique values <code>n_unique</code>. Handy for a quick data-quality check
+Before modelling.</div>
+<h3>Usage</h3><pre>mc_inspect(.data)</pre>
+<h3>Details</h3><div class='details'>Purpose: a quick pre-modelling data-quality check; for each column it reports
+The type, number of observations, number of missing values, missing
+Percentage and number of unique values.
+Arguments:.data is a data.frame or tibble; no other arguments.
+Result: returns a data.frame with one row per input column. Columns: variable
+(column name), class (type), n (valid observations), n_missing (missing
+Count), pct_missing (missing percentage), n_unique (number of unique values).
+Note: n is the count of valid (non-missing) observations, so n + n_missing
+Equals the column's total length, and the missing percentage is computed
+Against that total length. This is the first "health check" of the
+Preprocessing pipeline  -  run it before any cleaning or modelling.</div>
+<h3>Arguments</h3><table class='args'><tr><td><code>.data</code></td><td>A <code>data.frame</code> or <code>tibble</code>.</td></tr></table>
+<h3>Value</h3><div class='details'>A <code>data.frame</code> with those six columns, one row per input column.</div>
+<h3>Examples</h3><pre># data-quality check on the birthwt data frame (try injecting
+# missing values to practice)
+birthwt &lt;- MASS::birthwt
+mc_inspect(birthwt[, c("age", "lwt", "bwt", "smoke", "low")])</pre>
+<h2 id='fn3'>3. mc_theme</h2>
+<span class='tag'>Meet the data</span>
+<div class='desc'>A light, restrained ggplot2 theme with ample whitespace, ready for direct use
+In reports. It is the default theme returned inside the <code>plot</code>/<code>forest</code>
+Components of several analysis functions (e.g. <code>mc_survfit()</code>, <code>mc_cox()</code>,
+<code>mc_rcs()</code>).</div>
+<h3>Usage</h3><pre>mc_theme(base_size = 12)</pre>
+<h3>Details</h3><div class='details'>Purpose: a light, restrained ggplot2 theme with ample whitespace for report
+Figures, matching the plot components returned by several analysis functions
+(e.g. mc_survfit(), mc_cox(), mc_rcs()).
+Arguments: base_size controls the base font size; default 12.
+Result: returns a ggplot2 theme object that can be appended to any ggplot
+With +.
+Note: this is a pure theme (no geoms), so it must be combined with layers
+Such as geom_point() or geom_line(); pair it with mc_palette() to change the
+Colour scheme.</div>
+<h3>Arguments</h3><table class='args'><tr><td><code>base_size</code></td><td>Base font size; default <code>12</code>.</td></tr></table>
+<h3>Value</h3><div class='details'>A <code>ggplot2</code> theme object, usable with <code>+</code>.</div>
+<h3>Examples</h3><pre>library(ggplot2)
+# maternal pregnancy weight vs. birth weight scatter
+# (coloured by smoking status)
+birthwt &lt;- MASS::birthwt
+p &lt;- ggplot(birthwt, aes(lwt, bwt, color = factor(smoke))) +
+geom_point(size = 2, alpha = 0.6) + mc_theme(base_size = 13)
+print(p)</pre>
+<h2 id='fn4'>4. mc_palette</h2>
+<span class='tag'>Meet the data</span>
+<div class='desc'>Supplies a set of stable brand anchor colours (hex) and, instead of a static
+Vector, **linearly interpolates** between anchors to generate any number of
+Transition colours (a continuous gradient or a discrete ramp). Returns a named
+Character vector usable with <code>ggplot2::scale_color_manual()</code> /
+<code>scale_fill_manual()</code>.</div>
+<h3>Usage</h3><pre>mc_palette(n = NULL, type = c("brand", "gradient", "discrete"))</pre>
+<h3>Details</h3><div class='details'>Purpose: returns the brand anchor colours to keep plotting colours
+Consistent; when the number of categories exceeds 6, it interpolates between
+Anchors to generate the required number of colours, avoiding manual colour
+Picking.
+Method (original): internally it parses "#RRGGBB" into a 0-255 RGB triplet
+(.hex_to_rgb), performs linear interpolation between anchor colours by
+Position (.interp_palette), then converts the result back to hex
+(.rgb_to_hex); the whole process uses no palette package.
+Arguments: n is the number of colours to generate; NULL (default) returns the
+Six fixed brand colours. type selects "brand" (default, six discrete brand
+Colours), "gradient" (continuous gradient between brand colours, default 100
+Colours), or "discrete" (a discrete ramp interpolated over the brand
+Colours).
+Result: by default returns a named character vector with the six brand
+Colours: primary (blue), secondary (purple), accent (green), warn (red),
+Info (cyan), muted (grey). When n is given, returns a colour vector of length
+N (gradient is unnamed by default; discrete/brand keep anchor names).
+Note: colours are generated purely algorithmically with no dependence on
+Data; interpolation is in linear RGB space  -  switch to HCL space later if a
+More perceptually uniform ramp is needed. Often paired with mc_theme() for
+Style-consistent report figures.</div>
+<h3>Arguments</h3><table class='args'><tr><td><code>n</code></td><td>The number of colours to generate; <code>NULL</code> = the six fixed brand Colours.</td></tr><tr><td><code>type</code></td><td>Palette type: <code>"brand"</code>, <code>"gradient"</code> or <code>"discrete"</code>.</td></tr></table>
+<h3>Value</h3><div class='details'>A named character vector of the six brand colours by default, or a
+Vector of length <code>n</code>.</div>
+<h3>Examples</h3><pre>pal &lt;- mc_palette() # default: six brand colours
+print(pal)
+grad &lt;- mc_palette(n = 20, type = "gradient") # 20-colour continuous gradient
+print(head(grad))
+library(ggplot2)
+df &lt;- data.frame(name = factor(names(pal), names(pal)), col = pal)
+p &lt;- ggplot(df, aes(name, fill = name)) + geom_bar() +
+scale_fill_manual(values = pal) + theme_void()
+print(p)</pre>
+<h2 id='fn5'>5. mc_impute_knn</h2>
+<span class='tag'>Preprocessing</span>
+<div class='desc'>Imputes only numeric columns
+Using standardised Euclidean distance; missing values in non-numeric columns
+Are left untouched with a warning. No extra dependency is required.</div>
+<h3>Usage</h3><pre>mc_impute_knn(.data, k = 5)</pre>
+<h3>Details</h3><div class='details'>Purpose: Impute missing values in numeric columns using K-nearest neighbours,
+Suitable when missingness is low and variables are correlated.
+Method: Only numeric columns are processed. Columns are standardised
+(mean-centred, divided by SD), then for each missing point the k nearest
+Non-missing observations are found by Euclidean distance and their mean is
+Used to impute; columns with zero SD fall back to column-mean imputation.
+Missing values in non-numeric columns are left untouched with a warning.
+Arguments: <code>.data</code> is a data.frame; <code>k</code> is the number of neighbours, default 5.
+Result: Returns an imputed data.frame with the same structure as the input.
+Note: KNN is sensitive to scale, so standardisation is done internally;
+However, if columns differ greatly in range, it is still recommended to run
+mc_scale() first. Categorical variables are not used in KNN and must be
+Handled separately (e.g. mode imputation or category merging).</div>
+<h3>Arguments</h3><table class='args'><tr><td><code>.data</code></td><td>A <code>data.frame</code>.</td></tr><tr><td><code>k</code></td><td>Number of neighbours; default <code>5</code>.</td></tr></table>
+<h3>Value</h3><div class='details'>The imputed <code>data.frame</code> (same structure as the input).</div>
+<h3>Examples</h3><pre># demonstrating kNN missing-value imputation with iris
+data(iris)
+set.seed(105)
+iris_na &lt;- iris
+iris_na$Sepal.Length[sample(150, 15)] &lt;- NA
+iris_na$Sepal.Width[sample(150, 15)] &lt;- NA
+head(mc_impute_knn(iris_na, k = 3))</pre>
+<h2 id='fn6'>6. mc_impute_mice</h2>
+<span class='tag'>Preprocessing</span>
+<div class='desc'>Requires the <code>mice</code> package (Suggests). On top of the MICE engine, it
+**adds an original per-variable imputation diagnostic**.</div>
+<h3>Usage</h3><pre>mc_impute_mice(.data, m = 5, method = NULL, ...)</pre>
+<h3>Details</h3><div class='details'>Purpose: Use multiple imputation by chained equations (MICE) to handle
+Missingness, suitable when the missingness mechanism is complex and you want
+To retain uncertainty; it also provides a quantitative per-column imputation
+Diagnostic afterwards.
+Dependency: Requires the mice package (Suggests); an informative error is
+Raised if it is not installed.
+Method: For each variable with missingness, related variables are used as
+Predictors in an iterative model that generates multiple complete datasets,
+Preserving the uncertainty due to missingness.
+Arguments: <code>.data</code> is a data.frame; <code>m</code> is the number of imputations
+(datasets generated), default 5; <code>method</code> of NULL means automatic selection;
+<code>...</code> is passed to mice::mice().
+Result: Returns a list containing <code>mids</code> (the raw multiple-imputation object
+For further analysis), <code>long</code> (the long table from
+Mice::complete(action = "long")), and <code>summary</code>  -  an **original diagnostic
+Table**: per variable it gives <code>n_missing_original</code> (original missing count),
+<code>n_imputed</code> (count of imputed observations), and <code>pct_imputed</code> (imputation
+Proportion).
+Note: Analysis after multiple imputation should not rely on a single dataset;
+Instead use the <code>mids</code> object with downstream functions supporting mice
+(e.g. with()/pool()) to pool results. The <code>summary</code> is only for quickly
+Checking which variables were imputed and by how much, and does not represent
+Imputation quality itself.</div>
+<h3>Arguments</h3><table class='args'><tr><td><code>.data</code></td><td>A <code>data.frame</code>.</td></tr><tr><td><code>m</code></td><td>Number of imputations; default <code>5</code>.</td></tr><tr><td><code>method</code></td><td>Method passed to <code>mice()</code>; <code>NULL</code> = automatic.</td></tr><tr><td><code>...</code></td><td>Other arguments passed to <code>mice::mice()</code>.</td></tr></table>
+<h3>Value</h3><div class='details'>A list with <code>mids</code>, <code>long</code>, and <code>summary</code>: <code>mids</code> is
+The raw <code>mids</code> object, <code>long</code> is the imputed long table (from
+<code>mice::complete(action = "long")</code>), and <code>summary</code> is the per-variable
+Imputation diagnostic table.</div>
+<h3>Examples</h3><pre>\dontrun{
+# multiple imputation by chained equations (mICE) with per-variable diagnostic
+set.seed(106)
+n &lt;- 44
+df &lt;- data.frame(
+age = c(rnorm(n - 4, 50), NA, NA, rnorm(2, 55)),
+bili = c(NA, rnorm(n - 4, 1.2), NA, rnorm(2, 1.5)),
+chol = rnorm(n, 200, 40), stringsAsFactors = FALSE)
+res &lt;- mc_impute_mice(df, m = 3)
+head(res$long)
+print(res$summary) # original: per-variable imputation diagnostic</pre>
+<h2 id='fn7'>7. mc_dedup</h2>
+<span class='tag'>Preprocessing</span>
+<div class='desc'>Deduplicates by all columns by
+Default, or by specified key columns, keeping the last row of each group.</div>
+<h3>Usage</h3><pre>mc_dedup(.data, by = NULL, keep = c("last", "first"))</pre>
+<h3>Details</h3><div class='details'>Purpose: Remove duplicate rows, commonly used to clean duplicate entries or
+Repeated follow-up records.
+Arguments: <code>.data</code> is a data.frame; <code>by</code> names the key columns used to detect
+Duplicates (e.g. subject ID), NULL means judge by all columns; <code>keep</code> chooses
+Whether to retain the "last" (default) or "first" row of each group.
+Result: Returns the deduplicated data.frame.
+Note: When <code>by</code> is specified, only those key columns are compared; other
+Columns are ignored even if they differ, and duplicates are collapsed to a
+Single row. Ensure the key columns uniquely identify a record, or information
+May be lost. This matches Excel's "Remove Duplicates" semantics.</div>
+<h3>Arguments</h3><table class='args'><tr><td><code>.data</code></td><td>A <code>data.frame</code>.</td></tr><tr><td><code>by</code></td><td>Key column names; <code>NULL</code> = all columns.</td></tr><tr><td><code>keep</code></td><td>Whether to keep <code>"first"</code> or <code>"last"</code>; default <code>"last"</code>.</td></tr></table>
+<h3>Value</h3><div class='details'>The deduplicated <code>data.frame</code>.</div>
+<h3>Examples</h3><pre># removing duplicate follow-up records (deduplicate by subject iD)
+df &lt;- data.frame(subj = c(1, 1, 2, 2, 3), measure = c("a", "a", "b", "b", "c"), visit = 1:5)
+mc_dedup(df, by = "subj") # keep the last row of each group
+mc_dedup(df, by = "subj", keep = "first") # keep the first row of each group</pre>
+<h2 id='fn8'>8. mc_scale</h2>
+<span class='tag'>Preprocessing</span>
+<div class='desc'>Supports z-score (default),
+Min-max, and robust (median/IQR based) scaling. Only numeric columns are
+Replaced.</div>
+<h3>Usage</h3><pre>mc_scale(.data, cols = NULL, method = c("z", "minmax", "robust"))</pre>
+<h3>Details</h3><div class='details'>Purpose: Scale numeric columns to remove scale differences, speed up model
+Convergence, or prepare data for algorithms such as KNN or regularised
+Regression.
+Method: Three scaling options  -  z (default; z-score: subtract mean, divide by
+SD, yielding mean 0 and SD 1), minmax (linear transform to [0, 1]), and
+Robust (subtract median, divide by IQR; robust to outliers).
+Arguments: <code>.data</code> is a data.frame; <code>cols</code> names the columns to scale, NULL
+Means all numeric columns; <code>method</code> selects one of the three above.
+Result: Returns a data.frame where only numeric columns are replaced; other
+Columns are unchanged.
+Note: Scaling discards the original units, so model coefficients are harder to
+Interpret in real units; if interpretability is needed, keep the original
+Variables or record the scaling parameters for back-transformation. Missing
+Values are excluded column-wise when computing scaling.</div>
+<h3>Arguments</h3><table class='args'><tr><td><code>.data</code></td><td>A <code>data.frame</code>.</td></tr><tr><td><code>cols</code></td><td>Numeric columns to scale; <code>NULL</code> = all numeric columns.</td></tr><tr><td><code>method</code></td><td>Scaling method: <code>"z"</code> (default), <code>"minmax"</code>, or <code>"robust"</code>.</td></tr></table>
+<h3>Value</h3><div class='details'>The scaled <code>data.frame</code>; only numeric columns are replaced.</div>
+<h3>Examples</h3><pre># scaling numeric columns of iris (removing scale differences)
+mc_scale(iris[, 1:4], method = "z") # z-score standardisation
+mc_scale(iris[, 1:4], method = "minmax") # normalise to [0, 1]
+mc_scale(iris[, 1:4], method = "robust") # robust scaling</pre>
+<h2 id='fn9'>9. mc_wide_long</h2>
+<span class='tag'>Preprocessing</span>
+<div class='desc'>Pivots the specified measure columns of a wide table into a long layout.
+Implemented natively in base R with **no external pivoting dependency**.</div>
+<h3>Usage</h3><pre>mc_wide_long(.data,
+             id_cols,
+             measure_vars,
+             name_to = "variable",
+             value_to = "value")</pre>
+<h3>Details</h3><div class='details'>Purpose: Convert a wide table (multiple measurements of one subject in
+Different columns) to a long table (one row per measurement); a core step in
+Data processing.
+Method (original, native implementation): First verify that <code>id_cols</code> and
+<code>measure_vars</code> exist in the data.frame; then for each measure column, replicate
+And stack the identifier columns by the number of measure columns, and merge
+Each measure column name as the "variable" and its values as the "value",
+Producing a tidy long table. Uses only base R with no external dependency.
+Arguments: <code>.data</code> is a data.frame; <code>id_cols</code> are the identifier columns to
+Keep (e.g. ID, group); <code>measure_vars</code> are the measure columns to lengthen;
+<code>name_to</code>/<code>value_to</code> are the output column names for "variable" and "value",
+Defaulting to variable / value.
+Result: Returns a long-format data.frame.
+Note: After conversion, rows = original rows x number of measure columns; this
+Is the inverse of mc_long_wide(). If measure columns carry time suffixes
+(e.g. t1/t2/t3), the result is a tidy "time-value" pair of columns, convenient
+For repeated-measures analysis. Identifier columns that are factors are
+Preserved as factors; measure columns should share a common type, otherwise
+The "value" column is coerced to a common type.</div>
+<h3>Arguments</h3><table class='args'><tr><td><code>.data</code></td><td>A <code>data.frame</code>.</td></tr><tr><td><code>id_cols</code></td><td>Identifier columns to keep.</td></tr><tr><td><code>measure_vars</code></td><td>Measured columns to pivot longer.</td></tr><tr><td><code>name_to</code></td><td>Output name column; default <code>"variable"</code>.</td></tr><tr><td><code>value_to</code></td><td>Output value column; default <code>"value"</code>.</td></tr></table>
+<h3>Value</h3><div class='details'>The long <code>data.frame</code>.</div>
+<h3>Examples</h3><pre># convert wide table of longitudinal blood-pressure measurements to long (t1/t2/t3 visits)
+wide &lt;- data.frame(id = 1:4,
+t1 = rnorm(4, 120), t2 = rnorm(4, 122), t3 = rnorm(4, 118))
+mc_wide_long(wide, id_cols = "id", measure_vars = c("t1", "t2", "t3"))</pre>
+<h2 id='fn10'>10. mc_long_wide</h2>
+<span class='tag'>Preprocessing</span>
+<div class='desc'>Spreads a long table back to wide. Implemented natively in base R with
+**no external pivoting dependency**.</div>
+<h3>Usage</h3><pre>mc_long_wide(.data, id_cols, name_from, value_from)</pre>
+<h3>Details</h3><div class='details'>Purpose: Spread a long table back to wide by the name column; the inverse of
+mc_wide_long(), commonly used to restore a "time-value" long table to a
+Subject x time-point wide matrix.
+Method (original, native implementation): First take the unique combinations
+Of identifier columns as the skeleton of output rows; then for each value of
+The name column, fill the corresponding <code>value_from</code> back into the new column
+According to the "identifier key -&gt; value" relationship. Spreading is done via
+Custom key concatenation and matching, relying only on base R.
+Arguments: <code>.data</code> is the long table; <code>id_cols</code> are the identifier columns;
+<code>name_from</code> is the source column supplying new column names; <code>value_from</code> is
+The source column supplying fill values.
+Result: Returns a wide-format data.frame.
+Note: If duplicate (identifier + name) combinations exist (same ID and name
+Appearing multiple times), the spread takes the first occurrence and issues a
+Warning; ensure identifier + name is unique before converting. This is the
+Inverse of mc_wide_long().</div>
+<h3>Arguments</h3><table class='args'><tr><td><code>.data</code></td><td>A <code>data.frame</code>.</td></tr><tr><td><code>id_cols</code></td><td>Identifier columns.</td></tr><tr><td><code>name_from</code></td><td>Column providing names.</td></tr><tr><td><code>value_from</code></td><td>Column providing values.</td></tr></table>
+<h3>Value</h3><div class='details'>The wide <code>data.frame</code>.</div>
+<h3>Examples</h3><pre>\dontrun{
+# restore a "visit-blood pressure" long table to a subject x visit wide table
+long_df &lt;- data.frame(id = 1:2, variable = c("t1", "t2"),
+value = c(120, 118))
+mc_long_wide(long_df, id_cols = "id",
+name_from = "variable", value_from = "value")</pre>
+<h2 id='fn11'>11. mc_desc_quant</h2>
+<span class='tag'>Quantitative description</span>
+<div class='desc'>Produces about 20 descriptive statistics
+In one call (n, n missing, mean, median, sd, variance, min, max, range, IQR,
+SE, 95% CI, CV, skewness, kurtosis, Shapiro-Wilk normality). Supports grouped
+Computation.</div>
+<h3>Usage</h3><pre>mc_desc_quant(.data, vars = NULL, group = NULL, conf = 0.95)</pre>
+<h3>Details</h3><div class='details'>Purpose: one-call descriptive statistics for quantitative variables, covering
+About 20 common metrics; the main function for baseline tables and pre-modeling
+Exploration.
+Arguments: <code>.data</code> is a data frame; <code>vars</code> selects the numeric columns to
+Describe (all numeric columns by default); <code>group</code> optionally specifies a
+Grouping column for per-group output; <code>conf</code> is the confidence level for the
+Mean, default 0.95.
+Result: returns a data frame with sample size, mean, sd, median, IQR, min, max,
+Skewness, kurtosis, normality-test statistics, and the mean confidence interval.
+Note: skewness/kurtosis help judge distribution shape (skewness far from 0 or
+Kurtosis much greater than 3 suggests non-normality); if planning t-tests/ANOVA,
+Check normality and variance homogeneity first. When grouping, group sizes may
+Differ, so mind the fairness of comparisons.</div>
+<h3>Arguments</h3><table class='args'><tr><td><code>.data</code></td><td>A <code>data.frame</code>.</td></tr><tr><td><code>vars</code></td><td>Numeric variable names; <code>NULL</code> = all numeric columns.</td></tr><tr><td><code>group</code></td><td>Optional grouping variable name.</td></tr><tr><td><code>conf</code></td><td>Confidence level; default <code>0.95</code>.</td></tr></table>
+<h3>Value</h3><div class='details'>A wide <code>data.frame</code>, one row per variable (one row per group level
+When grouped), with columns <code>variable</code>, <code>group</code> (when grouped), and the 18
+Statistic columns.</div>
+<h3>Examples</h3><pre># low birth weight study (birthwt, MASS package)
+birthwt &lt;- MASS::birthwt
+cat("==== overall: birth weight / age / pregnancy weight ====\n")
+print(mc_desc_quant(birthwt, vars = c("bwt","age","lwt")), row.names = FALSE)
+cat("\n==== grouped by mother's smoking status ====\n")
+print(mc_desc_quant(birthwt, vars = c("bwt","age"), group = "smoke"), row.names = FALSE)</pre>
+<h2 id='fn12'>12. mc_norm_test</h2>
+<span class='tag'>Quantitative description</span>
+<div class='desc'>Shapiro-Wilk (default, robust for n &lt;= 5000) or
+Kolmogorov-Smirnov. Returns the test name, statistic and p-value.</div>
+<h3>Usage</h3><pre>mc_norm_test(x, method = c("shapiro", "ks"), ...)</pre>
+<h3>Details</h3><div class='details'>Purpose: test whether a quantitative variable follows a normal distribution;
+A prerequisite for choosing parametric vs non-parametric methods.
+Methods: <code>shapiro</code> (default) is the Shapiro-Wilk test, sensitive and powerful
+For small-to-moderate samples (typically n &lt; 5000); <code>ks</code> is the
+Kolmogorov-Smirnov test, by default compared against the standard normal,
+Sensitive to location/scale.
+Arguments: <code>x</code> is the numeric vector to test; <code>method</code> selects one of the two.
+Result: returns the test statistic, p-value, etc.
+Note: with large samples normality tests easily become "significant" (tiny p)
+Even when deviation is practically harmless, so do not rely on p alone - combine
+With histograms, Q-Q plots and skewness/kurtosis. The Shapiro test may be
+Unreliable or very slow for n &gt; 5000.</div>
+<h3>Arguments</h3><table class='args'><tr><td><code>x</code></td><td>Numeric vector.</td></tr><tr><td><code>method</code></td><td><code>"shapiro"</code> (default) or <code>"ks"</code> (test method).</td></tr><tr><td><code>...</code></td><td>Extra arguments passed to <code>stats::ks.test()</code>.</td></tr></table>
+<h3>Value</h3><div class='details'>A <code>data.frame</code> with columns <code>test</code>, <code>statistic</code>, <code>p.value</code>.</div>
+<h3>Examples</h3><pre># test whether quantitative variables in birthwt are normal
+birthwt &lt;- MASS::birthwt
+mc_norm_test(birthwt$bwt) # birth weight
+mc_norm_test(birthwt$age) # mother's age</pre>
+<h2 id='fn13'>13. mc_var_test</h2>
+<span class='tag'>Quantitative description</span>
+<div class='desc'>Bartlett, Fligner-Killeen, and Levene (mean-deviation method). Returns the
+Test name, statistic and p-value.</div>
+<h3>Usage</h3><pre>mc_var_test(x, g, method = c("bartlett", "fligner", "levene"))</pre>
+<h3>Details</h3><div class='details'>Purpose: test whether several groups have equal population variances (variance
+Homogeneity), a prerequisite before choosing ANOVA / t-tests (which usually
+Assume equal variance).
+Methods: <code>bartlett</code> (default) is most sensitive for normal data; <code>fligner</code>
+(Fligner-Killeen) is robust to non-normality; <code>levene</code> (Levene) is based on
+Deviations and robust to heavy-tailed distributions, the most commonly used.
+Arguments: <code>x</code> is a numeric vector; <code>g</code> is the grouping factor/vector (same
+Length as <code>x</code>); <code>method</code> selects one of the three.
+Result: returns the test statistic, degrees of freedom and p-value.
+Note: if variances are unequal (small p), use Welch correction (e.g. mc_ttest
+Defaults to Welch for two samples) or a non-parametric method instead of the
+Standard t-test/ANOVA. Bartlett relies strongly on normality; for non-normal
+Data prefer Levene or Fligner.</div>
+<h3>Arguments</h3><table class='args'><tr><td><code>x</code></td><td>Numeric vector.</td></tr><tr><td><code>g</code></td><td>A grouping factor.</td></tr><tr><td><code>method</code></td><td><code>"bartlett"</code> (default) / <code>"fligner"</code> / <code>"levene"</code> (test method).</td></tr></table>
+<h3>Value</h3><div class='details'>A <code>data.frame</code> with columns <code>test</code>, <code>statistic</code>, <code>p.value</code>.</div>
+<h3>Examples</h3><pre># test variance homogeneity of birth weight across races (race)
+birthwt &lt;- MASS::birthwt
+mc_var_test(birthwt$bwt, birthwt$race, method = "bartlett")
+mc_var_test(birthwt$bwt, birthwt$race, method = "levene")</pre>
+<h2 id='fn14'>14. mc_ttest</h2>
+<span class='tag'>Quantitative description</span>
+<div class='desc'>One-sample, independent two-sample, and paired
+T-tests through a single entry point.</div>
+<h3>Usage</h3><pre>mc_ttest(x,
+         y = NULL,
+         paired = FALSE,
+         mu = 0,
+         conf = 0.95,
+         alternative = "two.sided")</pre>
+<h3>Details</h3><div class='details'>Purpose: a unified entry point for t-tests covering three common cases:
+One-sample (vs a known constant), independent two-sample, and paired.
+Methods: two independent samples use Welch's corrected t-test by default (no
+Equal-variance assumption), closer to practice; can switch to Student's t.
+Arguments: <code>x</code> is the first group or one-sample vector; <code>y</code> is the second
+Vector (for independent/paired; left NULL for one-sample); <code>paired = TRUE</code>
+Runs a paired t-test; <code>mu</code> is the reference value for the one-sample test,
+Default 0; <code>conf</code>/<code>alternative</code> control confidence level and the alternative
+Direction.
+Result: returns the mean difference (or sample mean), standard error, t
+Statistic, degrees of freedom, p-value and confidence interval.
+Note: paired tests require x, y to be paired (e.g. same person measured
+Before/after); using an independent test when groups are not independent
+Understates error. For clearly skewed or small samples, consider mc_nonparam()'s
+Wilcoxon test.</div>
+<h3>Arguments</h3><table class='args'><tr><td><code>x</code></td><td>Numeric vector.</td></tr><tr><td><code>y</code></td><td>A second vector (for independent/paired); <code>NULL</code> for one-sample.</td></tr><tr><td><code>paired</code></td><td>Logical; paired? default <code>FALSE</code>.</td></tr><tr><td><code>mu</code></td><td>Hypothesised mean for one-sample; default <code>0</code>.</td></tr><tr><td><code>conf</code></td><td>Confidence level; default <code>0.95</code>.</td></tr><tr><td><code>alternative</code></td><td><code>"two.sided"</code> (default) / <code>"less"</code> / <code>"greater"</code>.</td></tr></table>
+<h3>Value</h3><div class='details'>A <code>data.frame</code> with columns <code>method</code>, <code>estimate</code>, <code>conf.low</code>,
+<code>conf.high</code>, <code>statistic</code>, <code>p.value</code>.</div>
+<h3>Examples</h3><pre>#
+birthwt &lt;- MASS::birthwt
+# one-sample: is the average birth weight equal to 3000 g?
+mc_ttest(birthwt$bwt, mu = 3000)
+# independent two-sample (welch correction): smoking vs non-smoking mothers' birth weight
+mc_ttest(birthwt$bwt[birthwt$smoke == 1], birthwt$bwt[birthwt$smoke == 0])</pre>
+<h2 id='fn15'>15. mc_anova</h2>
+<span class='tag'>Quantitative description</span>
+<div class='desc'>Built on <code>stats::aov</code>, returns the
+Degrees of freedom, sum of squares, mean square, F statistic and p-value of
+Each term.</div>
+<h3>Usage</h3><pre>mc_anova(formula, data)</pre>
+<h3>Details</h3><div class='details'>Purpose: one-way ANOVA, comparing whether the means of three or more groups
+Are equal overall.
+Methods: decomposes variation via a linear model, comparing between-group and
+Within-group mean squares to obtain the F statistic.
+Arguments: <code>formula</code> like y ~ g (response ~ grouping factor); <code>data</code> is the
+Data frame containing both columns.
+Result: returns the degrees of freedom, sum of squares, mean square, F value
+And p-value of each term.
+Note: ANOVA only tells you "at least two groups differ"; which two require
+Post-hoc multiple comparisons (e.g. Tukey HSD). Its assumptions are normality
+And equal variance per group - verify first with mc_norm_test() and mc_var_test().
+If variances are unequal or distributions skewed, consider Kruskal-Wallis
+(see mc_nonparam).</div>
+<h3>Arguments</h3><table class='args'><tr><td><code>formula</code></td><td>A formula like <code>y ~ group</code>.</td></tr><tr><td><code>data</code></td><td>A <code>data.frame</code> containing the variables.</td></tr></table>
+<h3>Value</h3><div class='details'>A <code>data.frame</code> with columns <code>term</code>, <code>df</code>, <code>sumsq</code>, <code>meansq</code>,
+<code>statistic</code>, <code>p.value</code>.</div>
+<h3>Examples</h3><pre># do mothers of different races (race) differ in birth weight? (one-way aNOVA)
+birthwt &lt;- MASS::birthwt
+mc_anova(bwt ~ factor(race), data = birthwt)</pre>
+<h2 id='fn16'>16. mc_nonparam</h2>
+<span class='tag'>Quantitative description</span>
+<div class='desc'>Wilcoxon
+Rank-sum (two groups) or Kruskal-Wallis (multiple groups). Returns the test
+Name, statistic and p-value.</div>
+<h3>Usage</h3><pre>mc_nonparam(x, g, method = c("wilcoxon", "kruskal"))</pre>
+<h3>Details</h3><div class='details'>Purpose: when data violate normality/equal-variance assumptions, or are merely
+Ordinal, use non-parametric methods to compare groups.
+Methods: <code>wilcoxon</code> is the Wilcoxon rank-sum test (Mann-Whitney U) for two
+Independent samples; <code>kruskal</code> is the Kruskal-Wallis test for three or more
+Groups. They compare distribution location (ranks), not means.
+Arguments: <code>x</code> is a numeric vector; <code>g</code> is the grouping vector (wilcoxon for
+Two groups, kruskal for multiple); <code>method</code> selects the test.
+Result: returns the test statistic and p-value (Kruskal also includes df).
+Note: non-parametric tests usually have lower power than their parametric
+Counterparts (when data are truly normal) but are more robust; they test
+"whether distributions are identical / locations shifted", so conclusions
+Should be phrased as "median/distribution difference" not "mean difference".
+For paired two groups use the Wilcoxon signed-rank test (not covered here;
+Use stats::wilcox.test(paired = TRUE)).</div>
+<h3>Arguments</h3><table class='args'><tr><td><code>x</code></td><td>Numeric vector.</td></tr><tr><td><code>g</code></td><td>Grouping vector/factor.</td></tr><tr><td><code>method</code></td><td><code>"wilcoxon"</code> (default) or <code>"kruskal"</code> (test method).</td></tr></table>
+<h3>Value</h3><div class='details'>A <code>data.frame</code> with columns <code>test</code>, <code>statistic</code>, <code>p.value</code>.</div>
+<h3>Examples</h3><pre># birth weight by smoking status (two-group wilcoxon) and race (multi-group kruskal-wallis)
+birthwt &lt;- MASS::birthwt
+mc_nonparam(birthwt$bwt, birthwt$smoke, method = "wilcoxon")
+mc_nonparam(birthwt$bwt, factor(birthwt$race), method = "kruskal")</pre>
+<h2 id='fn17'>17. mc_contingency</h2>
+<span class='tag'>Qualitative description</span>
+<div class='desc'>Corresponds to (chi-square, Fisher's exact, and the
+Cochran-Mantel-Haenszel test). Builds a contingency table and runs one of
+Three independence tests selected by <code>method</code>.</div>
+<h3>Usage</h3><pre>mc_contingency(.data,
+               row,
+               col,
+               correct = TRUE,
+               method = c("chisq", "fisher", "cmh"),
+               strata = NULL)</pre>
+<h3>Details</h3><div class='details'>Purpose: build contingency tables for categorical variables and run
+Independence/association tests; the first step in analyzing categorical
+Associations, covering the three methods required by Section 4.3.
+Methods:
+\itemize{
+\item <code>"chisq"</code> (default): chi-square independence test for 2x2 and
+Larger tables; <code>correct = TRUE</code> applies Yates' continuity correction to
+2x2 tables to avoid overstating significance in small samples. For 2x2
+Tables, Fisher's exact method additionally gives the OR and its 95% CI.
+\item <code>"fisher"</code>: <code>stats::fisher.test</code> exact test for any r x c
+Table (suitable for small samples or sparse expected counts).
+\item <code>"cmh"</code>: requires a <code>strata</code> variable; builds a 3-way
+Contingency table and runs <code>stats::mantelhaen.test</code> (Cochran-Mantel-
+Haenszel) to judge whether the row-column association persists after
+Controlling for the stratifying factor, returning the common OR.
+}
+Arguments: <code>.data</code> is a data frame; <code>row</code>/<code>col</code> are the row/column variable
+Names; <code>correct</code> controls chi-square continuity correction; <code>method</code> selects
+The test type; <code>strata</code> is the layer variable name for CMH.
+Result: returns a list with table (contingency table, stratified when 3-way),
+Test (a data frame: test/statistic/df/p.value), and method-specific OR /
+CommonOR.
+Note: chi-square requires sufficiently large expected counts (generally a
+Sufficient proportion of cells with expected &gt; 5), otherwise use
+<code>method = "fisher"</code>. CMH is suitable for estimating "adjusted"
+Association when there is a confounding stratum (e.g. multi-center studies).
+OR &gt; 1 suggests a positive association; a CI crossing 1 means the association
+Is not significant.</div>
+<h3>Arguments</h3><table class='args'><tr><td><code>.data</code></td><td>A <code>data.frame</code>.</td></tr><tr><td><code>row</code></td><td>Row variable name, categorical.</td></tr><tr><td><code>col</code></td><td>Column variable name, categorical.</td></tr><tr><td><code>correct</code></td><td>Continuity correction for chi-square; default <code>TRUE</code> (only Applies to <code>method = "chisq"</code>).</td></tr><tr><td><code>method</code></td><td>Test type: <code>"chisq"</code> (default), <code>"fisher"</code>, or <code>"cmh"</code>.</td></tr><tr><td><code>strata</code></td><td>Stratifying variable name for the CMH test.</td></tr></table>
+<h3>Value</h3><div class='details'>A list with <code>table</code> (contingency table), <code>test</code> (a data frame:
+Test/statistic/df/p.value); for <code>method = "chisq"</code> with a 2x2 table it also
+Returns <code>OR</code> (OR/CI.low/CI.high/fisher.p), for <code>method = "fisher"</code> it
+Returns <code>OR</code> (with 95% CI and p), and for <code>method = "cmh"</code> it returns
+<code>commonOR</code> (common odds ratio and its CI).</div>
+<h3>Examples</h3><pre># demonstrate three independence tests with birthwt
+birthwt &lt;- MASS::birthwt
+## ---- chi-square independence test (2x2 with fisher OR) ----
+res &lt;- mc_contingency(birthwt, row = "smoke", col = "low")
+cat("---- contingency table / table ----\n"); print(res$table)
+cat("\n---- chi-square test / chi-square ----\n"); print(res$test, row.names = FALSE)
+cat("\n---- odds ratio OR / odds ratio ----\n"); print(res$OR, row.names = FALSE)
+## ---- fisher's exact test (small samples / sparse expected counts) ----
+res2 &lt;- mc_contingency(birthwt, row = "smoke", col = "low", method = "fisher")
+print(res2$test, row.names = FALSE); print(res2$OR, row.names = FALSE)
+## ---- cMH stratified test: common OR of smoking &amp; low birth weight after controlling for hypertension (ht) ----
+res3 &lt;- mc_contingency(birthwt, row = "smoke", col = "low",
+method = "cmh", strata = "ht")
+cat("\n---- cMH test / cochran-mantel-haenszel ----\n")
+print(res3$test, row.names = FALSE)
+print(res3$commonOR, row.names = FALSE)</pre>
+<h2 id='fn18'>18. mc_corr</h2>
+<span class='tag'>Qualitative description</span>
+<div class='desc'>Pearson / Spearman correlation; optionally compute
+Partial correlation by residualising all variables on the control variable(s).</div>
+<h3>Usage</h3><pre>mc_corr(.data, vars = NULL, method = c("pearson", "spearman"), control = NULL)</pre>
+<h3>Details</h3><div class='details'>Purpose: compute correlation coefficients between variables, supporting
+Pearson (linear) and Spearman (rank/monotonic), plus partial correlation
+(after controlling for confounders).
+Methods: pearson measures linear association, assumes approximate normality;
+Spearman is rank-based, robust to non-linear monotonic relations and outliers;
+Control specifies one or more control variables to compute partial correlation
+(the net correlation after removing their effect).
+Arguments: <code>.data</code> is a data frame; <code>vars</code> is a vector of variable names to
+Correlate; <code>method</code> selects the correlation type; <code>control</code> is an optional
+Control variable name.
+Result: returns a correlation matrix (coefficients); for partial correlation
+Returns the controlled matrix.
+Note: the correlation coefficient only measures association strength and
+Direction, not causation; near 0 does not mean no relation (could be
+Non-linear). Spearman suits ordinal data or clearly skewed data. Partial
+Correlation helps identify "spurious correlation" caused by a common confounder.</div>
+<h3>Arguments</h3><table class='args'><tr><td><code>.data</code></td><td>A <code>data.frame</code>.</td></tr><tr><td><code>vars</code></td><td>Variable names; <code>NULL</code> = all numeric columns.</td></tr><tr><td><code>method</code></td><td><code>"pearson"</code> (default) or <code>"spearman"</code>.</td></tr><tr><td><code>control</code></td><td>Optional control variable names for partial correlation.</td></tr></table>
+<h3>Value</h3><div class='details'>A long <code>data.frame</code> with columns <code>var1</code>, <code>var2</code>, <code>r</code>, <code>p.value</code>.</div>
+<h3>Examples</h3><pre># correlation of birth weight &amp; pregnancy weight in birthwt (spearman)
+birthwt &lt;- MASS::birthwt
+cat("==== spearman correlation / spearman ====\n")
+# note: birthwt has tied observations; cor.test switches to the asymptotic
+# method for p-values and warns, which is normal; we suppress the warning here
+# to simplify the example output
+suppressWarnings(print(mc_corr(birthwt, vars = c("bwt","lwt"), method = "spearman"),
+row.names = FALSE))
+cat("\n==== partial correlation after controlling for mother's age / partial on age ====\n")
+print(mc_corr(birthwt, vars = c("bwt","lwt"), control = "age"),
+row.names = FALSE)</pre>
+<h2 id='fn19'>19. mc_tableone</h2>
+<span class='tag'>Qualitative description</span>
+<div class='desc'>Numeric variables are summarised as
+Mean +/- SD; categorical variables as counts and percentages; can be
+Stratified by a grouping variable.</div>
+<h3>Usage</h3><pre>mc_tableone(.data, vars, group = NULL, digits = 2)</pre>
+<h3>Details</h3><div class='details'>Purpose: generate the common "Table 1" baseline characteristics table, one row
+Per variable, shown by exposure/group column, ready for the manuscript.
+Methods: numeric variables summarised as "mean +/- SD" (when approximately
+Normal); categorical variables as counts and percentages.
+Arguments: <code>.data</code> is a data frame; <code>vars</code> are the variable names to include;
+<code>group</code> is an optional grouping column (e.g. treatment), summarising per group;
+<code>digits</code> controls decimal places, default 2.
+Result: returns a tidy data frame, directly usable with knitr::kable() or
+print() to make a table.
+Note: p-values for group comparisons are usually not in this table (compute
+Separately with mc_ttest/mc_nonparam/mc_contingency). Too many levels for a
+Categorical variable widens the table; consider merging rare categories first.
+This is a descriptive table, not a substitute for statistical inference.</div>
+<h3>Arguments</h3><table class='args'><tr><td><code>.data</code></td><td>A <code>data.frame</code>.</td></tr><tr><td><code>vars</code></td><td>Variable names to include.</td></tr><tr><td><code>group</code></td><td>Optional grouping variable name.</td></tr><tr><td><code>digits</code></td><td>Number of decimals; default <code>2</code>.</td></tr></table>
+<h3>Value</h3><div class='details'>A <code>data.frame</code> with columns <code>variable</code>, <code>level</code>, <code>stratum</code>, <code>value</code>.</div>
+<h3>Examples</h3><pre># birthwt baseline characteristics table (grouped by low birth weight)
+birthwt &lt;- MASS::birthwt
+bw &lt;- birthwt
+bw$race &lt;- factor(bw$race, levels = 1:3, labels = c("white","black","other"))
+bw$smoke &lt;- factor(bw$smoke, levels = 0:1, labels = c("no","yes"))
+bw$low &lt;- factor(bw$low, levels = 0:1, labels = c("normal","low"))
+mc_tableone(bw, vars = c("age","lwt","race","smoke","bwt"), group = "low")</pre>
+<h2 id='fn20'>20. mc_linear</h2>
+<span class='tag'>Conventional regression</span>
+<div class='desc'>Wraps
+<code>stats::lm</code> and adds three *self-implemented* diagnostics: a bootstrap
+Confidence interval for coefficients, variance-inflation-factor (VIF)
+Multicollinearity checks via auxiliary regressions, and the four standard
+Regression diagnostic plots.</div>
+<h3>Usage</h3><pre>mc_linear(data, formula, bootstrap = 0L, conf_level = 0.95)</pre>
+<h3>Details</h3><div class='details'>Purpose: fit simple or multiple linear regression and automatically produce a
+Reportable coefficient table and diagnostics.
+Methods: ordinary least squares via <code>stats::lm</code>; on top of it, three
+Self-implemented diagnostics - 
+(1) *Bootstrap CI*: resample observations with replacement and refit
+Repeatedly, taking empirical quantiles of coefficients as the interval, with
+No normality assumption (enable with <code>bootstrap &gt; 0</code>);
+(2) *VIF*: for each predictor, fit an auxiliary linear regression on the
+Remaining predictors and take 1/(1-R^2) as its variance inflation factor;
+VIF &gt; 5 usually signals multicollinearity;
+(3) *Four diagnostic plots*: residuals vs fitted (non-linearity /
+Heteroscedasticity), normal Q-Q (residual normality), scale-location
+(whether spread changes with fitted values), Cook's distance (influential
+Points).
+Arguments: <code>data</code> is a data frame; <code>formula</code> is the model formula
+(e.g. <code>y ~ x1 + x2</code>); <code>bootstrap</code> is the number of resamples (default 0 = no
+Bootstrap CI); <code>conf_level</code> is the confidence level, default 0.95.
+Result: returns a list - <code>coef</code> (coefficient table: estimate/SE/t/p/normal CI,
+Plus boot lower/upper if bootstrap on), <code>performance</code> (R^2/adjusted R^2/F
+Statistic/AIC/BIC), <code>vif</code> (VIF per predictor), <code>diagnostics</code> (diagnostic
+Data frame), <code>diag_plots</code> (list of four ggplot objects), <code>plot</code> (main
+Residual diagnostic plot).
+Note: VIF is computed only for numeric predictors; bootstrap significantly
+Increases runtime, so for very large samples try a small number (e.g. 200)
+First. This function depends only on base R and ggplot2, no extra packages.</div>
+<h3>Arguments</h3><table class='args'><tr><td><code>data</code></td><td>A <code>data.frame</code>.</td></tr><tr><td><code>formula</code></td><td>A model <code>formula</code>, e.g. <code>y ~ x1 + x2</code>.</td></tr><tr><td><code>bootstrap</code></td><td>Number of bootstrap resamples; <code>0</code> = skip bootstrap CI.</td></tr><tr><td><code>conf_level</code></td><td>Confidence level; default <code>0.95</code>.</td></tr></table>
+<h3>Value</h3><div class='details'>A list with <code>coef</code>, <code>performance</code>, <code>vif</code>, <code>diagnostics</code>,
+<code>diag_plots</code>, <code>plot</code> (coefficient table, performance metrics, VIF,
+Diagnostics, diagnostic plots and the main residual plot).</div>
+<h3>Examples</h3><pre># predict birth weight by mother's age, pregnancy weight, smoking
+birthwt &lt;- MASS::birthwt
+res &lt;- mc_linear(birthwt, bwt ~ age + lwt + smoke + factor(race),
+bootstrap = 200)
+res$coef # coefficient table (with bootstrap cI)
+res$performance # r^2 / adjusted r^2 / aIC / bIC
+res$vif # variance inflation factor (multicollinearity)
+print(res$plot) # residuals vs fitted diagnostic plot</pre>
+<h2 id='fn21'>21. mc_logistic</h2>
+<span class='tag'>Conventional regression</span>
+<div class='desc'>Based on <code>glm(family = binomial)</code>, returns a
+Tidy coefficient table (with OR and its 95% CI, already exponentiated).</div>
+<h3>Usage</h3><pre>mc_logistic(data, formula, conf = 0.95)</pre>
+<h3>Details</h3><div class='details'>Purpose: Fit a binary logistic regression to obtain the log-odds ratio and OR
+Of each predictor for the outcome.
+Method: A binomial logit model estimated by maximum likelihood; factor/
+Character variables are automatically handled as categorical.
+Arguments: <code>data</code> is a data.frame; <code>formula</code> is of the form
+Outcome ~ predictors (the outcome must be 0/1 or a two-level factor);
+<code>conf</code> is the confidence level for the OR, default 0.95.
+Result: Returns a tidy coefficient table with estimate (on the logit scale),
+Standard error, z value, p value, and the exponentiated OR with its
+Confidence interval, for direct interpretation.
+Note: OR &gt; 1 means the odds of the outcome increase by one unit of the
+Predictor (or relative to the reference level); a CI crossing 1 indicates the
+Predictor is not significant at alpha = 0.05. Check for severe
+Multicollinearity and empty cells before modelling. For non-binary outcomes,
+Use a multinomial or ordinal model instead.</div>
+<h3>Arguments</h3><table class='args'><tr><td><code>data</code></td><td>A <code>data.frame</code>.</td></tr><tr><td><code>formula</code></td><td>A model formula, e.g. <code>y ~ x1 + x2</code>.</td></tr><tr><td><code>conf</code></td><td>Confidence level; default <code>0.95</code>.</td></tr></table>
+<h3>Value</h3><div class='details'>A tidy <code>data.frame</code> with columns <code>term</code> / <code>estimate</code>
+(OR) / <code>std.error</code> / <code>statistic</code> / <code>p.value</code> / <code>conf.low</code>
+/ <code>conf.high</code>; <code>estimate</code> is the exponentiated OR.</div>
+<h3>Examples</h3><pre># multivariable logistic regression for low birth weight
+birthwt &lt;- MASS::birthwt
+mc_logistic(birthwt, low ~ age + lwt + smoke + factor(race))</pre>
+<h2 id='fn22'>22. mc_logistic_screen</h2>
+<span class='tag'>Conventional regression</span>
+<div class='desc'>Run a univariate logistic
+Regression for each candidate variable, screen significant ones at <code>alpha</code>,
+Then build a multivariable model from the selected variables.</div>
+<h3>Usage</h3><pre>mc_logistic_screen(data, y, x_vars, alpha = 0.05, conf = 0.95)</pre>
+<h3>Details</h3><div class='details'>Purpose: One-step implementation of the classic epidemiological workflow
+"univariate screening then multivariable modelling", removing the need for
+Manual stepwise work.
+Method: First run a univariate logistic regression for each candidate
+<code>x_vars</code>, screen significant variables at the <code>alpha</code> threshold (default 0.05),
+Then fit a multivariable model with the selected variables.
+Arguments: <code>data</code> is a data.frame; <code>y</code> is the binary outcome column name
+(character); <code>x_vars</code> is a vector of candidate predictor column names;
+<code>alpha</code> is the significance threshold for univariate screening; <code>conf</code> is the
+Confidence level.
+Result: Returns a list with <code>univariate</code> (univariate results per variable),
+<code>selected</code> (names of selected variables), and <code>multivariable</code> (the tidy
+Multivariable coefficient table).
+Note: This is convenient but not a gold standard  -  stepwise/screening can
+Introduce selection bias and overfitting, and univariate significance does not
+Imply multivariable significance (variables may mask or amplify each other).
+Report both univariate and multivariable results and state the screening rule.
+It is still recommended to validate the final model with mc_logistic().</div>
+<h3>Arguments</h3><table class='args'><tr><td><code>data</code></td><td>A <code>data.frame</code>.</td></tr><tr><td><code>y</code></td><td>Binary outcome variable name (character).</td></tr><tr><td><code>x_vars</code></td><td>Candidate predictor names (character vector).</td></tr><tr><td><code>alpha</code></td><td>Univariate screening significance threshold; default <code>0.05</code>.</td></tr><tr><td><code>conf</code></td><td>Multivariable confidence level; default <code>0.95</code>.</td></tr></table>
+<h3>Value</h3><div class='details'>A list with <code>univariate</code> (univariate table), <code>selected</code>
+(selected variables), and <code>multivariable</code> (multivariable coefficient
+Table; <code>NULL</code> if no variables were selected).</div>
+<h3>Examples</h3><pre># : univariate screening then multivariable modelling ("screen then model")
+birthwt &lt;- MASS::birthwt
+bw &lt;- birthwt
+bw$race &lt;- factor(bw$race)
+bw$smoke &lt;- factor(bw$smoke)
+res &lt;- mc_logistic_screen(bw, y = "low",
+x_vars = c("age","lwt","race","smoke","ht","ui"))
+cat("==== univariate ====\n"); print(res$univariate, row.names = FALSE)
+cat("\n==== selected ====\n"); print(res$selected)
+cat("\n==== multivariable ====\n"); print(as.data.frame(res$multivariable), row.names = FALSE)</pre>
+<h2 id='fn23'>23. mc_stepwise</h2>
+<span class='tag'>Conventional regression</span>
+<div class='desc'>Stepwise selection based on AIC
+(default <code>k = 2</code>), returning a coefficient table (OR / regression
+Coefficients).</div>
+<h3>Usage</h3><pre>mc_stepwise(data,
+            formula,
+            direction = c("both", "backward", "forward"),
+            k = 2)</pre>
+<h3>Details</h3><div class='details'>Purpose: Perform stepwise variable selection based on an information criterion
+(AIC), automatically adding/removing variables from the full model to obtain a
+Simpler regression model.
+Method: Aims to minimise AIC and supports "both" (default, bidirectional, can
+Enter or leave), "backward" (drop from the full model), and "forward" (add
+From the null model); <code>k</code> is the penalty (default 2 gives AIC; using log(n)
+Gives BIC).
+Arguments: <code>data</code> is a data.frame; <code>formula</code> contains all candidate
+Predictors; <code>direction</code> selects the direction; <code>k</code> is the AIC/BIC penalty.
+Result: Returns a list with the final <code>coefficients</code> (coefficient table) and
+<code>formula</code> (the formula of finally selected variables).
+Note: Stepwise regression is convenient for exploration but has statistical
+Flaws  -  p values are underestimated, confidence intervals are too narrow, and
+Overfitting is likely; results also depend on arbitrary entry/removal
+Thresholds. Treat it as a "draft" for variable screening; important
+Conclusions still need domain knowledge and a pre-registered analysis plan.</div>
+<h3>Arguments</h3><table class='args'><tr><td><code>data</code></td><td>A <code>data.frame</code>.</td></tr><tr><td><code>formula</code></td><td>Full model formula.</td></tr><tr><td><code>direction</code></td><td><code>"both"</code> (default), <code>"backward"</code>, or <code>"forward"</code>.</td></tr><tr><td><code>k</code></td><td>AIC penalty; default <code>2</code>.</td></tr></table>
+<h3>Value</h3><div class='details'>A list with <code>model</code> (final glm object), <code>coefficients</code>
+(coefficient table), and <code>formula</code> (final formula).</div>
+<h3>Examples</h3><pre># aIC-based stepwise variable selection
+birthwt &lt;- MASS::birthwt
+bw &lt;- birthwt
+bw$race &lt;- factor(bw$race)
+bw$smoke &lt;- factor(bw$smoke)
+mc_stepwise(bw, low ~ age + lwt + race + smoke + ht + ui)$coefficients</pre>
+<h2 id='fn24'>24. mc_ordinal_logistic</h2>
+<span class='tag'>Conventional regression</span>
+<div class='desc'>Based on
+<code>MASS</code>'s <code>polr</code>; the outcome must be an ordered factor. Returns a
+Coefficient table with OR.</div>
+<h3>Usage</h3><pre>mc_ordinal_logistic(data, formula)</pre>
+<h3>Details</h3><div class='details'>Purpose: Fit an ordinal logistic regression (proportional-odds model),
+Suitable when the outcome is an ordered multicategory variable
+(e.g. mild/moderate/severe).
+Method: Based on MASS's polr(), which assumes the predictor effects are the
+Same across all cut points (proportional-odds assumption).
+Arguments: <code>data</code> is a data.frame; <code>formula</code> is of the form
+Ordered_outcome ~ predictors, where the outcome must be an ordered factor
+(ordered()).
+Result: Returns a coefficient table with coefficients (on the logit scale),
+Standard errors, and the exponentiated OR (odds ratio).
+Note: If the proportional-odds assumption fails (check via MASS::polr-based
+Tests or large stratum-specific OR differences), interpret results cautiously;
+Consider a partial proportional-odds model or a multinomial logistic model.
+Always convert the outcome to an ordered factor first, otherwise the model is
+Meaningless. Depends on MASS (Suggests).</div>
+<h3>Arguments</h3><table class='args'><tr><td><code>data</code></td><td>A <code>data.frame</code>.</td></tr><tr><td><code>formula</code></td><td>Model formula; the outcome is an ordered factor.</td></tr></table>
+<h3>Value</h3><div class='details'>A <code>data.frame</code> of coefficients with columns <code>variable</code> /
+<code>Value</code> / <code>Std.Error</code> / <code>t.value</code> / <code>OR</code> /
+<code>p.value</code>; <code>OR = exp(Value)</code>.</div>
+<h3>Examples</h3><pre># ordinal logistic  -  ordinal outcome of number of prenatal visits (ftv)
+birthwt &lt;- MASS::birthwt
+bw &lt;- birthwt
+bw$ftv_ord &lt;- ordered(cut(bw$ftv, c(-1, 0, 2, Inf),
+labels = c("0", "1-2", "3+")))
+bw$smoke &lt;- factor(bw$smoke)
+mc_ordinal_logistic(bw, ftv_ord ~ age + lwt + smoke)</pre>
+<h2 id='fn25'>25. mc_clogistic</h2>
+<span class='tag'>Conventional regression</span>
+<div class='desc'>Suitable for
+1:M matched case-control studies; fits <code>survival::clogit()</code> which
+Conditions on each matched set, yielding a conditional odds ratio.</div>
+<h3>Usage</h3><pre>mc_clogistic(data, formula)</pre>
+<h3>Details</h3><div class='details'>Purpose: Analyse the association between exposure and outcome in matched
+Case-control data, controlling for confounding from the matching variables.
+Dependency: Requires the survival package (Suggests); a clear message is given
+If not installed.
+Method: Specify the matched stratum in the formula with
+<code>strata(matching variable)</code>, and <code>survival::clogit()</code> performs a
+Conditional logistic likelihood estimation within each stratum.
+Arguments: <code>data</code> is a data.frame; <code>formula</code> is the model formula
+With a 0/1 response (1 = case), and must include a
+<code>strata(matching variable)</code> term.
+Result: Returns a coefficient table with estimate, standard error, z value,
+P value, OR (exp(estimate)), and the OR 95% confidence interval. OR &gt; 1
+Indicates the exposure is a risk factor.
+Note: Each matched stratum should contain both cases and controls; if a
+Stratum has only one status, it contributes nothing to the conditional
+Likelihood. Model comparison can be done with mc_model_compare().</div>
+<h3>Arguments</h3><table class='args'><tr><td><code>data</code></td><td>A <code>data.frame</code>.</td></tr><tr><td><code>formula</code></td><td>A formula with a <code>strata()</code> term.</td></tr></table>
+<h3>Value</h3><div class='details'>A coefficient table with estimate / standard error / z / p / OR / OR
+Confidence interval.</div>
+<h3>Examples</h3><pre># demonstrating conditional logistic regression with the built-in matched case-control dataset infert
+# case: infertility status (1 = case); stratum: matched set; spontaneous/induced: miscarriage history
+infert &lt;- datasets::infert
+mc_clogistic(infert, case ~ spontaneous + induced + survival::strata(stratum))</pre>
+<h2 id='fn26'>26. mc_model_compare</h2>
+<span class='tag'>Conventional regression</span>
+<div class='desc'>Computes AIC, BIC,
+A *self-implemented* small-sample-corrected AICc and Akaike weights from AICc,
+Then ranks models by weight.</div>
+<h3>Usage</h3><pre>mc_model_compare(..., n = NULL)</pre>
+<h3>Details</h3><div class='details'>Purpose: Compare candidate regression models by information criteria and
+Select the relatively best one.
+Method (original): AIC and BIC come from base R; AICc = AIC + 2k(k+1)/(n-k-1)
+Where k is the number of parameters and n is the sample size (models with
+N &lt; k+1 are set to NA); then delta = AICc - min is computed, and the Akaike
+Weight w = exp(-0.5*delta) / sum(exp(-0.5*delta)); a larger weight means a
+Better model.
+Arguments: <code>...</code> are several fitted model objects (e.g. lm/glm/coxph)
+That support <code>AIC()</code>/<code>BIC()</code>/<code>nobs()</code>; <code>n</code> is the sample
+Size (when omitted, it is attempted from <code>nobs()</code>).
+Result: Returns a model-comparison table sorted by weight descending, with k
+(number of parameters), n, AIC, BIC, AICc, delta_AICc, and weight.
+Note: Models compared must be based on the same dataset and the same response
+Variable, otherwise the criteria are not comparable. The weight reflects the
+Relative probability of each model being the best, not an absolute
+Goodness-of-fit.</div>
+<h3>Arguments</h3><table class='args'><tr><td><code>...</code></td><td>Fitted model objects.</td></tr><tr><td><code>n</code></td><td>Sample size; auto-detected from the model if NULL.</td></tr></table>
+<h3>Value</h3><div class='details'>A ranked comparison table sorted by Akaike weight.</div>
+<h3>Examples</h3><pre># comparing multiple linear models predicting birth weight (aIC/bIC/aICc/weights)
+birthwt &lt;- MASS::birthwt
+m1 &lt;- lm(bwt ~ lwt, data = birthwt)
+m2 &lt;- lm(bwt ~ lwt + age, data = birthwt)
+m3 &lt;- lm(bwt ~ lwt + age + smoke + factor(race), data = birthwt)
+mc_model_compare(m1, m2, m3)</pre>
+<h2 id='fn27'>27. mc_survfit</h2>
+<span class='tag'>Survival analysis</span>
+<div class='desc'>Survival estimation, between-group log-rank test,
+And visualisation.</div>
+<h3>Usage</h3><pre>mc_survfit(data, time, status, group = NULL)</pre>
+<h3>Details</h3><div class='details'>Purpose: Estimate the Kaplan-Meier survival curve and compare between-group
+Survival differences with the log-rank test; the most basic exploratory tool in
+Survival analysis.
+Method: The KM method estimates the survival function from the product of
+Conditional survival probabilities; with grouping it automatically performs a
+Log-rank test (whether the group survival curves are overall equal).
+Arguments: <code>data</code> is a data frame; <code>time</code> is the follow-up time column;
+<code>status</code> is the event indicator column (usually 1 = event, 0 = censored);
+<code>group</code> is an optional grouping column.
+Results: Returns a list with <code>survfit</code> (survival object), <code>logrank</code>
+(chi-square, df, p value of the log-rank test, present when grouped), and
+<code>plot</code> (KM curve drawn by ggplot, with confidence band and group legend).
+Notes: Censored data (<code>status = 0</code>) must not be counted as events; the
+Log-rank test is insensitive to late differences (use a weighted test to emphasize
+Distant differences). View the result directly with <code>print(res$plot)</code>.</div>
+<h3>Arguments</h3><table class='args'><tr><td><code>data</code></td><td>A <code>data.frame</code>.</td></tr><tr><td><code>time</code></td><td>Time variable name.</td></tr><tr><td><code>status</code></td><td>Outcome variable name; 0 = censored, 1 = event.</td></tr><tr><td><code>group</code></td><td>Optional grouping variable name.</td></tr></table>
+<h3>Value</h3><div class='details'>A list with <code>fit</code> (survfit object), <code>logrank</code> (test data frame:
+Test/chisq/p.value; <code>NULL</code> when ungrouped), <code>plot</code> (ggplot KM plot).</div>
+<h3>Examples</h3><pre># demonstrate kM curve and log-rank test with the ovarian cancer prognostic dataset
+ovarian &lt;- survival::ovarian
+ov &lt;- ovarian
+ov$status &lt;- ifelse(ov$fustat == 2, 0, 1) # 2 = censored -&gt; 0, 1 = death -&gt; 1
+res &lt;- mc_survfit(ov, time = "futime", status = "status", group = "rx")
+cat("---- log-rank test ----\n"); print(res$logrank, row.names = FALSE)
+print(res$plot)</pre>
+<h2 id='fn28'>28. mc_cox</h2>
+<span class='tag'>Survival analysis</span>
+<div class='desc'>Cox model, proportional-hazards assumption test
+(Schoenfeld residuals), and a forest plot.</div>
+<h3>Usage</h3><pre>mc_cox(data, formula, conf = 0.95)</pre>
+<h3>Details</h3><div class='details'>Purpose: Fit a Cox proportional-hazards model to assess the concurrent effect of
+Several covariates on the hazard of an event, yielding hazard ratios (HR).
+Method: A semi-parametric model that makes no assumption about the baseline hazard
+Shape and only estimates covariate hazard ratios; by default it tests the
+Proportional-hazards (PH) assumption.
+Arguments: <code>data</code> is a data frame; <code>formula</code> is of the form
+<code>Surv(time, status) ~ covariates</code>, requiring <code>survival::Surv()</code> to build
+The survival object; <code>conf</code> is the HR confidence level.
+Results: Returns a list with <code>coefficients</code> (per-variable HR, SE, z, p value
+And CI), <code>ph_test</code> (PH-assumption test result), and <code>forest</code> (HR forest
+Plot, ggplot object).
+Notes: HR &gt; 1 means the event hazard rises as that covariate increases. The PH
+Assumption is the core premise of Cox -- if <code>ph_test</code> shows a significant
+Violation (e.g. a very small p for a variable), consider stratified Cox,
+Time-varying effects, or a parametric model. View the forest plot with
+<code>print(res$forest)</code>.</div>
+<h3>Arguments</h3><table class='args'><tr><td><code>data</code></td><td>A <code>data.frame</code>.</td></tr><tr><td><code>formula</code></td><td>A Cox model formula, e.g. <code>Surv(time, status) ~ x1 + x2</code>.</td></tr><tr><td><code>conf</code></td><td>Confidence level; default <code>0.95</code>.</td></tr></table>
+<h3>Value</h3><div class='details'>A list with <code>model</code> (coxph object), <code>coefficients</code> (HR table:
+Term/estimate/conf.low/conf.high/p.value), <code>ph_test</code> (PH test table),
+<code>forest</code> (ggplot forest plot).</div>
+<h3>Examples</h3><pre># cox proportional-hazards model -- ovarian-cancer survival prognosis
+ovarian &lt;- survival::ovarian
+ov &lt;- ovarian
+ov$status &lt;- ifelse(ov$fustat == 2, 0, 1)
+res &lt;- mc_cox(ov, survival::Surv(futime, status) ~ age + rx + resid.ds + ecog.ps)
+cat("---- HR table / coefficients ----\n"); print(as.data.frame(res$coefficients), row.names = FALSE)
+cat("\n---- pH assumption test ----\n"); print(res$ph_test)
+print(res$forest)</pre>
+<h2 id='fn29'>29. mc_ph_test</h2>
+<span class='tag'>Survival analysis</span>
+<div class='desc'>Runs
+<code>survival::cox.zph()</code> on a Cox model and adds a *self-built* ggplot of
+Scaled Schoenfeld residuals versus transformed time.</div>
+<h3>Usage</h3><pre>mc_ph_test(fit = NULL,
+           data = NULL,
+           formula = NULL,
+           which = NULL,
+           transform = "km")</pre>
+<h3>Details</h3><div class='details'>Purpose: Test the core assumption of the Cox proportional-hazards model -- whether
+Each covariate's hazard ratio is constant over time.
+Dependencies: Requires the survival package (already in Imports).
+Method: Scaled Schoenfeld residuals should show no trend over time;
+<code>survival::cox.zph()</code> smooths each curve and runs a correlation test; p &gt; 0.05
+Is usually taken as satisfying the PH assumption.
+Arguments: <code>fit</code> is a fitted <code>coxph</code> object (e.g. returned by
+<code>mc_cox()</code>); or pass <code>data</code> and <code>formula</code> for the function to fit first.
+Results: Returns a list -- <code>test</code> (test table: variable / chi-square / df / p
+Value, including a Global row), <code>plot</code> (ggplot of scaled Schoenfeld residuals
+Vs time; the <code>which</code> variable can be specified, defaulting to the first covariate).
+Notes: With small sample size or few events the PH test has low power; if the PH
+Assumption is violated, consider stratified Cox, time-dependent terms, or an
+Alternative model such as <code>mc_competing_risk()</code>.</div>
+<h3>Arguments</h3><table class='args'><tr><td><code>fit</code></td><td>A fitted <code>coxph</code> object.</td></tr><tr><td><code>data</code></td><td>A data frame (used only when <code>fit</code> is not supplied).</td></tr><tr><td><code>formula</code></td><td>A survival formula (used only when <code>fit</code> is not supplied).</td></tr><tr><td><code>which</code></td><td>Covariate name for the residual plot (default the first).</td></tr><tr><td><code>transform</code></td><td>Time transformation; default <code>"km"</code> (Kaplan-Meier).</td></tr></table>
+<h3>Value</h3><div class='details'>A list with the test table and residual plot.</div>
+<h3>Examples</h3><pre># test the proportional-hazards assumption of an ovarian-cancer cox model
+ovarian &lt;- survival::ovarian
+ov &lt;- ovarian
+ov$status &lt;- ifelse(ov$fustat == 2, 0, 1)
+fit &lt;- survival::coxph(survival::Surv(futime, status) ~ age + rx + resid.ds, data = ov)
+r &lt;- mc_ph_test(fit)
+print(r$test) # pH test table for each covariate
+print(r$plot) # scaled schoenfeld residuals vs time</pre>
+<h2 id='fn30'>30. mc_gam</h2>
+<span class='tag'>Advanced regression</span>
+<div class='desc'>Generalized additive regression models (GAM) capture non-linear relationships while keeping interpretability.
+Built on \code{<code>gam</code>}, it returns the
+degrees of freedom and significance of each smooth term.</div>
+<h3>Usage</h3><pre>mc_gam(data, formula, ...)</pre>
+<h3>Details</h3><div class='details'>Purpose: Fit a generalized additive model (GAM) that, while keeping the
+Interpretability of a linear model, lets predictors enter the model as smooth
+(non-linear) terms, automatically capturing curved relationships.
+Method: Built on mgcv's <code>gam()</code>, using splines (e.g. <code>s(x)</code>) for the
+Smooth terms; it auto-selects the smoothing degrees of freedom and reports
+Significance.
+Arguments: <code>data</code> is a data frame; <code>formula</code> is of the form
+<code>y ~ s(x1) + x2</code>, where <code>s()</code>-wrapped terms are smooth and the rest are linear.
+Results: Returns a list with <code>model</code> (a gam object; use <code>plot()</code> to view
+The smooth curves) and <code>terms</code> (edf, reference df, F value and p value of
+Each smooth term, used to judge whether the variable has a non-linear effect).
+Notes: If <code>edf</code> is near 1 and not significant, the variable is approximately
+Linear and smoothing is unnecessary; a very large <code>edf</code> may overfit. Smooth
+Terms need sufficient sample size for stable estimation. Depends on mgcv (Suggests).
+To view the effect plot, use <code>plot(res$model, pages = 1, shade = TRUE)</code>.</div>
+<h3>Arguments</h3><table class='args'><tr><td><code>data</code></td><td>A <code>data.frame</code>.</td></tr><tr><td><code>formula</code></td><td>A GAM formula such as <code>y ~ s(x1) + x2</code>.</td></tr><tr><td><code>...</code></td><td>Additional arguments passed to \code{<code>gam</code>}.</td></tr></table>
+<h3>Value</h3><div class='details'>A list with <code>model</code> and <code>terms</code>.</div>
+<h3>Examples</h3><pre># use gAM to capture the non-linear effect of pregnancy weight (lwt) on birth weight
+birthwt &lt;- MASS::birthwt
+res &lt;- mc_gam(birthwt, bwt ~ s(lwt) + smoke)
+cat("smooth terms:\n")
+print(as.data.frame(res$terms), row.names = FALSE)</pre>
+<h3>See also</h3><div class='details'>\code{\link{mc_rcs}} (restricted cubic spline with self-implemented basis).</div>
+<h2 id='fn31'>31. mc_lasso</h2>
+<span class='tag'>Advanced regression</span>
+<div class='desc'>Lasso regression (L1 regularization) for prediction and embedded variable selection.
+Built on <code>glmnet</code> with <code>alpha = 1</code>. Returns the non-zero
+coefficient table selected by 10-fold cross-validated lambda.</div>
+<h3>Usage</h3><pre>mc_lasso(data, x, y, nfolds = 10, family = "gaussian")</pre>
+<h3>Details</h3><div class='details'>Purpose: Use Lasso (L1 regularization) for regression and variable selection; in
+High-dimensional or collinear data it automatically shrinks the coefficients of
+Unimportant variables to zero, achieving embedded feature screening.
+Method: Based on the glmnet package; <code>alpha = 1</code> is Lasso; k-fold
+Cross-validation (default 10 folds) is used to select the optimal penalty
+Strength lambda.
+Arguments: <code>data</code> is a data frame; <code>x</code> is a vector of predictor column
+Names; <code>y</code> is the response column name; <code>nfolds</code> is the number of CV
+Folds (default 10); <code>family</code> defaults to gaussian (continuous outcome), and
+Can also be binomial, etc.
+Results: Returns a list with <code>coefficients</code> (table of non-zero coefficients;
+Variables shrunk to zero do not appear).
+Notes: Lasso coefficients are biased (shrunken overall), so it suits prediction
+And screening but not direct statistical inference. When several variables are
+Highly correlated, Lasso randomly keeps one and zeroes the rest. Larger lambda
+Means stronger shrinkage; tune with cv.glmnet's lambda.min / lambda.1se. Depends
+On glmnet (Suggests).</div>
+<h3>Arguments</h3><table class='args'><tr><td><code>data</code></td><td>A <code>data.frame</code>.</td></tr><tr><td><code>x</code></td><td>Character vector of predictor column names.</td></tr><tr><td><code>y</code></td><td>Response variable name.</td></tr><tr><td><code>nfolds</code></td><td>Cross-validation folds; default <code>10</code>.</td></tr><tr><td><code>family</code></td><td>GLM family; <code>"gaussian"</code> (default) or <code>"binomial"</code>, etc.</td></tr></table>
+<h3>Value</h3><div class='details'>A list with <code>cv</code>, <code>coefficients</code>, <code>lambda.min</code>.</div>
+<h3>Examples</h3><pre># use lasso for variable selection among all mtcars predictors (mpg ~.)
+xvars &lt;- setdiff(names(mtcars), "mpg")
+mc_lasso(mtcars, x = xvars, y = "mpg")$coefficients</pre>
+<h3>See also</h3><div class='details'>\code{\link{mc_ridge}}, \code{\link{mc_elastic_net}}.</div>
+<h2 id='fn32'>32. mc_ridge</h2>
+<span class='tag'>Advanced regression</span>
+<div class='desc'>Ridge regression (L2 regularization) handles multicollinearity by shrinking all coefficients proportionally.
+Built on <code>glmnet</code> with <code>alpha = 0</code>. Returns the coefficient
+table (ridge coefficients are typically non-sparse).</div>
+<h3>Usage</h3><pre>mc_ridge(data, x, y, nfolds = 10, family = "gaussian")</pre>
+<h3>Details</h3><div class='details'>Purpose: Use ridge regression (L2 regularization) to handle multicollinearity and
+Stabilize coefficient estimates, suited to cases where all variables matter and
+You do not want to drop any.
+Method: Based on glmnet; <code>alpha = 0</code> is ridge; it shrinks all coefficients
+Proportionally (without zeroing) and keeps every variable.
+Arguments: <code>data</code> is a data frame; <code>x</code> is a vector of predictor column
+Names; <code>y</code> is the response column name; <code>nfolds</code> is the number of CV
+Folds (default 10); <code>family</code> defaults to gaussian.
+Results: Returns a list with <code>coefficients</code> (shrunk but all non-zero coefficients).
+Notes: Unlike Lasso, ridge coefficients are never exactly zero, so it performs no
+Variable selection, only shrinkage. It is robust to collinearity (spreading
+Variance across correlated variables), but all variables remain in the
+Interpretation. Larger lambda means stronger shrinkage. Depends on glmnet (Suggests).</div>
+<h3>Arguments</h3><table class='args'><tr><td><code>data</code></td><td>A <code>data.frame</code>.</td></tr><tr><td><code>x</code></td><td>Character vector of predictor column names.</td></tr><tr><td><code>y</code></td><td>Response variable name.</td></tr><tr><td><code>nfolds</code></td><td>Cross-validation folds; default <code>10</code>.</td></tr><tr><td><code>family</code></td><td>GLM family; <code>"gaussian"</code> (default) or <code>"binomial"</code>, etc.</td></tr></table>
+<h3>Value</h3><div class='details'>A list with <code>cv</code>, <code>coefficients</code>, <code>lambda.min</code>.</div>
+<h3>Examples</h3><pre># ridge regression for multicollinearity among mtcars predictors
+xvars &lt;- setdiff(names(mtcars), "mpg")
+mc_ridge(mtcars, x = xvars, y = "mpg")$coefficients</pre>
+<h3>See also</h3><div class='details'>\code{\link{mc_lasso}}, \code{\link{mc_elastic_net}}.</div>
+<h2 id='fn33'>33. mc_elastic_net</h2>
+<span class='tag'>Advanced regression</span>
+<div class='desc'>Elastic net blends L1 and L2 penalties, balancing variable selection and shrinkage.
+Built on <code>glmnet</code>; <code>alpha</code> tunes between
+ridge (0) and lasso (1).</div>
+<h3>Usage</h3><pre>mc_elastic_net(data, x, y, alpha = 0.5, nfolds = 10, family = "gaussian")</pre>
+<h3>Details</h3><div class='details'>Purpose: Use elastic net to combine Lasso's sparsity with ridge's robustness to
+Collinearity; it is a continuous interpolation between the two.
+Method: Based on glmnet; <code>alpha</code> tunes the mixing ratio between 0 (pure
+Ridge) and 1 (pure Lasso); <code>alpha = 0.5</code> is a common compromise.
+Arguments: <code>data</code> is a data frame; <code>x</code> is a vector of predictor column
+Names; <code>y</code> is the response column name; <code>alpha</code> is the mixing parameter
+(default 0.5); <code>nfolds</code> is the number of CV folds; <code>family</code> defaults to gaussian.
+Results: Returns a list with <code>coefficients</code> (coefficients shrunk per the
+Chosen alpha, some possibly zero).
+Notes: When predictors are grouped and highly correlated, elastic net is more
+Robust than Lasso: it keeps or drops the whole group together rather than
+Randomly keeping one. The closer alpha is to 1, the more it favours selection;
+The closer to 0, the more it favours shrinkage. Depends on glmnet (Suggests).</div>
+<h3>Arguments</h3><table class='args'><tr><td><code>data</code></td><td>A <code>data.frame</code>.</td></tr><tr><td><code>x</code></td><td>Character vector of predictor column names.</td></tr><tr><td><code>y</code></td><td>Response variable name.</td></tr><tr><td><code>alpha</code></td><td>Elastic-net mixing parameter; default <code>0.5</code>.</td></tr><tr><td><code>nfolds</code></td><td>Cross-validation folds; default <code>10</code>.</td></tr><tr><td><code>family</code></td><td>GLM family; <code>"gaussian"</code> (default) or <code>"binomial"</code>, etc.</td></tr></table>
+<h3>Value</h3><div class='details'>A list with <code>cv</code>, <code>coefficients</code>, <code>lambda.min</code>, <code>alpha</code>.</div>
+<h3>Examples</h3><pre># elastic net (alpha = 0.5) balances variable selection and shrinkage
+xvars &lt;- setdiff(names(mtcars), "mpg")
+mc_elastic_net(mtcars, x = xvars, y = "mpg", alpha = 0.5)$coefficients</pre>
+<h3>See also</h3><div class='details'>\code{\link{mc_lasso}}, \code{\link{mc_ridge}}.</div>
+<h2 id='fn34'>34. mc_rcs</h2>
+<span class='tag'>Advanced regression</span>
+<div class='desc'>Restricted cubic splines model flexible non-linear dose-response relationships without external packages.
+Without depending on <code>rms</code>, it builds a
+restricted cubic spline basis and fits a linear / generalized linear model,
+returning the prediction curve.</div>
+<h3>Usage</h3><pre>mc_rcs(data, x, y, nk = 3, knots = NULL, family = "gaussian")</pre>
+<h3>Details</h3><div class='details'>Purpose: Use restricted cubic splines (RCS) to describe the non-linear
+Dose-response relationship between a predictor and the outcome, and to visualize
+The curve; a common approach in epidemiology for presenting exposure-effect curves.
+Method: A self-implemented spline basis (no extra dependencies) applies linear
+Constraints at both ends of the predictor ("restricted") to avoid wild swings at
+The boundaries; default interior knots <code>nk = 3</code>.
+Arguments: <code>data</code> is a data frame; <code>x</code> is the predictor column name;
+<code>y</code> is the response column name; <code>nk</code> is the number of knots (default 3,
+Larger = more flexible); <code>knots</code> can manually set knot positions (default
+Auto-selected by quantiles); <code>family</code> defaults to gaussian and also supports
+Binomial (then it describes how the log-odds change with x).
+Results: Returns a list with <code>knots</code> (knot positions), <code>coefficients</code>
+(spline basis coefficients), and <code>plot</code> (prediction-curve ggplot object).
+Notes: More knots make the curve wigglier and more prone to overfitting; usually
+3-5 knots suffice. RCS does not assume monotonicity and can show U-shaped or
+Inverted-U relationships. View the result with <code>print(res$plot)</code>.</div>
+<h3>Arguments</h3><table class='args'><tr><td><code>data</code></td><td>A <code>data.frame</code>.</td></tr><tr><td><code>x</code></td><td>Numeric predictor name.</td></tr><tr><td><code>y</code></td><td>Response variable name.</td></tr><tr><td><code>nk</code></td><td>Number of interior knots; default <code>3</code>.</td></tr><tr><td><code>knots</code></td><td>Full knot vector including boundaries; <code>NULL</code> = automatic quantile knots.</td></tr><tr><td><code>family</code></td><td>GLM family; <code>"gaussian"</code> (default) or <code>"binomial"</code>, etc.</td></tr></table>
+<h3>Value</h3><div class='details'>A list with <code>model</code>, <code>coefficients</code>, <code>plot</code>, <code>knots</code>.</div>
+<h3>Examples</h3><pre># dose-response curve of maternal age vs low-birth-weight risk (non-linear)
+birthwt &lt;- MASS::birthwt
+res &lt;- mc_rcs(birthwt, x = "age", y = "low", nk = 4, family = "binomial")
+cat("knots:", round(res$knots, 2), "\n")
+print(res$plot)</pre>
+<h3>See also</h3><div class='details'>\code{\link{mc_gam}} (smooth terms are also used for non-linear relationship modeling).</div>
+<h2 id='fn35'>35. mc_quantile_reg</h2>
+<span class='tag'>Advanced regression</span>
+<div class='desc'>Corresponds to "Principles and Application Scenarios of Quantile
+Regression" Built on
+\code{<code>rq</code>}, it returns coefficients for multiple quantiles
+At once.</div>
+<h3>Usage</h3><pre>mc_quantile_reg(data, formula, taus = c(0.25, 0.5, 0.75))</pre>
+<h3>Details</h3><div class='details'>Purpose: Use quantile regression to describe how a predictor affects different
+Quantiles of the outcome (e.g. median, upper/lower quartiles); especially useful
+Under heteroscedasticity or when focusing on extreme quantiles (e.g. low income,
+High death risk).
+Method: Based on quantreg's <code>rq()</code>, minimizing weighted absolute residuals;
+It can estimate coefficients for multiple quantiles at once.
+Arguments: <code>data</code> is a data frame; <code>formula</code> is of the form <code>y ~ x</code>;
+<code>taus</code> is the vector of quantiles to estimate, default <code>c(0.25, 0.5, 0.75)</code>.
+Results: Returns a data frame of coefficients at each quantile (including intercept
+And predictor slope), allowing comparison of slopes across quantiles.
+Notes: If the predictor slope differs markedly across quantiles (e.g. under
+Heteroscedasticity), the conditional distribution shape changes with x -- information
+Invisible to ordinary mean regression (OLS). Quantile regression is robust to
+Outliers. Depends on quantreg (Suggests).</div>
+<h3>Arguments</h3><table class='args'><tr><td><code>data</code></td><td>A <code>data.frame</code>.</td></tr><tr><td><code>formula</code></td><td>A regression formula.</td></tr><tr><td><code>taus</code></td><td>Vector of quantile points; default <code>c(0.25, 0.5, 0.75)</code>.</td></tr></table>
+<h3>Value</h3><div class='details'>A <code>data.frame</code> with columns <code>term</code>, <code>estimate</code>, <code>std.error</code>, <code>statistic</code>,
+<code>p.value</code>, <code>tau</code> (stacked over taus).</div>
+<h3>Examples</h3><pre># conditional quantile regression of birth weight (slope of pregnancy weight lwt across quantiles)
+birthwt &lt;- MASS::birthwt
+mc_quantile_reg(birthwt, bwt ~ lwt + age, taus = c(0.25, 0.5, 0.75))</pre>
+<h2 id='fn36'>36. mc_pcr</h2>
+<span class='tag'>Advanced regression</span>
+<div class='desc'>The whole pipeline is *self-implemented*:
+PCA via <code>stats::prcomp</code>, an in-house k-fold CV to pick the number of
+Components, and a back-transform of coefficients to the original scale.</div>
+<h3>Usage</h3><pre>mc_pcr(data, formula, ncomp = NULL, k = 5L, seed = NULL)</pre>
+<h3>Details</h3><div class='details'>Purpose: When predictors are highly correlated (multicollinear), use principal
+Components regression for stable estimation.
+Method (self-implemented): (1) standardize predictors (center + scale); (2) PCA
+Yields uncorrelated principal components; (3) if the number of components is not
+Given, an in-house k-fold CV selects the optimum by prediction MSE; (4) fit linear
+Regression on the selected components; (5) back-transform component coefficients to
+The original variable scale (using the rotation matrix and standardization parameters).
+Arguments: <code>data</code> is a data frame; <code>formula</code> is of the form
+<code>y ~ x1 + x2 +...</code>; <code>ncomp</code> is the number of components
+(<code>NULL</code> = auto-selected by CV); <code>k</code> is the number of CV folds (default 5);
+<code>seed</code> is the CV random seed.
+Results: Returns a list -- <code>best_ncomp</code> (chosen components), <code>cv_table</code>
+(CV-MSE for each candidate), <code>coef_original</code> (original-scale coefficients +
+Intercept), <code>performance</code> (R-squared / adjusted R-squared / RMSE),
+<code>plot</code> (CV-MSE vs number of components), <code>fit</code> (final lm object).
+Notes: PCR standardizes predictors, so coefficients relate to the standardized
+Scale; categorical variables should be dummy-coded first. This function depends
+Only on base R, no extra package needed.</div>
+<h3>Arguments</h3><table class='args'><tr><td><code>data</code></td><td>A <code>data.frame</code>.</td></tr><tr><td><code>formula</code></td><td>A model <code>formula</code>, e.g. <code>y ~ x1 + x2</code>.</td></tr><tr><td><code>ncomp</code></td><td>Number of principal components; <code>NULL</code> = auto-select by CV.</td></tr><tr><td><code>k</code></td><td>CV folds; default <code>5</code>.</td></tr><tr><td><code>seed</code></td><td>Random seed for CV.</td></tr></table>
+<h3>Value</h3><div class='details'>A list with chosen components, CV table, original-scale coefficients,
+Performance and the CV plot.</div>
+<h3>Examples</h3><pre># predict birth weight from several correlated predictors (pCR removes collinearity)
+# note: pCR requires all predictors to be numeric, so the categorical variable race is
+# excluded (dummy-coding is discussed elsewhere)
+birthwt &lt;- MASS::birthwt
+bw &lt;- birthwt
+res &lt;- mc_pcr(bw, bwt ~ age + lwt + smoke + ht + ui + ptl, k = 5, seed = 1)
+res$best_ncomp
+res$coef_original
+print(res$plot)</pre>
+<h2 id='fn37'>37. mc_nnet_reg</h2>
+<span class='tag'>Advanced regression</span>
+<div class='desc'>A single-hidden-layer
+Feed-forward network for regression via <code>nnet::nnet()</code> (with <code>linout = TRUE</code>),
+Plus a predicted-vs-observed plot and RMSE.</div>
+<h3>Usage</h3><pre>mc_nnet_reg(data, formula, hidden = 5, maxit = 200, seed = NULL)</pre>
+<h3>Details</h3><div class='details'>Purpose: Use a neural network to fit the non-linear relationship between predictors
+And a continuous outcome.
+Dependencies: Requires the nnet package (in Suggests); a clear message is given if
+Not installed.
+Method: <code>nnet::nnet(y ~., linout = TRUE, size = hidden)</code>; the number of hidden
+Nodes is controlled by <code>hidden</code>; data are auto-standardized to speed up convergence.
+Arguments: <code>data</code> is a data frame; <code>formula</code> is of the form
+<code>y ~ x1 + x2 +...</code>; <code>hidden</code> is the number of hidden nodes (default 5);
+<code>maxit</code> is the maximum iterations (default 200); <code>seed</code> is the random seed.
+Results: Returns a list -- <code>fit</code> (nnet object), <code>predictions</code> (fitted
+Values), <code>rmse</code>, <code>plot</code> (predicted vs observed scatter).
+Notes: Neural nets are scale-sensitive; this function standardizes predictors
+Internally. Results are sensitive to random initialization, so set <code>seed</code> for
+Reproducibility. Too many nodes overfit; compare structures with
+<code>mc_model_compare()</code> or cross-validation.</div>
+<h3>Arguments</h3><table class='args'><tr><td><code>data</code></td><td>A <code>data.frame</code>.</td></tr><tr><td><code>formula</code></td><td>A model <code>formula</code>.</td></tr><tr><td><code>hidden</code></td><td>Hidden-layer nodes; default <code>5</code>.</td></tr><tr><td><code>maxit</code></td><td>Maximum iterations; default <code>200</code>.</td></tr><tr><td><code>seed</code></td><td>Random seed.</td></tr></table>
+<h3>Value</h3><div class='details'>A list with the fitted net, predictions, RMSE and the fit plot.</div>
+<h3>Examples</h3><pre># neural-network regression -- predict birth weight from maternal features
+birthwt &lt;- MASS::birthwt
+bw &lt;- birthwt
+bw$race &lt;- factor(bw$race)
+res &lt;- mc_nnet_reg(bw, bwt ~ age + lwt + smoke + race, hidden = 5, seed = 7)
+res$rmse
+print(res$plot)</pre>
+<h2 id='fn38'>38. mc_competing_risk</h2>
+<span class='tag'>Advanced survival</span>
+<div class='desc'>Based on
+<code>cmprsk</code>'s <code>crr</code>. <code>status</code>: 0 = censored, &gt;0 = different event
+Types; <code>cause</code> selects the event of interest.</div>
+<h3>Usage</h3><pre>mc_competing_risk(data, time, status, group, cause = 1)</pre>
+<h3>Details</h3><div class='details'>Purpose: Perform regression in the presence of competing events, avoiding
+Overestimation of the target-event risk by mistakenly treating competing events as
+Censored. Typical scenario: a relapse analysis where death is the competing event.
+Method: Based on cmprsk's Fine-Gray subdistribution-hazard model, which treats
+Competing events as a special kind of censoring and directly estimates the
+Cumulative incidence of the target cause.
+Arguments: <code>data</code> is a data frame; <code>time</code> is the time column;
+<code>status</code> is the status column (0 = censored, &gt;0 = different event types);
+<code>group</code> is the grouping/exposure variable; <code>cause</code> specifies the target
+Event code (default 1).
+Results: Returns a list with <code>coefficients</code> (subdistribution hazard ratio SHR,
+SE, z, p value per variable).
+Notes: The <code>status</code> coding differs from <code>mc_survfit()</code>/<code>mc_cox()</code>:
+Here 0 is censored and each other positive integer represents one event type;
+Arrange the data accordingly. If there is only one event type with no competition,
+An ordinary Cox model suffices. Depends on cmprsk (Suggests).</div>
+<h3>Arguments</h3><table class='args'><tr><td><code>data</code></td><td>A <code>data.frame</code>.</td></tr><tr><td><code>time</code></td><td>Time variable name.</td></tr><tr><td><code>status</code></td><td>Competing-risk status variable name.</td></tr><tr><td><code>group</code></td><td>Covariate (grouping/exposure) variable name.</td></tr><tr><td><code>cause</code></td><td>Event type of interest; default <code>1</code>.</td></tr></table>
+<h3>Value</h3><div class='details'>A list with <code>model</code> (crr object), <code>coefficients</code> (subdistribution
+HR table: variable / HR / coef / p.value).</div>
+<h3>Examples</h3><pre># competing risks of leukemia relapse (1) and death (2)
+# event of interest cause = 1 (relapse); death is a competing event and must not be treated as censored
+set.seed(126)
+n &lt;- 300
+trt &lt;- sample(c(0,1), n, TRUE)
+ftime &lt;- rexp(n,.05)
+fstatus &lt;- sample(0:2, n, TRUE, c(.4,.35,.25)) # 0 censored, 1 relapse, 2 death (competing)
+df &lt;- data.frame(ftime = ftime, fstatus = fstatus, trt = trt)
+res &lt;- mc_competing_risk(df, time = "ftime", status = "fstatus", group = "trt", cause = 1)
+print(res$coefficients)</pre>
+<h2 id='fn39'>39. mc_multistate</h2>
+<span class='tag'>Advanced survival</span>
+<div class='desc'>Requires <code>data</code>
+To be in <code>mstate</code>'s expanded long format (with Tstart, Tstop, status,
+From, to and covariates); <code>trans</code> is the transition matrix.</div>
+<h3>Usage</h3><pre>mc_multistate(data, trans, formula, ...)</pre>
+<h3>Details</h3><div class='details'>Purpose: Fit a multi-state survival model to study the transition risk between
+Several health states (e.g. healthy -&gt; complication -&gt; death), which is closer to
+The clinical process than a single endpoint.
+Method: Based on the mstate package; first expand follow-up data into a from-to
+Transition long table, then model each transition separately with <code>coxph()</code>.
+Arguments: <code>data</code> is the already-expanded multi-state long table (with columns
+Id, Tstart, Tstop, status, from, to,...); <code>trans</code> is the transition matrix
+(built by <code>mstate::transMat()</code>, defining which transitions between states are
+Allowed); <code>formula</code> contains the survival object and covariates, and may use
+<code>strata(trans)</code> to stratify by transition type.
+Results: Returns a list with <code>model</code> (coxph fit per transition) and
+<code>msfit</code> (an msfit object for predicting cumulative transition probabilities).
+Notes: The input must already be in mstate's required long format (not the raw wide
+Table), and the <code>trans</code> codes must match the from/to columns and
+<code>strata(trans)</code>; a wrong construction leads to "all observations in one group"
+Or no estimable transitions. Depends on mstate (Suggests).</div>
+<h3>Arguments</h3><table class='args'><tr><td><code>data</code></td><td>mstate expanded long-format <code>data.frame</code>.</td></tr><tr><td><code>trans</code></td><td>Transition matrix.</td></tr><tr><td><code>formula</code></td><td>A formula, e.g. <code>Surv(time, status) ~ cov</code> (time/status are columns in data).</td></tr><tr><td><code>...</code></td><td>Extra arguments passed to <code>survival::coxph</code>.</td></tr></table>
+<h3>Value</h3><div class='details'>A list with <code>model</code> (coxph object), <code>msfit</code> (mstate::msfit object).</div>
+<h3>Examples</h3><pre># three-state model (healthy h -&gt; complication i / direct death d)
+set.seed(127)
+library(mstate)
+n &lt;- 150
+age &lt;- rnorm(n, 55, 8)
+t12 &lt;- rexp(n,.15); t23 &lt;- rexp(n,.20); t13 &lt;- rexp(n,.10)
+rows &lt;- list()
+for (i in 1:n) {
+if (runif(1) &lt;.6) {
+rows[[length(rows)+1]] &lt;- data.frame(id=i, tstart=0, tstop=t12[i], status=1, from=1, to=2, age=age[i])
+rows[[length(rows)+1]] &lt;- data.frame(id=i, tstart=t12[i], tstop=t12[i]+t23[i], status=1, from=2, to=3, age=age[i])
+} else {
+rows[[length(rows)+1]] &lt;- data.frame(id=i, tstart=0, tstop=t13[i], status=1, from=1, to=3, age=age[i])
+ms &lt;- do.call(rbind, rows)
+trans &lt;- transMat(list(c(2,3), c(3), c()), names = c("h","i","d"))
+ms$trans &lt;- with(ms, ifelse(from == 1 &amp; to == 2, 1, ifelse(from == 1 &amp; to == 3, 2, 3)))
+fit &lt;- mc_multistate(ms, trans = trans, formula = survival::Surv(tstart, tstop, status) ~ age + survival::strata(trans))
+cat("coxph coefficients:\n")
+print(summary(fit$model)$coefficients)
+cat("\nmsfit class:", class(fit$msfit)[1], "\n")</pre>
+</body></html>
