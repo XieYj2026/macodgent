@@ -4,12 +4,14 @@
 \alias{mc_clogistic}
 \title{Conditional logistic regression}
 \usage{
-mc_clogistic(data, formula)
+mc_clogistic(data, formula, conf = 0.95)
 }
 \arguments{
 \item{data}{A \code{data.frame}.}
 
 \item{formula}{A formula with a \code{strata()} term.}
+
+\item{conf}{Confidence level for the OR interval; default \code{0.95}.}
 }
 \value{
 A coefficient table with estimate / standard error / z / p / OR / OR
@@ -39,8 +41,11 @@ Stratum has only one status, it contributes nothing to the conditional
 Likelihood. Model comparison can be done with mc_model_compare().
 }
 \examples{
-# demonstrating conditional logistic regression with the built-in matched case-control dataset infert
-# case: infertility status (1 = case); stratum: matched set; spontaneous/induced: miscarriage history
-infert <- datasets::infert
-mc_clogistic(infert, case ~ spontaneous + induced + survival::strata(stratum))
+# SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+# Not real patients; see ?sim_htn_trial before interpreting any result.
+data(sim_htn_trial)
+d <- sim_htn_trial
+m <- d[1:600, ]                      # 300 simulated matched pairs
+mc_clogistic(m,
+  case_status ~ smoke + prior_cv + survival::strata(match_id))
 }
