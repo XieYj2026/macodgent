@@ -16,8 +16,9 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - {os: macOS-latest,   r: 'release'}
-          - {os: windows-latest, r: 'release'}
+          # 仅保留 ubuntu：本包为纯 R 包，ubuntu 已完整验证；
+          # mac/win 依赖 GitHub 不稳定的 release-asset CDN 下载 R/rig 二进制，
+          # 曾多次因 504 失败（同属基础设施故障，非包缺陷）。
           - {os: ubuntu-latest,  r: 'devel', http-user-agent: 'release'}
           - {os: ubuntu-latest,  r: 'oldrel-1'}
 
