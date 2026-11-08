@@ -11,48 +11,60 @@ Routine Analysis Techniques for medical data science. It covers data
 preprocessing, quantitative and qualitative
 Descriptive statistics, conventional and advanced regression, survival
 Analysis, competing-risk and multi-state models. All exported functions share
-The \code{mc_} prefix and return tidy \code{data.frame} objects that drop straight into
-Reports and downstream pipelines.
+The \code{mc_} prefix. Descriptive statistics and hypothesis tests return tidy
+\code{data.frame} objects; model-fitting functions return a list holding the fitted
+model, a coefficient table and, where applicable, a plot.
 }
 \section{Modules and functions}{
 
 \describe{
-\item{Meet the data}{\code{mc_mode()}, \code{mc_inspect()},
+\item{Meet the data}{\code{mc_stat_mode()}, \code{mc_inspect()},
 \code{mc_theme()}, \code{mc_palette()}}
 \item{Preprocessing}{\code{mc_impute_knn()},
-\code{mc_impute_mice()}, \code{mc_dedup()}, \code{mc_scale()}, \code{mc_wide_long()},
-\code{mc_long_wide()}}
-\item{Quantitative}{\code{mc_desc_quant()},
-\code{mc_norm_test()}, \code{mc_var_test()}, \code{mc_ttest()}, \code{mc_anova()},
-\code{mc_nonparam()}}
-\item{Qualitative}{\code{mc_contingency()}, \code{mc_corr()},
-\code{mc_tableone()}}
+\code{mc_impute_mice()}, \code{mc_dedup()}, \code{mc_scale_numeric()}, \code{mc_pivot_longer()},
+\code{mc_pivot_wider()}}
+\item{Quantitative}{\code{mc_describe_numeric()},
+\code{mc_test_normality()}, \code{mc_test_equal_variance()}, \code{mc_ttest()}, \code{mc_anova_oneway()},
+\code{mc_test_rank()}}
+\item{Qualitative}{\code{mc_crosstab_test()}, \code{mc_correlate()},
+\code{mc_baseline_table()}}
 \item{Conventional regression}{\code{mc_linear()},
 \code{mc_logistic()}, \code{mc_logistic_screen()}, \code{mc_stepwise()},
 \code{mc_ordinal_logistic()}, \code{mc_clogistic()}, \code{mc_model_compare()}}
-\item{Survival}{\code{mc_survfit()}, \code{mc_cox()},
-\code{mc_ph_test()}}
+\item{Survival}{\code{mc_kaplan_meier()}, \code{mc_cox()},
+\code{mc_test_proportional_hazards()}}
 \item{Advanced regression}{\code{mc_gam()}, \code{mc_lasso()},
 \code{mc_ridge()}, \code{mc_elastic_net()}, \code{mc_rcs()}, \code{mc_quantile_reg()},
-\code{mc_pcr()}, \code{mc_nnet_reg()}}
+\code{mc_pca_regression()}, \code{mc_nnet_reg()}}
 \item{Advanced survival}{\code{mc_competing_risk()},
 \code{mc_multistate()}}
+\item{Inference and reporting}{\code{mc_compare_groups()},
+\code{mc_adjust_p()}, \code{mc_posthoc_tukey()}, \code{mc_logistic_report()}}
 }
+}
+
+\section{Inference layer}{
+
+Every hypothesis test reports an effect size with a confidence interval,
+and every family of tests reports multiplicity-adjusted p values. Model
+functions add explicit methodological checks (discrimination, calibration,
+events per variable, collinearity, influence, proportional hazards).
 }
 
 \section{Design principles}{
 
 \enumerate{
 \item All exported functions use the \code{mc_} prefix to avoid name clashes.
-\item Analysis functions return tidy \code{data.frame} objects, ready for
-Reporting and piping.
+\item Descriptive statistics and hypothesis tests return tidy \code{data.frame}
+objects, ready for reporting and piping. Model-fitting functions return a
+list with the fitted model, a coefficient table and an optional plot.
 \item Heavy methods live in \code{Suggests} with graceful namespace guards.
 }
 }
 
 \seealso{
 Entry points: \code{\link{mc_inspect}},
-\code{\link{mc_desc_quant}}, \code{\link{mc_tableone}},
+\code{\link{mc_describe_numeric}}, \code{\link{mc_baseline_table}},
 \code{\link{mc_logistic}}, \code{\link{mc_cox}}.
 }
 \author{
