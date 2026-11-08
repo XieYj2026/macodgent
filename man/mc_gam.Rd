@@ -39,12 +39,14 @@ Terms need sufficient sample size for stable estimation. Depends on mgcv (Sugges
 To view the effect plot, use \code{plot(res$model, pages = 1, shade = TRUE)}.
 }
 \examples{
+# SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+# Not real patients; see ?sim_htn_trial before interpreting any result.
+data(sim_htn_trial)
+d <- sim_htn_trial
 \donttest{
-# use gAM to capture the non-linear effect of pregnancy weight (lwt) on birth weight
-birthwt <- MASS::birthwt
-res <- mc_gam(birthwt, bwt ~ s(lwt) + smoke)
-cat("smooth terms:\n")
-print(as.data.frame(res$terms), row.names = FALSE)
+g <- mc_gam(d, sbp_week12 ~ s(sbp_baseline) + treatment)
+g$smooths
+g$performance
 }
 }
 \seealso{

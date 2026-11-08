@@ -4,7 +4,16 @@
 \alias{mc_elastic_net}
 \title{Elastic Net Regression}
 \usage{
-mc_elastic_net(data, x, y, alpha = 0.5, nfolds = 10, family = "gaussian")
+mc_elastic_net(
+  data,
+  x,
+  y,
+  alpha = 0.5,
+  nfolds = 10,
+  family = "gaussian",
+  stability = 0L,
+  seed = NULL
+)
 }
 \arguments{
 \item{data}{A \code{data.frame}.}
@@ -18,6 +27,10 @@ mc_elastic_net(data, x, y, alpha = 0.5, nfolds = 10, family = "gaussian")
 \item{nfolds}{Cross-validation folds; default \code{10}.}
 
 \item{family}{GLM family; \code{"gaussian"} (default) or \code{"binomial"}, etc.}
+
+\item{stability}{Number of bootstrap refits for coefficient-selection frequency; \code{0} (default) skips it.}
+
+\item{seed}{Random seed for cross-validation and stability resamples.}
 }
 \value{
 A list with \code{cv}, \code{coefficients}, \code{lambda.min}, \code{alpha}.
@@ -43,10 +56,14 @@ Randomly keeping one. The closer alpha is to 1, the more it favours selection;
 The closer to 0, the more it favours shrinkage. Depends on glmnet (Suggests).
 }
 \examples{
+# SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+# Not real patients; see ?sim_htn_trial before interpreting any result.
+data(sim_htn_trial)
+d <- sim_htn_trial
 \donttest{
-# elastic net (alpha = 0.5) balances variable selection and shrinkage
-xvars <- setdiff(names(mtcars), "mpg")
-mc_elastic_net(mtcars, x = xvars, y = "mpg", alpha = 0.5)$coefficients
+xvars <- c("age", "bmi", "sbp_baseline", "ldl", "glucose", "creatinine")
+mc_elastic_net(d, x = xvars, y = "sbp_week12",
+               nfolds = 5, seed = 1)$coefficients
 }
 }
 \seealso{

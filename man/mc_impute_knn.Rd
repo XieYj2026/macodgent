@@ -31,15 +31,16 @@ Arguments: \code{.data} is a data.frame; \code{k} is the number of neighbours, d
 Result: Returns an imputed data.frame with the same structure as the input.
 Note: KNN is sensitive to scale, so standardisation is done internally;
 However, if columns differ greatly in range, it is still recommended to run
-mc_scale() first. Categorical variables are not used in KNN and must be
+mc_scale_numeric() first. Categorical variables are not used in KNN and must be
 Handled separately (e.g. mode imputation or category merging).
 }
 \examples{
-# demonstrating kNN missing-value imputation with iris
-data(iris)
-set.seed(105)
-iris_na <- iris
-iris_na$Sepal.Length[sample(150, 15)] <- NA
-iris_na$Sepal.Width[sample(150, 15)] <- NA
-head(mc_impute_knn(iris_na, k = 3))
+# SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+# Not real patients; see ?sim_htn_trial before interpreting any result.
+data(sim_htn_trial)
+d <- sim_htn_trial
+x <- d[1:200, c("age", "bmi", "potassium", "quality_score")]
+colSums(is.na(x))
+imp <- mc_impute_knn(x, k = 5)
+colSums(is.na(imp))
 }
