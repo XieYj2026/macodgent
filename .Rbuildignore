@@ -8,4 +8,8 @@
 ^\.Ruserdata$
 ^.*\.tar\.gz$
 ^\.Rcheck$
+^\.github$
+^macodgent-.*\.html$
 ^cran-comments\.md$
+^Rplots\.pdf$
+^data-raw$
