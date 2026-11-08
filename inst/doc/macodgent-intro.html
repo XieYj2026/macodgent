@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>macodgent: one simulated dataset for every analysis function</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">macodgent: one simulated dataset for every
+analysis function</h1>
+
+
+
+<div id="simulated-data-read-this-first" class="section level1">
+<h1>SIMULATED DATA — read this first</h1>
+<p><code>sim_htn_trial</code> is <strong>entirely synthetic</strong>. It
+contains 3000 simulated hypertension-trial participants and 47 columns,
+generated by <code>data-raw/sim_htn_trial.R</code> with
+<code>set.seed(20261105)</code>. There are no real patients, no real
+trial results and no personally identifiable information. Every example
+in this vignette, in the README and in every help page uses this one
+dataset. All estimates, p values and survival probabilities below are
+artefacts of the simulation; they must not be used for clinical,
+regulatory or epidemiological inference.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">dim</span>(d)</span></code></pre></div>
+<pre><code>## [1] 3000   47</code></pre>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">attr</span>(d, <span class="st">&quot;simulated&quot;</span>)</span></code></pre></div>
+<pre><code>## [1] TRUE</code></pre>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">attr</span>(d, <span class="st">&quot;provenance&quot;</span>)</span></code></pre></div>
+<pre><code>## [1] &quot;SYNTHETIC / SIMULATED data generated by data-raw/sim_htn_trial.R; no real patients; for package examples only; not for clinical or regulatory inference.&quot;</code></pre>
+<p>The dataset deliberately contains every variable role the package
+needs: continuous and skewed measurements, categorical and ordered
+factors, binary and ordinal endpoints, a time-to-event endpoint with a
+competing cause, repeated blood-pressure visits in wide format, matched
+case-control strata, and MCAR missing values. See
+<code>?sim_htn_trial</code> for the full 47-column dictionary.</p>
+</div>
+<div id="data-overview" class="section level1">
+<h1>1. Data overview</h1>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">mc_inspect</span>(d[, <span class="fu">c</span>(<span class="st">&quot;id&quot;</span>, <span class="st">&quot;age&quot;</span>, <span class="st">&quot;bmi&quot;</span>, <span class="st">&quot;smoke&quot;</span>, <span class="st">&quot;crp&quot;</span>)], <span class="at">detailed =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<pre><code>##   variable   class    n n_missing pct_missing n_unique pct_unique is_constant
+## 1       id integer 3000         0           0     3000     100.00       FALSE
+## 2      age numeric 3000         0           0      498      16.60       FALSE
+## 3      bmi numeric 3000         0           0      213       7.10       FALSE
+## 4    smoke  factor 3000         0           0        2       0.07       FALSE
+## 5      crp numeric 3000         0           0      798      26.60       FALSE
+##   n_outliers            distribution        suggested_role
+## 1          0 approximately symmetric  identifier (exclude)
+## 2          0 approximately symmetric             predictor
+## 3         11 approximately symmetric             predictor
+## 4         NA             categorical categorical predictor
+## 5        168            right-skewed             predictor</code></pre>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="fu">mc_stat_mode</span>(d<span class="sc">$</span>site)</span></code></pre></div>
+<pre><code>## [1] &quot;SITE-1&quot;</code></pre>
+</div>
+<div id="quantitative-and-qualitative-description" class="section level1">
+<h1>2. Quantitative and qualitative description</h1>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="fu">mc_describe_numeric</span>(d, <span class="at">vars =</span> <span class="fu">c</span>(<span class="st">&quot;age&quot;</span>, <span class="st">&quot;bmi&quot;</span>, <span class="st">&quot;sbp_baseline&quot;</span>),</span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>                    <span class="at">group =</span> <span class="st">&quot;treatment&quot;</span>)</span></code></pre></div>
+<pre><code>##   treatment     variable    n n_missing      mean median        sd       var
+## 1   Placebo          age 1517         0  57.94918   58.1 10.903400 118.88412
+## 2   Placebo          bmi 1517         0  26.51305   26.4  4.050511  16.40664
+## 3   Placebo sbp_baseline 1517         0 149.29532  149.7 11.814580 139.58431
+## 4    Active          age 1483         0  57.35840   57.0 10.874730 118.25975
+## 5    Active          bmi 1483         0  26.59737   26.5  4.172004  17.40561
+## 6    Active sbp_baseline 1483         0 149.84160  150.1 11.992533 143.82085
+##     min   max range  IQR   SE.mean CI.mean.low CI.mean.high         CV
+## 1  30.0  85.0  55.0 15.0 0.2799427    57.40006     58.49829 0.18815452
+## 2  17.0  39.2  22.2  5.7 0.1039961    26.30906     26.71704 0.15277421
+## 3 110.6 190.2  79.6 15.9 0.3033371   148.70031    149.89032 0.07913564
+## 4  30.0  85.0  55.0 15.3 0.2823891    56.80447     57.91232 0.18959264
+## 5  17.0  40.9  23.9  5.6 0.1083363    26.38486     26.80988 0.15685775
+## 6  95.8 183.5  87.7 16.3 0.3114156   149.23074    150.45247 0.08003474
+##       skewness    kurtosis shapiro.W   shapiro.p
+## 1 -0.041149696 -0.19463560 0.9967562 0.002904760
+## 2 -0.003517597 -0.24125129 0.9969142 0.004237061
+## 3 -0.009625869  0.12504627 0.9987759 0.380262834
+## 4  0.055350155 -0.30410765 0.9967658 0.003503899
+## 5  0.158944190 -0.01953436 0.9964535 0.001703832
+## 6 -0.090312380  0.03243496 0.9980344 0.074377579
+##                                           distribution
+## 1 non-normal: inspect a Q-Q plot, consider a rank test
+## 2 non-normal: inspect a Q-Q plot, consider a rank test
+## 3                                 approximately normal
+## 4 non-normal: inspect a Q-Q plot, consider a rank test
+## 5 non-normal: inspect a Q-Q plot, consider a rank test
+## 6                                 approximately normal</code></pre>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="fu">mc_test_normality</span>(d<span class="sc">$</span>crp)</span></code></pre></div>
+<pre><code>##           test statistic      p.value    n skewness kurtosis
+## 1 Shapiro-Wilk 0.6967577 7.179347e-59 3000 3.674673 22.62508
+##                                                            verdict
+## 1 departure from normality; consider a rank test or transformation</code></pre>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="fu">mc_correlate</span>(d, <span class="at">vars =</span> <span class="fu">c</span>(<span class="st">&quot;age&quot;</span>, <span class="st">&quot;bmi&quot;</span>, <span class="st">&quot;sbp_baseline&quot;</span>, <span class="st">&quot;ldl&quot;</span>, <span class="st">&quot;glucose&quot;</span>))</span></code></pre></div>
+<pre><code>##            var1         var2            r     conf.low  conf.high    n  method
+## 1           age          bmi  0.165766965  0.130756140 0.20036486 3000 pearson
+## 2           age sbp_baseline  0.309300246  0.276575094 0.34130888 3000 pearson
+## 3           age          ldl -0.016943259 -0.052697806 0.01885467 3000 pearson
+## 4           age      glucose  0.027404503 -0.008390225 0.06312909 3000 pearson
+## 5           bmi sbp_baseline  0.266057570  0.232484619 0.29899724 3000 pearson
+## 6           bmi          ldl  0.009501700 -0.026293740 0.04527281 3000 pearson
+## 7           bmi      glucose  0.149034906  0.113855648 0.18384090 3000 pearson
+## 8  sbp_baseline          ldl  0.001284134 -0.034503951 0.03706893 3000 pearson
+## 9  sbp_baseline      glucose  0.069314588  0.033611463 0.10484103 3000 pearson
+## 10          ldl      glucose -0.013985809 -0.049747410 0.02181161 3000 pearson
+##         p.value   p.adjusted
+## 1  6.306699e-20 5.045359e-19
+## 2  1.615278e-67 1.615278e-66
+## 3  3.535630e-01 1.000000e+00
+## 4  1.334428e-01 6.672141e-01
+## 5  8.743624e-50 7.869262e-49
+## 6  6.029072e-01 1.000000e+00
+## 7  2.297485e-16 1.608240e-15
+## 8  9.439504e-01 1.000000e+00
+## 9  1.449857e-04 8.699144e-04
+## 10 4.438236e-01 1.000000e+00</code></pre>
+</div>
+<div id="group-comparison-and-table-one" class="section level1">
+<h1>3. Group comparison and Table One</h1>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a><span class="fu">mc_compare_groups</span>(d, <span class="at">group =</span> <span class="st">&quot;treatment&quot;</span>,</span>
+<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a>                  <span class="at">vars =</span> <span class="fu">c</span>(<span class="st">&quot;age&quot;</span>, <span class="st">&quot;bmi&quot;</span>, <span class="st">&quot;crp&quot;</span>, <span class="st">&quot;smoke&quot;</span>, <span class="st">&quot;sex&quot;</span>))</span></code></pre></div>
+<pre><code>## Group comparison -- 5 tests, p adjusted by holm 
+##  variable              test          effect estimate  conf.low conf.high
+##       age Wilcoxon rank-sum rank-biserial r  0.03490 -0.000887    0.0706
+##       bmi Wilcoxon rank-sum rank-biserial r -0.00459 -0.040400    0.0312
+##       crp Wilcoxon rank-sum rank-biserial r -0.00103 -0.036800    0.0348
+##     smoke        Chi-square      Cramer&#39;s V  0.00755        NA        NA
+##       sex        Chi-square      Cramer&#39;s V  0.01030        NA        NA
+##  p.value p.adjusted significant
+##   0.0979       0.49       FALSE
+##   0.8280       1.00       FALSE
+##   0.9610       1.00       FALSE
+##   0.6790       1.00       FALSE
+##   0.5720       1.00       FALSE</code></pre>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a><span class="fu">mc_baseline_table</span>(d, <span class="at">vars =</span> <span class="fu">c</span>(<span class="st">&quot;age&quot;</span>, <span class="st">&quot;bmi&quot;</span>, <span class="st">&quot;sex&quot;</span>, <span class="st">&quot;smoke&quot;</span>, <span class="st">&quot;sbp_baseline&quot;</span>),</span>
+<span id="cb19-2"><a href="#cb19-2" tabindex="-1"></a>                  <span class="at">group =</span> <span class="st">&quot;treatment&quot;</span>)</span></code></pre></div>
+<pre><code>##        variable  level stratum            value              test    p.value
+## 1           age        Overall  57.66 +/- 10.89 Wilcoxon rank-sum 0.09790818
+## 2           age        Placebo  57.95 +/- 10.90 Wilcoxon rank-sum 0.09790818
+## 3           age         Active  57.36 +/- 10.87 Wilcoxon rank-sum 0.09790818
+## 4           bmi        Overall   26.55 +/- 4.11 Wilcoxon rank-sum 0.82781334
+## 5           bmi        Placebo   26.51 +/- 4.05 Wilcoxon rank-sum 0.82781334
+## 6           bmi         Active   26.60 +/- 4.17 Wilcoxon rank-sum 0.82781334
+## 7           sex Female Overall     1458 (48.6%)        Chi-square 0.57182785
+## 8           sex   Male Overall     1542 (51.4%)        Chi-square 0.57182785
+## 9           sex Female Placebo      745 (49.1%)        Chi-square 0.57182785
+## 10          sex   Male Placebo      772 (50.9%)        Chi-square 0.57182785
+## 11          sex Female  Active      713 (48.1%)        Chi-square 0.57182785
+## 12          sex   Male  Active      770 (51.9%)        Chi-square 0.57182785
+## 13        smoke     No Overall     2207 (73.6%)        Chi-square 0.67922303
+## 14        smoke    Yes Overall      793 (26.4%)        Chi-square 0.67922303
+## 15        smoke     No Placebo     1121 (73.9%)        Chi-square 0.67922303
+## 16        smoke    Yes Placebo      396 (26.1%)        Chi-square 0.67922303
+## 17        smoke     No  Active     1086 (73.2%)        Chi-square 0.67922303
+## 18        smoke    Yes  Active      397 (26.8%)        Chi-square 0.67922303
+## 19 sbp_baseline        Overall 149.57 +/- 11.90      Welch t-test 0.20899717
+## 20 sbp_baseline        Placebo 149.30 +/- 11.81      Welch t-test 0.20899717
+## 21 sbp_baseline         Active 149.84 +/- 11.99      Welch t-test 0.20899717
+##    p.adjusted          effect  effect_size         smd
+## 1   0.4895409 rank-biserial r  0.034900483  0.05425446
+## 2   0.4895409 rank-biserial r  0.034900483  0.05425446
+## 3   0.4895409 rank-biserial r  0.034900483  0.05425446
+## 4   1.0000000 rank-biserial r -0.004586811 -0.02050685
+## 5   1.0000000 rank-biserial r -0.004586811 -0.02050685
+## 6   1.0000000 rank-biserial r -0.004586811 -0.02050685
+## 7   1.0000000      Cramer&#39;s V  0.010322043          NA
+## 8   1.0000000      Cramer&#39;s V  0.010322043          NA
+## 9   1.0000000      Cramer&#39;s V  0.010322043          NA
+## 10  1.0000000      Cramer&#39;s V  0.010322043          NA
+## 11  1.0000000      Cramer&#39;s V  0.010322043          NA
+## 12  1.0000000      Cramer&#39;s V  0.010322043          NA
+## 13  1.0000000      Cramer&#39;s V  0.007549874          NA
+## 14  1.0000000      Cramer&#39;s V  0.007549874          NA
+## 15  1.0000000      Cramer&#39;s V  0.007549874          NA
+## 16  1.0000000      Cramer&#39;s V  0.007549874          NA
+## 17  1.0000000      Cramer&#39;s V  0.007549874          NA
+## 18  1.0000000      Cramer&#39;s V  0.007549874          NA
+## 19  0.8359887        Hedges g -0.045883724 -0.04589132
+## 20  0.8359887        Hedges g -0.045883724 -0.04589132
+## 21  0.8359887        Hedges g -0.045883724 -0.04589132</code></pre>
+</div>
+<div id="logistic-screening-and-full-diagnostic-report" class="section level1">
+<h1>4. Logistic screening and full diagnostic report</h1>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" tabindex="-1"></a>sc <span class="ot">&lt;-</span> <span class="fu">mc_logistic_screen</span>(d, <span class="at">y =</span> <span class="st">&quot;bp_control&quot;</span>,</span>
+<span id="cb21-2"><a href="#cb21-2" tabindex="-1"></a>  <span class="at">x_vars =</span> <span class="fu">c</span>(<span class="st">&quot;age&quot;</span>, <span class="st">&quot;bmi&quot;</span>, <span class="st">&quot;ldl&quot;</span>, <span class="st">&quot;glucose&quot;</span>, <span class="st">&quot;smoke&quot;</span>, <span class="st">&quot;diabetes&quot;</span>),</span>
+<span id="cb21-3"><a href="#cb21-3" tabindex="-1"></a>  <span class="at">p_adjust =</span> <span class="st">&quot;BH&quot;</span>)</span>
+<span id="cb21-4"><a href="#cb21-4" tabindex="-1"></a>sc<span class="sc">$</span>univariate</span></code></pre></div>
+<pre><code>##   variable        OR    CI.low  CI.high    p.value p.adjusted selected
+## 1      age 1.0011197 0.9941659 1.008124 0.75298316  0.7758789    FALSE
+## 2      bmi 0.9954123 0.9771763 1.013964 0.62562691  0.7758789    FALSE
+## 3      ldl 1.0010192 0.9982057 1.003841 0.47799789  0.7758789    FALSE
+## 4  glucose 0.9993025 0.9945102 1.004114 0.77587887  0.7758789    FALSE
+## 5    smoke 1.0829823 0.9120189 1.284249 0.36110308  0.7758789    FALSE
+## 6 diabetes 0.7689756 0.5779379 1.013346 0.06630135  0.3978081    FALSE</code></pre>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" tabindex="-1"></a>rep <span class="ot">&lt;-</span> <span class="fu">mc_logistic_report</span>(d,</span>
+<span id="cb23-2"><a href="#cb23-2" tabindex="-1"></a>  bp_control <span class="sc">~</span> age <span class="sc">+</span> bmi <span class="sc">+</span> treatment <span class="sc">+</span> diabetes, <span class="at">auc_boot =</span> <span class="dv">0</span><span class="dt">L</span>)</span>
+<span id="cb23-3"><a href="#cb23-3" tabindex="-1"></a>rep<span class="sc">$</span>checks</span></code></pre></div>
+<pre><code>##                      check       value   threshold status
+## 1           Discrimination   0.6384381 AUC &gt;= 0.70 REVIEW
+## 2              Calibration   0.9959801 HL p &gt; 0.05   PASS
+## 3        Overfitting (EPV) 250.2500000   EPV &gt;= 10   PASS
+## 4        Multicollinearity   1.0296668 max VIF &lt; 5   PASS
+## 5 Influential observations 105.0000000 flagged = 0 REVIEW</code></pre>
+</div>
+<div id="survival-analysis" class="section level1">
+<h1>5. Survival analysis</h1>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" tabindex="-1"></a>km <span class="ot">&lt;-</span> <span class="fu">mc_kaplan_meier</span>(d, <span class="at">time =</span> <span class="st">&quot;followup_days&quot;</span>, <span class="at">status =</span> <span class="st">&quot;cv_event&quot;</span>,</span>
+<span id="cb25-2"><a href="#cb25-2" tabindex="-1"></a>                      <span class="at">group =</span> <span class="st">&quot;treatment&quot;</span>)</span>
+<span id="cb25-3"><a href="#cb25-3" tabindex="-1"></a>km<span class="sc">$</span>logrank</span></code></pre></div>
+<pre><code>##       test    chisq df     p.value
+## 1 log-rank 29.12409  1 6.78877e-08</code></pre>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" tabindex="-1"></a>cox <span class="ot">&lt;-</span> <span class="fu">mc_cox</span>(d, survival<span class="sc">::</span><span class="fu">Surv</span>(followup_days, cv_event) <span class="sc">~</span></span>
+<span id="cb27-2"><a href="#cb27-2" tabindex="-1"></a>                age <span class="sc">+</span> bmi <span class="sc">+</span> treatment <span class="sc">+</span> diabetes)</span>
+<span id="cb27-3"><a href="#cb27-3" tabindex="-1"></a>cox<span class="sc">$</span>performance</span></code></pre></div>
+<pre><code>##           metric        value
+## 1              n 3.000000e+03
+## 2         events 7.870000e+02
+## 3    concordance 6.219268e-01
+## 4 concordance_se 9.748604e-03
+## 5       LRT_chi2 1.410921e+02
+## 6         LRT_df 4.000000e+00
+## 7          LRT_p 1.647482e-29
+## 8            AIC 1.213999e+04
+## 9             R2 4.594190e-02</code></pre>
+</div>
+<div id="non-linear-dose-response" class="section level1">
+<h1>6. Non-linear dose-response</h1>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" tabindex="-1"></a>rcs <span class="ot">&lt;-</span> <span class="fu">mc_rcs</span>(d, <span class="at">x =</span> <span class="st">&quot;sbp_baseline&quot;</span>, <span class="at">y =</span> <span class="st">&quot;sbp_week12&quot;</span>, <span class="at">nk =</span> <span class="dv">4</span>)</span>
+<span id="cb29-2"><a href="#cb29-2" tabindex="-1"></a>rcs<span class="sc">$</span>nonlinearity_p</span></code></pre></div>
+<pre><code>## [1] 0.9171916</code></pre>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" tabindex="-1"></a><span class="fu">head</span>(rcs<span class="sc">$</span>curve)</span></code></pre></div>
+<pre><code>##           x      fit       lo       hi
+## 1  95.80000 85.68006 75.73304 95.62707
+## 2  96.75354 86.67773 77.09801 96.25745
+## 3  97.70707 87.67534 78.46211 96.88858
+## 4  98.66061 88.67284 79.82484 97.52083
+## 5  99.61414 89.67014 81.18567 98.15462
+## 6 100.56768 90.66721 82.54409 98.79033</code></pre>
+</div>
+<div id="one-call-many-results" class="section level1">
+<h1>7. One call, many results</h1>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" tabindex="-1"></a>auto <span class="ot">&lt;-</span> <span class="fu">mc_auto_analyze</span>(d, <span class="at">outcome =</span> <span class="st">&quot;bp_control&quot;</span>, <span class="at">group =</span> <span class="st">&quot;treatment&quot;</span>,</span>
+<span id="cb33-2"><a href="#cb33-2" tabindex="-1"></a>  <span class="at">vars =</span> <span class="fu">c</span>(<span class="st">&quot;age&quot;</span>, <span class="st">&quot;bmi&quot;</span>, <span class="st">&quot;sbp_baseline&quot;</span>, <span class="st">&quot;ldl&quot;</span>, <span class="st">&quot;glucose&quot;</span>, <span class="st">&quot;smoke&quot;</span>, <span class="st">&quot;diabetes&quot;</span>),</span>
+<span id="cb33-3"><a href="#cb33-3" tabindex="-1"></a>  <span class="at">auc_boot =</span> <span class="dv">0</span><span class="dt">L</span>)</span>
+<span id="cb33-4"><a href="#cb33-4" tabindex="-1"></a>auto<span class="sc">$</span>findings</span></code></pre></div>
+<pre><code>## [1] &quot;Dataset: 3000 rows x 9 columns; 3000 complete rows, 0 duplicated rows, 0 missing cells (0.0%).&quot;
+## [2] &quot;Column audit: 7 predictor(s) eligible, 0 excluded (none).&quot;                                     
+## [3] &quot;Distribution: 3 of 5 numeric columns look approximately normal; correlation used spearman.&quot;    
+## [4] &quot;Group comparison (treatment): 0 of 7 tests significant after holm adjustment.&quot;                 
+## [5] &quot;Univariable screening: 1 of 8 predictors significant after holm adjustment.&quot;                   
+## [6] &quot;Multivariable logistic model: 8 coefficients, 2 with p &lt; 0.05 (treatmentActive, diabetesYes).&quot; 
+## [7] &quot;Model checks: 4 PASS, 2 REVIEW (Discrimination, Influential observations).&quot;</code></pre>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" tabindex="-1"></a>auto<span class="sc">$</span>model<span class="sc">$</span>checks</span></code></pre></div>
+<pre><code>##                      check        value    threshold status note
+## 1           Discrimination 6.435196e-01  AUC &gt;= 0.70 REVIEW     
+## 2              Calibration 9.795735e-01  HL p &gt; 0.05   PASS     
+## 3        Overfitting (EPV) 1.251250e+02    EPV &gt;= 10   PASS     
+## 4        Multicollinearity 1.200528e+00  max VIF &lt; 5   PASS     
+## 5 Influential observations 6.700000e+01  flagged = 0 REVIEW     
+## 6         Global model fit 4.489544e-36 LRT p &lt; 0.05   PASS</code></pre>
+<p>The mapping between each function and the analysis modules is listed
+in the module table of <code>README.md</code>.</p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
