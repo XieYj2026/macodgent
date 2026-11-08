@@ -6,7 +6,7 @@ on:
   pull_request:
   workflow_dispatch:
 
-permissions: read-all
+permissions: contents: read  # 仅需读权限即可运行 check（不上传快照）
 
 jobs:
   R-CMD-check:
@@ -43,5 +43,7 @@ jobs:
 
       - uses: r-lib/actions/check-r-package@v2
         with:
-          upload-snapshots: true
+          # 显式去掉默认的 --as-cran：本包不上 CRAN，其强制的
+          # “CRAN incoming feasibility” 联网检查在 CI 环境下会失败。
+          args: 'c("--no-manual")'
           build_args: 'c("--no-manual")'
