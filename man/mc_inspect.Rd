@@ -4,10 +4,12 @@
 \alias{mc_inspect}
 \title{Data frame overview}
 \usage{
-mc_inspect(.data)
+mc_inspect(.data, detailed = FALSE)
 }
 \arguments{
 \item{.data}{A \code{data.frame} or \code{tibble}.}
+
+\item{detailed}{If \code{TRUE}, add unique-percentage, constant flag, outlier count, distribution verdict and a suggested variable role.}
 }
 \value{
 A \code{data.frame} with those six columns, one row per input column.
@@ -32,8 +34,10 @@ Against that total length. This is the first "health check" of the
 Preprocessing pipeline  -  run it before any cleaning or modelling.
 }
 \examples{
-# data-quality check on the birthwt data frame (try injecting
-# missing values to practice)
-birthwt <- MASS::birthwt
-mc_inspect(birthwt[, c("age", "lwt", "bwt", "smoke", "low")])
+# SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+# Not real patients; see ?sim_htn_trial before interpreting any result.
+data(sim_htn_trial)
+d <- sim_htn_trial
+mc_inspect(d[, c("id", "age", "bmi", "smoke", "crp")])
+mc_inspect(d[, c("age", "bmi", "smoke", "crp")], detailed = TRUE)
 }

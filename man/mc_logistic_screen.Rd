@@ -4,7 +4,16 @@
 \alias{mc_logistic_screen}
 \title{Univariate screen -> multivariable logistic regression}
 \usage{
-mc_logistic_screen(data, y, x_vars, alpha = 0.05, conf = 0.95)
+mc_logistic_screen(
+  data,
+  y,
+  x_vars,
+  alpha = 0.05,
+  conf = 0.95,
+  p_adjust = "none",
+  bootstrap = 0L,
+  seed = NULL
+)
 }
 \arguments{
 \item{data}{A \code{data.frame}.}
@@ -16,6 +25,12 @@ mc_logistic_screen(data, y, x_vars, alpha = 0.05, conf = 0.95)
 \item{alpha}{Univariate screening significance threshold; default \code{0.05}.}
 
 \item{conf}{Multivariable confidence level; default \code{0.95}.}
+
+\item{p_adjust}{Multiplicity correction for the univariate p values; \code{"none"} (default), \code{"holm"}, \code{"BH"}, etc.}
+
+\item{bootstrap}{Number of resamples for variable-selection stability; \code{0} (default) skips it.}
+
+\item{seed}{Random seed for the stability resamples.}
 }
 \value{
 A list with \code{univariate} (univariate table), \code{selected}
@@ -48,14 +63,13 @@ Report both univariate and multivariable results and state the screening rule.
 It is still recommended to validate the final model with mc_logistic().
 }
 \examples{
-# : univariate screening then multivariable modelling ("screen then model")
-birthwt <- MASS::birthwt
-bw <- birthwt
-bw$race <- factor(bw$race)
-bw$smoke <- factor(bw$smoke)
-res <- mc_logistic_screen(bw, y = "low",
-x_vars = c("age","lwt","race","smoke","ht","ui"))
-cat("==== univariate ====\n"); print(res$univariate, row.names = FALSE)
-cat("\n==== selected ====\n"); print(res$selected)
-cat("\n==== multivariable ====\n"); print(as.data.frame(res$multivariable), row.names = FALSE)
+# SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+# Not real patients; see ?sim_htn_trial before interpreting any result.
+data(sim_htn_trial)
+d <- sim_htn_trial
+scr <- mc_logistic_screen(d, y = "bp_control",
+  x_vars = c("age", "bmi", "ldl", "glucose", "smoke", "diabetes"),
+  p_adjust = "BH")
+scr$univariate
+scr$selected
 }

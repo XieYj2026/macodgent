@@ -4,7 +4,14 @@
 \alias{mc_logistic}
 \title{Binary logistic regression}
 \usage{
-mc_logistic(data, formula, conf = 0.95)
+mc_logistic(
+  data,
+  formula,
+  conf = 0.95,
+  diagnostics = FALSE,
+  auc_boot = 0L,
+  seed = 1L
+)
 }
 \arguments{
 \item{data}{A \code{data.frame}.}
@@ -12,6 +19,12 @@ mc_logistic(data, formula, conf = 0.95)
 \item{formula}{A model formula, e.g. \code{y ~ x1 + x2}.}
 
 \item{conf}{Confidence level; default \code{0.95}.}
+
+\item{diagnostics}{If \code{TRUE}, return the full diagnostic bundle from \code{\link[=mc_logistic_report]{mc_logistic_report()}} instead of only the coefficient table.}
+
+\item{auc_boot}{Bootstrap resamples for the AUC CI; \code{0} uses the Hanley-McNeil approximation.}
+
+\item{seed}{Random seed used when \code{diagnostics = TRUE}.}
 }
 \value{
 A tidy \code{data.frame} with columns \code{term} / \code{estimate}
@@ -40,7 +53,11 @@ Multicollinearity and empty cells before modelling. For non-binary outcomes,
 Use a multinomial or ordinal model instead.
 }
 \examples{
-# multivariable logistic regression for low birth weight
-birthwt <- MASS::birthwt
-mc_logistic(birthwt, low ~ age + lwt + smoke + factor(race))
+# SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+# Not real patients; see ?sim_htn_trial before interpreting any result.
+data(sim_htn_trial)
+d <- sim_htn_trial
+mc_logistic(d, bp_control ~ age + bmi + treatment)
+mc_logistic(d, bp_control ~ age + bmi + treatment,
+            diagnostics = TRUE, auc_boot = 0L)$checks
 }

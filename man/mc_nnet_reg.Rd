@@ -4,7 +4,16 @@
 \alias{mc_nnet_reg}
 \title{Neural-network regression}
 \usage{
-mc_nnet_reg(data, formula, hidden = 5, maxit = 200, seed = NULL)
+mc_nnet_reg(
+  data,
+  formula,
+  hidden = 5,
+  maxit = 200,
+  seed = NULL,
+  validation = c("holdout", "cv", "none"),
+  prop = 0.7,
+  folds = 5L
+)
 }
 \arguments{
 \item{data}{A \code{data.frame}.}
@@ -16,6 +25,12 @@ mc_nnet_reg(data, formula, hidden = 5, maxit = 200, seed = NULL)
 \item{maxit}{Maximum iterations; default \code{200}.}
 
 \item{seed}{Random seed.}
+
+\item{validation}{\code{"holdout"} (default), \code{"cv"} or \code{"none"}. Out-of-sample error replaces the optimistic in-sample RMSE.}
+
+\item{prop}{Training-set proportion for \code{validation = "holdout"}; default \code{0.7}.}
+
+\item{folds}{Number of folds for \code{validation = "cv"}; default \code{5}.}
 }
 \value{
 A list with the fitted net, predictions, RMSE and the fit plot.
@@ -43,13 +58,13 @@ Reproducibility. Too many nodes overfit; compare structures with
 \code{mc_model_compare()} or cross-validation.
 }
 \examples{
+# SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+# Not real patients; see ?sim_htn_trial before interpreting any result.
+data(sim_htn_trial)
+d <- sim_htn_trial
 \donttest{
-# neural-network regression -- predict birth weight from maternal features
-birthwt <- MASS::birthwt
-bw <- birthwt
-bw$race <- factor(bw$race)
-res <- mc_nnet_reg(bw, bwt ~ age + lwt + smoke + race, hidden = 5, seed = 7)
-res$rmse
-print(res$plot)
+nn <- mc_nnet_reg(d,
+  sbp_week12 ~ age + bmi + sbp_baseline + treatment, hidden = 5, seed = 7)
+nn$validation_rmse
 }
 }

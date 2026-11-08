@@ -4,7 +4,15 @@
 \alias{mc_lasso}
 \title{Lasso Regression}
 \usage{
-mc_lasso(data, x, y, nfolds = 10, family = "gaussian")
+mc_lasso(
+  data,
+  x,
+  y,
+  nfolds = 10,
+  family = "gaussian",
+  stability = 0L,
+  seed = NULL
+)
 }
 \arguments{
 \item{data}{A \code{data.frame}.}
@@ -16,6 +24,10 @@ mc_lasso(data, x, y, nfolds = 10, family = "gaussian")
 \item{nfolds}{Cross-validation folds; default \code{10}.}
 
 \item{family}{GLM family; \code{"gaussian"} (default) or \code{"binomial"}, etc.}
+
+\item{stability}{Number of bootstrap refits for coefficient-selection frequency; \code{0} (default) skips it.}
+
+\item{seed}{Random seed for cross-validation and stability resamples.}
 }
 \value{
 A list with \code{cv}, \code{coefficients}, \code{lambda.min}.
@@ -45,10 +57,13 @@ Means stronger shrinkage; tune with cv.glmnet's lambda.min / lambda.1se. Depends
 On glmnet (Suggests).
 }
 \examples{
+# SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+# Not real patients; see ?sim_htn_trial before interpreting any result.
+data(sim_htn_trial)
+d <- sim_htn_trial
 \donttest{
-# use lasso for variable selection among all mtcars predictors (mpg ~.)
-xvars <- setdiff(names(mtcars), "mpg")
-mc_lasso(mtcars, x = xvars, y = "mpg")$coefficients
+xvars <- c("age", "bmi", "sbp_baseline", "ldl", "glucose", "creatinine")
+mc_lasso(d, x = xvars, y = "sbp_week12", nfolds = 5, seed = 1)$coefficients
 }
 }
 \seealso{

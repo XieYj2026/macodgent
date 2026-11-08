@@ -4,12 +4,14 @@
 \alias{mc_ordinal_logistic}
 \title{Ordinal logistic regression}
 \usage{
-mc_ordinal_logistic(data, formula)
+mc_ordinal_logistic(data, formula, conf = 0.95)
 }
 \arguments{
 \item{data}{A \code{data.frame}.}
 
 \item{formula}{Model formula; the outcome is an ordered factor.}
+
+\item{conf}{Confidence level for the OR interval; default \code{0.95}.}
 }
 \value{
 A \code{data.frame} of coefficients with columns \code{variable} /
@@ -39,13 +41,11 @@ Always convert the outcome to an ordered factor first, otherwise the model is
 Meaningless. Depends on MASS (Suggests).
 }
 \examples{
+# SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+# Not real patients; see ?sim_htn_trial before interpreting any result.
+data(sim_htn_trial)
+d <- sim_htn_trial
 \donttest{
-# ordinal logistic  -  ordinal outcome of number of prenatal visits (ftv)
-birthwt <- MASS::birthwt
-bw <- birthwt
-bw$ftv_ord <- ordered(cut(bw$ftv, c(-1, 0, 2, Inf),
-labels = c("0", "1-2", "3+")))
-bw$smoke <- factor(bw$smoke)
-mc_ordinal_logistic(bw, ftv_ord ~ age + lwt + smoke)
+mc_ordinal_logistic(d, bp_grade ~ age + bmi + treatment)
 }
 }

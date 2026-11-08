@@ -4,12 +4,14 @@
 \alias{mc_model_compare}
 \title{Model comparison}
 \usage{
-mc_model_compare(..., n = NULL)
+mc_model_compare(..., n = NULL, lrt = FALSE)
 }
 \arguments{
 \item{...}{Fitted model objects.}
 
 \item{n}{Sample size; auto-detected from the model if NULL.}
+
+\item{lrt}{If \code{TRUE}, add pairwise likelihood-ratio tests between nested models ordered by parameter count.}
 }
 \value{
 A ranked comparison table sorted by Akaike weight.
@@ -38,10 +40,11 @@ Relative probability of each model being the best, not an absolute
 Goodness-of-fit.
 }
 \examples{
-# comparing multiple linear models predicting birth weight (aIC/bIC/aICc/weights)
-birthwt <- MASS::birthwt
-m1 <- lm(bwt ~ lwt, data = birthwt)
-m2 <- lm(bwt ~ lwt + age, data = birthwt)
-m3 <- lm(bwt ~ lwt + age + smoke + factor(race), data = birthwt)
-mc_model_compare(m1, m2, m3)
+# SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+# Not real patients; see ?sim_htn_trial before interpreting any result.
+data(sim_htn_trial)
+d <- sim_htn_trial
+m1 <- stats::lm(sbp_week12 ~ age + bmi, data = d)
+m2 <- stats::lm(sbp_week12 ~ age + bmi + treatment, data = d)
+mc_model_compare(m1, m2, lrt = TRUE)
 }

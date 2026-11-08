@@ -4,7 +4,7 @@
 \alias{mc_multistate}
 \title{Multi-state survival model}
 \usage{
-mc_multistate(data, trans, formula, ...)
+mc_multistate(data, trans, formula, ..., times = 0)
 }
 \arguments{
 \item{data}{mstate expanded long-format \code{data.frame}.}
@@ -14,6 +14,8 @@ mc_multistate(data, trans, formula, ...)
 \item{formula}{A formula, e.g. \code{Surv(time, status) ~ cov} (time/status are columns in data).}
 
 \item{...}{Extra arguments passed to \code{survival::coxph}.}
+
+\item{times}{Prediction time point(s) passed to \code{mstate::probtrans()}; default \code{0}.}
 }
 \value{
 A list with \code{model} (coxph object), \code{msfit} (mstate::msfit object).
@@ -42,28 +44,36 @@ Table), and the \code{trans} codes must match the from/to columns and
 Or no estimable transitions. Depends on mstate (Suggests).
 }
 \examples{
+# SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+# Not real patients; see ?sim_htn_trial before interpreting any result.
+data(sim_htn_trial)
+d <- sim_htn_trial
 \donttest{
-# three-state model (healthy h -> complication i / direct death d)
+ms_d <- d[1:200, ]                  # simulated 200-subject subset
 set.seed(127)
-library(mstate)
-n <- 150
-age <- rnorm(n, 55, 8)
-t12 <- rexp(n,.15); t23 <- rexp(n,.20); t13 <- rexp(n,.10)
+n <- nrow(ms_d)
+age <- ms_d$age
+t12 <- rexp(n, .15); t23 <- rexp(n, .20); t13 <- rexp(n, .10)
 rows <- list()
-for (i in 1:n) {
-if (runif(1) <.6) {
-rows[[length(rows)+1]] <- data.frame(id=i, tstart=0, tstop=t12[i], status=1, from=1, to=2, age=age[i])
-rows[[length(rows)+1]] <- data.frame(id=i, tstart=t12[i], tstop=t12[i]+t23[i], status=1, from=2, to=3, age=age[i])
-} else {
-rows[[length(rows)+1]] <- data.frame(id=i, tstart=0, tstop=t13[i], status=1, from=1, to=3, age=age[i])
-}
+for (i in seq_len(n)) {
+  if (runif(1) < .6) {
+    rows[[length(rows) + 1]] <- data.frame(id = i, tstart = 0,
+      tstop = t12[i], status = 1, from = 1, to = 2, age = age[i])
+    rows[[length(rows) + 1]] <- data.frame(id = i, tstart = t12[i],
+      tstop = t12[i] + t23[i], status = 1, from = 2, to = 3, age = age[i])
+  } else {
+    rows[[length(rows) + 1]] <- data.frame(id = i, tstart = 0,
+      tstop = t13[i], status = 1, from = 1, to = 3, age = age[i])
+  }
 }
 ms <- do.call(rbind, rows)
-trans <- transMat(list(c(2,3), c(3), c()), names = c("h","i","d"))
-ms$trans <- with(ms, ifelse(from == 1 & to == 2, 1, ifelse(from == 1 & to == 3, 2, 3)))
-fit <- mc_multistate(ms, trans = trans, formula = survival::Surv(tstart, tstop, status) ~ age + survival::strata(trans))
-cat("coxph coefficients:\n")
-print(summary(fit$model)$coefficients)
-cat("\nmsfit class:", class(fit$msfit)[1], "\n")
+trans <- mstate::transMat(list(c(2, 3), c(3), c()),
+                          names = c("h", "i", "d"))
+ms$trans <- with(ms, ifelse(from == 1 & to == 2, 1,
+                     ifelse(from == 1 & to == 3, 2, 3)))
+fit <- mc_multistate(ms, trans = trans,
+  formula = survival::Surv(tstart, tstop, status) ~
+    age + survival::strata(trans))
+head(fit$probability_table)
 }
 }

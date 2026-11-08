@@ -4,7 +4,7 @@
 \alias{mc_linear}
 \title{Linear regression with self-implemented diagnostics}
 \usage{
-mc_linear(data, formula, bootstrap = 0L, conf_level = 0.95)
+mc_linear(data, formula, bootstrap = 0L, conf_level = 0.95, alpha = 0.05)
 }
 \arguments{
 \item{data}{A \code{data.frame}.}
@@ -14,6 +14,8 @@ mc_linear(data, formula, bootstrap = 0L, conf_level = 0.95)
 \item{bootstrap}{Number of bootstrap resamples; \code{0} = skip bootstrap CI.}
 
 \item{conf_level}{Confidence level; default \code{0.95}.}
+
+\item{alpha}{Significance level for the shared PASS / REVIEW checks; default \code{0.05}.}
 }
 \value{
 A list with \code{coef}, \code{performance}, \code{vif}, \code{diagnostics},
@@ -55,12 +57,12 @@ Increases runtime, so for very large samples try a small number (e.g. 200)
 First. This function depends only on base R and ggplot2, no extra packages.
 }
 \examples{
-# predict birth weight by mother's age, pregnancy weight, smoking
-birthwt <- MASS::birthwt
-res <- mc_linear(birthwt, bwt ~ age + lwt + smoke + factor(race),
-bootstrap = 200)
-res$coef # coefficient table (with bootstrap cI)
-res$performance # r^2 / adjusted r^2 / aIC / bIC
-res$vif # variance inflation factor (multicollinearity)
-print(res$plot) # residuals vs fitted diagnostic plot
+# SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+# Not real patients; see ?sim_htn_trial before interpreting any result.
+data(sim_htn_trial)
+d <- sim_htn_trial
+fit <- mc_linear(d,
+  sbp_week12 ~ age + bmi + treatment + sbp_baseline, bootstrap = 0L)
+fit$coefficients
+fit$checks
 }
