@@ -11,7 +11,7 @@
 # -----------------------------------------------------------------------------
 # Module: Advanced modeling module (advanced)
 # This file contains: mc_gam / mc_lasso / mc_ridge / mc_elastic_net / mc_rcs /
-# mc_quantile_reg / mc_pcr (principal components regression) /
+# mc_quantile_reg / mc_pca_regression (principal components regression) /
 # mc_nnet_reg (neural-network regression)
 # where.rcs_basis (restricted cubic spline basis) is an original
 # implementation per Harrell, independent of the rms package;
@@ -42,41 +42,117 @@
 #' To view the effect plot, use \code{plot(res$model, pages = 1, shade = TRUE)}.
 #' @param data A `data.frame`.
 #' @param formula A GAM formula such as \code{y ~ s(x1) + x2}.
-#' @param... Additional arguments passed to \code{\link[mgcv]{gam}}.
+#' @param ... Additional arguments passed to \code{\link[mgcv]{gam}}.
 #' @return A list with \code{model} and \code{terms}.
 #' @examples
+#' # SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+#' # Not real patients; see ?sim_htn_trial before interpreting any result.
+#' data(sim_htn_trial)
+#' d <- sim_htn_trial
 #' \donttest{
-#' # use gAM to capture the non-linear effect of pregnancy weight (lwt) on birth weight
-#' birthwt <- MASS::birthwt
-#' res <- mc_gam(birthwt, bwt ~ s(lwt) + smoke)
-#' cat("smooth terms:\n")
-#' print(as.data.frame(res$terms), row.names = FALSE)
+#' g <- mc_gam(d, sbp_week12 ~ s(sbp_baseline) + treatment)
+#' g$smooths
+#' g$performance
 #' }
 #' @seealso \code{\link{mc_rcs}} (restricted cubic spline with self-implemented basis).
 #' @export
-mc_gam <- function(data, formula,...) {
+mc_gam <- function(data, formula, ...) {
  if (!requireNamespace("mgcv", quietly = TRUE)) {
  stop("`mc_gam` requires the mgcv package (shipped with R).")
  }
- fit <- eval(substitute(mgcv::gam(formula, data = DATA,...),
+ fit <- eval(substitute(mgcv::gam(formula, data = DATA, ...),
  list(DATA = data)))
- list(model = fit, terms = broom::tidy(fit))
+ s <- summary(fit)
+ smooths <- tryCatch({
+ t <- as.data.frame(s$s.table)
+ t$term <- rownames(t)
+ rownames(t) <- NULL
+ t
+ }, error = function(e) NULL)
+ if (is.null(smooths) || !nrow(smooths))
+ smooths <- data.frame(edf = NA_real_, Ref.df = NA_real_,
+ F = NA_real_, `p-value` = NA_real_,
+ term = "none", check.names = FALSE)
+ names(smooths) <- c("edf", "ref_df", "F", "p.value", "term")
+ parametric <- tryCatch({
+ t <- as.data.frame(s$p.table)
+ t$term <- rownames(t)
+ rownames(t) <- NULL
+ t
+ }, error = function(e) NULL)
+ n <- tryCatch(as.numeric(stats::nobs(fit)), error = function(e) nrow(data))
+ perf <- data.frame(
+ metric = c("AIC", "BIC", "deviance_explained", "adj_r_squared",
+ "n", "total_edf"),
+ value = c(stats::AIC(fit), stats::BIC(fit), s$dev.expl, s$r.sq,
+ n, sum(smooths$edf, na.rm = TRUE)),
+ stringsAsFactors = FALSE)
+ p_sm <- suppressWarnings(min(smooths$p.value, na.rm = TRUE))
+ edf_max <- suppressWarnings(max(smooths$edf, na.rm = TRUE))
+ checks <- rbind(
+ .mc_check_row("Smooth terms fitted", sum(!is.na(smooths$p.value)),
+ ">= 1", sum(!is.na(smooths$p.value)) >= 1L),
+ .mc_check_row("Non-linear signal", p_sm, "min smooth p < 0.05",
+ if (is.finite(p_sm)) p_sm < 0.05 else NA,
+ "edf near 1 with p > 0.05 suggests a linear term is sufficient"),
+ .mc_check_row("Smooth complexity", edf_max, "max edf < n / 10",
+ if (is.finite(edf_max)) edf_max < n / 10 else NA))
+ list(model = fit, terms = broom::tidy(fit), smooths = smooths,
+ parametric = parametric, performance = perf, checks = checks)
 }
 
 # Internal: unified implementation for elastic-net models.
-.elastic_net <- function(data, x, y, alpha, nfolds = 10, family = "gaussian") {
+.elastic_net <- function(data, x, y, alpha, nfolds = 10,
+                        family = "gaussian", stability = 0L, seed = NULL) {
  if (!requireNamespace("glmnet", quietly = TRUE)) {
  stop("`mc_elastic_net` requires the glmnet package; please install.packages('glmnet').")
  }
  xm <- as.matrix(data[x])
  yv <- data[[y]]
- cv <- glmnet::cv.glmnet(xm, yv, alpha = alpha, nfolds = nfolds, family = family)
+ if (!is.null(seed)) set.seed(seed)
+ cv <- glmnet::cv.glmnet(xm, yv, alpha = alpha, nfolds = nfolds,
+ family = family)
  cf <- as.matrix(stats::coef(cv, s = "lambda.min"))
  df <- data.frame(variable = rownames(cf), coefficient = cf[, 1],
  stringsAsFactors = FALSE)
  df <- df[df$variable != "(Intercept)", ]
  rownames(df) <- NULL
- list(cv = cv, coefficients = df, lambda.min = cv$lambda.min, alpha = alpha)
+ df$selected <- abs(df$coefficient) > 0
+ cf1 <- as.matrix(stats::coef(cv, s = "lambda.1se"))
+ cv_table <- data.frame(lambda = as.numeric(cv$lambda),
+ cvm = as.numeric(cv$cvm), cvsd = as.numeric(cv$cvsd),
+ cv_lo = as.numeric(cv$cvm) - as.numeric(cv$cvsd),
+ cv_hi = as.numeric(cv$cvm) + as.numeric(cv$cvsd),
+ stringsAsFactors = FALSE)
+ performance <- data.frame(
+ metric = c("lambda.min", "lambda.1se", "cv_mse_min",
+ "n_nonzero_min", "n_nonzero_1se"),
+ value = c(cv$lambda.min, cv$lambda.1se, min(cv$cvm, na.rm = TRUE),
+ sum(abs(cf[, 1]) > 0) - 1L, sum(abs(cf1[, 1]) > 0) - 1L),
+ stringsAsFactors = FALSE)
+ stab <- NULL
+ if (stability > 0L) {
+ if (!is.null(seed)) set.seed(seed + 1L)
+ cnt <- setNames(rep(0L, nrow(df)), df$variable)
+ n <- nrow(xm)
+ for (b in seq_len(stability)) {
+ idx <- sample.int(n, n, replace = TRUE)
+ c2 <- tryCatch(glmnet::cv.glmnet(xm[idx, , drop = FALSE], yv[idx],
+ alpha = alpha, nfolds = nfolds,
+ family = family), error = function(e) NULL)
+ if (is.null(c2)) next
+ cc <- as.matrix(stats::coef(c2, s = "lambda.min"))
+ nz <- setdiff(rownames(cc)[abs(cc[, 1]) > 0], "(Intercept)")
+ hit <- intersect(nz, names(cnt))
+ cnt[hit] <- cnt[hit] + 1L
+ }
+ stab <- data.frame(variable = names(cnt),
+ selection_frequency = as.numeric(cnt) / stability,
+ stringsAsFactors = FALSE)
+ }
+ list(cv = cv, coefficients = df, lambda.min = cv$lambda.min,
+ lambda.1se = cv$lambda.1se, alpha = alpha,
+ cv_table = cv_table, performance = performance, stability = stab)
 }
 
 #' Lasso Regression
@@ -109,16 +185,24 @@ mc_gam <- function(data, formula,...) {
 #' @param nfolds Cross-validation folds; default `10`.
 #' @param family GLM family; `"gaussian"` (default) or `"binomial"`, etc.
 #' @return A list with \code{cv}, \code{coefficients}, \code{lambda.min}.
+#' @param stability Number of bootstrap refits for coefficient-selection frequency; `0` (default) skips it.
+#' @param seed Random seed for cross-validation and stability resamples.
 #' @examples
+#' # SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+#' # Not real patients; see ?sim_htn_trial before interpreting any result.
+#' data(sim_htn_trial)
+#' d <- sim_htn_trial
 #' \donttest{
-#' # use lasso for variable selection among all mtcars predictors (mpg ~.)
-#' xvars <- setdiff(names(mtcars), "mpg")
-#' mc_lasso(mtcars, x = xvars, y = "mpg")$coefficients
+#' xvars <- c("age", "bmi", "sbp_baseline", "ldl", "glucose", "creatinine")
+#' mc_lasso(d, x = xvars, y = "sbp_week12", nfolds = 5, seed = 1)$coefficients
 #' }
 #' @seealso \code{\link{mc_ridge}}, \code{\link{mc_elastic_net}}.
 #' @export
-mc_lasso <- function(data, x, y, nfolds = 10, family = "gaussian") {
-.elastic_net(data, x, y, alpha = 1, nfolds = nfolds, family = family)
+mc_lasso <- function(data, x, y, nfolds = 10, family = "gaussian",
+               stability = 0L, seed = NULL) {
+ .elastic_net(data, x, y, alpha = 1, nfolds = nfolds,
+                family = family, stability = stability,
+                seed = seed)
 }
 
 #' Ridge Regression
@@ -147,16 +231,24 @@ mc_lasso <- function(data, x, y, nfolds = 10, family = "gaussian") {
 #' @param nfolds Cross-validation folds; default `10`.
 #' @param family GLM family; `"gaussian"` (default) or `"binomial"`, etc.
 #' @return A list with \code{cv}, \code{coefficients}, \code{lambda.min}.
+#' @param stability Number of bootstrap refits for coefficient-selection frequency; `0` (default) skips it.
+#' @param seed Random seed for cross-validation and stability resamples.
 #' @examples
+#' # SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+#' # Not real patients; see ?sim_htn_trial before interpreting any result.
+#' data(sim_htn_trial)
+#' d <- sim_htn_trial
 #' \donttest{
-#' # ridge regression for multicollinearity among mtcars predictors
-#' xvars <- setdiff(names(mtcars), "mpg")
-#' mc_ridge(mtcars, x = xvars, y = "mpg")$coefficients
+#' xvars <- c("age", "bmi", "sbp_baseline", "ldl", "glucose", "creatinine")
+#' mc_ridge(d, x = xvars, y = "sbp_week12", nfolds = 5, seed = 1)$coefficients
 #' }
 #' @seealso \code{\link{mc_lasso}}, \code{\link{mc_elastic_net}}.
 #' @export
-mc_ridge <- function(data, x, y, nfolds = 10, family = "gaussian") {
-.elastic_net(data, x, y, alpha = 0, nfolds = nfolds, family = family)
+mc_ridge <- function(data, x, y, nfolds = 10, family = "gaussian",
+               stability = 0L, seed = NULL) {
+ .elastic_net(data, x, y, alpha = 0, nfolds = nfolds,
+                family = family, stability = stability,
+                seed = seed)
 }
 
 #' Elastic Net Regression
@@ -186,16 +278,25 @@ mc_ridge <- function(data, x, y, nfolds = 10, family = "gaussian") {
 #' @param nfolds Cross-validation folds; default `10`.
 #' @param family GLM family; `"gaussian"` (default) or `"binomial"`, etc.
 #' @return A list with \code{cv}, \code{coefficients}, \code{lambda.min}, \code{alpha}.
+#' @param stability Number of bootstrap refits for coefficient-selection frequency; `0` (default) skips it.
+#' @param seed Random seed for cross-validation and stability resamples.
 #' @examples
+#' # SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+#' # Not real patients; see ?sim_htn_trial before interpreting any result.
+#' data(sim_htn_trial)
+#' d <- sim_htn_trial
 #' \donttest{
-#' # elastic net (alpha = 0.5) balances variable selection and shrinkage
-#' xvars <- setdiff(names(mtcars), "mpg")
-#' mc_elastic_net(mtcars, x = xvars, y = "mpg", alpha = 0.5)$coefficients
+#' xvars <- c("age", "bmi", "sbp_baseline", "ldl", "glucose", "creatinine")
+#' mc_elastic_net(d, x = xvars, y = "sbp_week12",
+#'                nfolds = 5, seed = 1)$coefficients
 #' }
 #' @seealso \code{\link{mc_lasso}}, \code{\link{mc_ridge}}.
 #' @export
-mc_elastic_net <- function(data, x, y, alpha = 0.5, nfolds = 10, family = "gaussian") {
-.elastic_net(data, x, y, alpha = alpha, nfolds = nfolds, family = family)
+mc_elastic_net <- function(data, x, y, alpha = 0.5, nfolds = 10, family = "gaussian",
+                           stability = 0L, seed = NULL) {
+ .elastic_net(data, x, y, alpha = alpha, nfolds = nfolds,
+                family = family, stability = stability,
+                seed = seed)
 }
 
 # Internal: restricted cubic spline basis (Harrell's definition).
@@ -250,39 +351,74 @@ mc_elastic_net <- function(data, x, y, alpha = 0.5, nfolds = 10, family = "gauss
 #' @param knots Full knot vector including boundaries; `NULL` = automatic quantile knots.
 #' @param family GLM family; `"gaussian"` (default) or `"binomial"`, etc.
 #' @return A list with \code{model}, \code{coefficients}, \code{plot}, \code{knots}.
+#' @param conf Confidence level for the curve band and coefficient intervals; default `0.95`.
 #' @examples
-#' # dose-response curve of maternal age vs low-birth-weight risk (non-linear)
-#' birthwt <- MASS::birthwt
-#' res <- mc_rcs(birthwt, x = "age", y = "low", nk = 4, family = "binomial")
-#' cat("knots:", round(res$knots, 2), "\n")
-#' print(res$plot)
+#' # SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+#' # Not real patients; see ?sim_htn_trial before interpreting any result.
+#' data(sim_htn_trial)
+#' d <- sim_htn_trial
+#' r <- mc_rcs(d, x = "sbp_baseline", y = "sbp_week12", nk = 4)
+#' r$knots
+#' r$nonlinearity_p
+#' head(r$curve)
 #' @seealso \code{\link{mc_gam}} (smooth terms are also used for non-linear relationship modeling).
 #' @export
-mc_rcs <- function(data, x, y, nk = 3, knots = NULL, family = "gaussian") {
- bx <-.rcs_basis(data[[x]], knots = knots, nk = nk)
- df <- data.frame(bx, y = data[[y]])
- f <- stats::as.formula(paste("y ~", paste(names(bx), collapse = " + ")))
- if (family == "gaussian") {
- fit <- stats::lm(f, data = df)
- } else {
- fit <- stats::glm(f, data = df, family = family)
- }
- grid <- data.frame(x = seq(min(data[[x]], na.rm = TRUE),
- max(data[[x]], na.rm = TRUE), length.out = 100))
- gx <-.rcs_basis(grid$x, knots = attr(bx, "knots"), nk = nk)
- pred <- stats::predict(fit, newdata = gx, se.fit = TRUE, type = "response")
- pc <- data.frame(x = grid$x,
- fit = as.numeric(pred$fit),
- lo = as.numeric(pred$fit) - 1.96 * pred$se.fit,
- hi = as.numeric(pred$fit) + 1.96 * pred$se.fit)
- plt <- ggplot2::ggplot(pc, ggplot2::aes(x = x, y = fit)) +
- ggplot2::geom_line() +
- ggplot2::geom_ribbon(ggplot2::aes(ymin = lo, ymax = hi), alpha = 0.2) +
- ggplot2::scale_x_continuous(breaks =.nice_breaks(pc$x, 6)) +
- ggplot2::labs(x = x, y = paste("predicted", y)) +
- mc_theme()
- td <- broom::tidy(fit, conf.int = TRUE, exponentiate = (family != "gaussian"))
- list(model = fit, coefficients = td, plot = plt, knots = attr(bx, "knots"))
+mc_rcs <- function(data, x, y, nk = 3, knots = NULL, family = "gaussian",
+                   conf = 0.95) {
+  bx <- .rcs_basis(data[[x]], knots = knots, nk = nk)
+  df <- data.frame(bx, y = data[[y]])
+  f <- stats::as.formula(paste("y ~", paste(names(bx), collapse = " + ")))
+  is_lm <- is.character(family) && length(family) == 1L &&
+    identical(family, "gaussian")
+  fit <- if (is_lm) stats::lm(f, data = df) else
+    stats::glm(f, data = df, family = family)
+  grid <- data.frame(x = seq(min(data[[x]], na.rm = TRUE),
+                             max(data[[x]], na.rm = TRUE), length.out = 100))
+  gx <- .rcs_basis(grid$x, knots = attr(bx, "knots"), nk = nk)
+  zc <- stats::qnorm(1 - (1 - conf) / 2)
+  if (is_lm) {
+    pred <- stats::predict(fit, newdata = gx, se.fit = TRUE)
+    pc <- data.frame(x = grid$x, fit = as.numeric(pred$fit),
+                     lo = as.numeric(pred$fit) - zc * pred$se.fit,
+                     hi = as.numeric(pred$fit) + zc * pred$se.fit)
+  } else {
+    ## predict.glm(se.fit = TRUE) returns se.fit on the LINK scale even when
+    ## type = "response". Build the interval on the link scale, then invert.
+    pred <- stats::predict(fit, newdata = gx, se.fit = TRUE, type = "link")
+    inv <- stats::family(fit)$linkinv
+    eta <- as.numeric(pred$fit)
+    pc <- data.frame(x = grid$x, fit = inv(eta),
+                     lo = inv(eta - zc * pred$se.fit),
+                     hi = inv(eta + zc * pred$se.fit))
+  }
+  plt <- ggplot2::ggplot(pc, ggplot2::aes(x = x, y = fit)) +
+    ggplot2::geom_line() +
+    ggplot2::geom_ribbon(ggplot2::aes(ymin = lo, ymax = hi), alpha = 0.2) +
+    ggplot2::scale_x_continuous(breaks = .nice_breaks(pc$x, 6)) +
+    ggplot2::labs(x = x, y = paste("predicted", y)) +
+    mc_theme()
+  td <- broom::tidy(fit, conf.int = TRUE, conf.level = conf,
+                    exponentiate = !is_lm)
+  ## Formal non-linearity test: linear term vs the full spline basis.
+  nl_p <- tryCatch({
+    f0 <- stats::as.formula("y ~ rcs_lin")
+    m0 <- if (is_lm) stats::lm(f0, data = df) else
+      stats::glm(f0, data = df, family = family)
+    if (is_lm) {
+      a <- stats::anova(m0, fit)
+      as.numeric(a[2, "Pr(>F)"])
+    } else {
+      a <- stats::anova(m0, fit, test = "Chisq")
+      as.numeric(a[2, "Pr(>Chi)"])
+    }
+  }, error = function(e) NA_real_)
+  list(model = fit, coefficients = td, plot = plt,
+       knots = attr(bx, "knots"), curve = pc,
+       nonlinearity_p = nl_p,
+       checks = .mc_check_row("Non-linearity", nl_p,
+                              "spline vs linear p < alpha",
+                              if (is.na(nl_p)) NA else nl_p < 0.05,
+                              "likelihood-ratio / F test against a linear term"))
 }
 
 #' Quantile Regression
@@ -312,25 +448,72 @@ mc_rcs <- function(data, x, y, nk = 3, knots = NULL, family = "gaussian") {
 #' @param taus Vector of quantile points; default `c(0.25, 0.5, 0.75)`.
 #' @return A `data.frame` with columns `term`, `estimate`, `std.error`, `statistic`,
 #' `p.value`, `tau` (stacked over taus).
+#' @param conf Confidence level for coefficient intervals; default `0.95`.
+#' @param se Standard-error method passed to `quantreg::summary.rq()`; `"rank"` (default), `"nid"` fallback.
 #' @examples
+#' # SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+#' # Not real patients; see ?sim_htn_trial before interpreting any result.
+#' data(sim_htn_trial)
+#' d <- sim_htn_trial
 #' \donttest{
-#' # conditional quantile regression of birth weight (slope of pregnancy weight lwt across quantiles)
-#' birthwt <- MASS::birthwt
-#' mc_quantile_reg(birthwt, bwt ~ lwt + age, taus = c(0.25, 0.5, 0.75))
+#' mc_quantile_reg(d, sbp_week12 ~ sbp_baseline + age,
+#'                 taus = c(0.25, 0.5, 0.75))
 #' }
 #' @export
-mc_quantile_reg <- function(data, formula, taus = c(0.25, 0.5, 0.75)) {
+mc_quantile_reg <- function(data, formula, taus = c(0.25, 0.5, 0.75),
+                            conf = 0.95, se = "nid") {
  if (!requireNamespace("quantreg", quietly = TRUE)) {
  stop("`mc_quantile_reg` requires the quantreg package; please install.packages('quantreg').")
  }
+ zc <- stats::qnorm(1 - (1 - conf) / 2)
  rows <- list()
  for (t in taus) {
  fit <- quantreg::rq(formula, data = data, tau = t)
- td <- broom::tidy(fit)
- td$tau <- t
- rows[[length(rows) + 1]] <- td
+ ## "rank" SE fails on non-unique solutions; try robust alternatives in order.
+ sm <- NULL
+ for (candidate in unique(c(se, "nid", "iid", "ker"))) {
+ sm <- suppressWarnings(tryCatch(summary(fit, se = candidate),
+ error = function(e) NULL))
+ if (!is.null(sm) && !is.null(sm$coefficients) &&
+ ncol(sm$coefficients) >= 4L) break
+ sm <- NULL
  }
- do.call(rbind, rows)
+ if (!is.null(sm)) {
+ co <- as.data.frame(sm$coefficients)
+ est <- co[, 1]; serr <- co[, 2]; tv <- co[, 3]; pv <- co[, 4]
+ } else {
+ est <- stats::coef(fit)
+ serr <- rep(NA_real_, length(est))
+ tv <- rep(NA_real_, length(est)); pv <- rep(NA_real_, length(est))
+ }
+ rows[[length(rows) + 1L]] <- data.frame(
+ term = names(stats::coef(fit)), estimate = as.numeric(est),
+ std_error = as.numeric(serr), statistic = as.numeric(tv),
+ p.value = as.numeric(pv),
+ conf.low = as.numeric(est) - zc * as.numeric(serr),
+ conf.high = as.numeric(est) + zc * as.numeric(serr),
+ tau = rep(t, length(est)), stringsAsFactors = FALSE)
+ }
+ out <- do.call(rbind, rows)
+ rownames(out) <- NULL
+ ## Approximate across-quantile slope test (independent-SE approximation).
+ terms <- setdiff(unique(out$term), "(Intercept)")
+ if (length(taus) >= 2L && length(terms)) {
+ i1 <- which(out$tau == min(taus)); i2 <- which(out$tau == max(taus))
+ tr <- do.call(rbind, lapply(terms, function(v) {
+ a <- out[i1, ][out$term[i1] == v, ][1, ]
+ b <- out[i2, ][out$term[i2] == v, ][1, ]
+ se2 <- sqrt(a$std_error^2 + b$std_error^2)
+ z <- (b$estimate - a$estimate) / se2
+ data.frame(term = v, tau_low = min(taus), tau_high = max(taus),
+ estimate_low = a$estimate, estimate_high = b$estimate,
+ difference = b$estimate - a$estimate, std_error = se2,
+ z = z, p.value = 2 * stats::pnorm(-abs(z)),
+ stringsAsFactors = FALSE)
+ }))
+ } else tr <- NULL
+ attr(out, "trend") <- tr
+ out
 }
 
 #' Principal Components Regression
@@ -365,29 +548,35 @@ mc_quantile_reg <- function(data, formula, taus = c(0.25, 0.5, 0.75)) {
 #' @param seed Random seed for CV.
 #' @return A list with chosen components, CV table, original-scale coefficients,
 #' Performance and the CV plot.
+#' @param conf Confidence level for original-scale coefficient intervals; default `0.95`.
+#' @param validation `"none"` (default) or `"holdout"` for an untouched test set.
+#' @param prop Training proportion for holdout validation; default `0.7`.
 #' @examples
-#' # predict birth weight from several correlated predictors (pCR removes collinearity)
-#' # note: pCR requires all predictors to be numeric, so the categorical variable race is
-#' # excluded (dummy-coding is discussed elsewhere)
-#' birthwt <- MASS::birthwt
-#' bw <- birthwt
-#' res <- mc_pcr(bw, bwt ~ age + lwt + smoke + ht + ui + ptl, k = 5, seed = 1)
-#' res$best_ncomp
-#' res$coef_original
-#' print(res$plot)
+#' # SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+#' # Not real patients; see ?sim_htn_trial before interpreting any result.
+#' data(sim_htn_trial)
+#' d <- sim_htn_trial
+#' pcr <- mc_pca_regression(d,
+#'   sbp_week12 ~ age + bmi + sbp_baseline + ldl + glucose, k = 5, seed = 1)
+#' pcr$best_ncomp
+#' pcr$coef_original
 #' @export
-mc_pcr <- function(data, formula, ncomp = NULL, k = 5L, seed = NULL) {
+mc_pca_regression <- function(data, formula, ncomp = NULL, k = 5L,
+                              seed = NULL, conf = 0.95,
+                              validation = c("none", "holdout"),
+                              prop = 0.7) {
  if (!inherits(data, "data.frame") || !inherits(formula, "formula"))
  stop("`data` must be a data.frame and `formula` a formula.")
+ validation <- match.arg(validation)
  mf <- stats::model.frame(formula, data = data)
- y <- as.numeric(model.response(mf))
+ y <- as.numeric(stats::model.response(mf))
  X <- as.matrix(mf[, -1, drop = FALSE])
  if (!is.numeric(X)) stop("All predictors must be numeric for PCR.")
  p <- ncol(X)
- Xs <- scale(X) # in-house: standardize
+ Xs <- scale(X)
  mu <- attr(Xs, "scaled:center")
  sg <- attr(Xs, "scaled:scale")
- pca <- stats::prcomp(Xs, center = FALSE, scale. = FALSE) # Xs already standardized
+ pca <- stats::prcomp(Xs, center = FALSE, scale. = FALSE)
  Z <- pca$x
  maxc <- min(p, length(y) - 2L)
  cv_mse <- NULL
@@ -411,21 +600,62 @@ mc_pcr <- function(data, formula, ncomp = NULL, k = 5L, seed = NULL) {
  ncomp <- min(as.integer(ncomp), maxc)
  }
  fit <- stats::lm(y ~ Z[, 1:ncomp])
- beta <- as.numeric(coef(fit)) # c(intercept, beta_pc...)
+ beta <- as.numeric(coef(fit))
  rot <- pca$rotation[, 1:ncomp, drop = FALSE]
- gamma <- as.numeric(crossprod(rot, beta[-1])) # original coefficients at scaled level
+ ## Back-transform PC coefficients: rotation (p x ncomp) times PC slopes.
+ gamma <- as.numeric(rot %*% beta[-1])
  coef_orig <- gamma / sg
  intercept <- beta[1] - sum(mu * coef_orig)
+ ## Analytic standard errors on the original scale: rotate the PC
+ ## coefficient covariance back through the loading matrix.
+ zc <- stats::qnorm(1 - (1 - conf) / 2)
+ V <- tryCatch(stats::vcov(fit)[-1, -1, drop = FALSE],
+ error = function(e) NULL)
+ se_orig <- if (!is.null(V))
+ sqrt(pmax(0, diag(rot %*% V %*% t(rot)))) / sg else
+ rep(NA_real_, length(coef_orig))
+ tstat <- coef_orig / se_orig
  coef_original <- data.frame(
  term = c("(Intercept)", colnames(X)),
- estimate = c(intercept, coef_orig), stringsAsFactors = FALSE)
+ estimate = c(intercept, coef_orig),
+ std.error = c(NA_real_, se_orig),
+ conf.low = c(NA_real_, coef_orig - zc * se_orig),
+ conf.high = c(NA_real_, coef_orig + zc * se_orig),
+ p.value = c(NA_real_, 2 * stats::pnorm(-abs(tstat))),
+ stringsAsFactors = FALSE)
  pred <- as.numeric(cbind(1, Z[, 1:ncomp]) %*% coef(fit))
  perf <- data.frame(
  metric = c("r_squared", "adj_r_squared", "rmse"),
  value = c(summary(fit)$r.squared, summary(fit)$adj.r.squared,
  sqrt(mean((y - pred)^2))), stringsAsFactors = FALSE)
- cv_table <- if (is.null(ncomp) || is.null(cv_mse)) NULL else
- data.frame(ncomp = seq_along(cv_mse), cv_mse = cv_mse, stringsAsFactors = FALSE)
+ ## Honest external validation on an untouched holdout set.
+ external <- NULL
+ if (validation == "holdout" && length(y) >= 20L) {
+ if (!is.null(seed)) set.seed(seed + 1L)
+ n <- length(y)
+ tr <- sample.int(n, max(10L, floor(prop * n)))
+ te <- setdiff(seq_len(n), tr)
+ Xtr <- scale(X[tr, , drop = FALSE])
+ mu_tr <- attr(Xtr, "scaled:center"); sg_tr <- attr(Xtr, "scaled:scale")
+ Xte <- sweep(sweep(X[te, , drop = FALSE], 2L, mu_tr, "-"),
+ 2L, sg_tr, "/")
+ pca_tr <- stats::prcomp(Xtr, center = FALSE, scale. = FALSE)
+ Rtr <- pca_tr$rotation[, seq_len(min(ncomp, ncol(pca_tr$x))), drop = FALSE]
+ Ztr <- pca_tr$x[, seq_len(ncol(Rtr)), drop = FALSE]
+ Zte <- as.matrix(Xte) %*% Rtr
+ m_tr <- stats::lm(y[tr] ~ Ztr)
+ pr <- as.numeric(cbind(1, Zte) %*% coef(m_tr))
+ sse <- sum((y[te] - pr)^2, na.rm = TRUE)
+ external <- data.frame(
+ metric = c("n_train", "n_test", "external_rmse", "external_r2"),
+ value = c(length(tr), length(te), sqrt(sse / length(te)),
+ 1 - sse / sum((y[te] - mean(y[te]))^2)),
+ stringsAsFactors = FALSE)
+ perf <- rbind(perf, external)
+ }
+ cv_table <- if (is.null(cv_mse)) NULL else
+ data.frame(ncomp = seq_along(cv_mse), cv_mse = cv_mse,
+ stringsAsFactors = FALSE)
  plot <- NULL
  if (!is.null(cv_table)) {
  plot <- ggplot2::ggplot(cv_table, ggplot2::aes(ncomp, cv_mse)) +
@@ -435,8 +665,9 @@ mc_pcr <- function(data, formula, ncomp = NULL, k = 5L, seed = NULL) {
  ggplot2::labs(x = "Number of principal components",
  y = "Cross-validated MSE") + mc_theme()
  }
- list(best_ncomp = ncomp, cv_table = cv_table, coef_original = coef_original,
- performance = perf, plot = plot, fit = fit)
+ list(best_ncomp = ncomp, cv_table = cv_table,
+ coef_original = coef_original, performance = perf,
+ external = external, plot = plot, fit = fit)
 }
 
 #' Neural-network regression
@@ -467,32 +698,78 @@ mc_pcr <- function(data, formula, ncomp = NULL, k = 5L, seed = NULL) {
 #' @param maxit Maximum iterations; default `200`.
 #' @param seed Random seed.
 #' @return A list with the fitted net, predictions, RMSE and the fit plot.
+#' @param validation `"holdout"` (default), `"cv"` or `"none"`. Out-of-sample error replaces the optimistic in-sample RMSE.
+#' @param prop Training-set proportion for `validation = "holdout"`; default `0.7`.
+#' @param folds Number of folds for `validation = "cv"`; default `5`.
 #' @examples
+#' # SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+#' # Not real patients; see ?sim_htn_trial before interpreting any result.
+#' data(sim_htn_trial)
+#' d <- sim_htn_trial
 #' \donttest{
-#' # neural-network regression -- predict birth weight from maternal features
-#' birthwt <- MASS::birthwt
-#' bw <- birthwt
-#' bw$race <- factor(bw$race)
-#' res <- mc_nnet_reg(bw, bwt ~ age + lwt + smoke + race, hidden = 5, seed = 7)
-#' res$rmse
-#' print(res$plot)
+#' nn <- mc_nnet_reg(d,
+#'   sbp_week12 ~ age + bmi + sbp_baseline + treatment, hidden = 5, seed = 7)
+#' nn$validation_rmse
 #' }
 #' @export
-mc_nnet_reg <- function(data, formula, hidden = 5, maxit = 200, seed = NULL) {
- if (!requireNamespace("nnet", quietly = TRUE)) {
- stop("`mc_nnet_reg` requires the nnet package; please install.packages('nnet').")
- }
- if (!is.null(seed)) set.seed(seed)
- fit <- nnet::nnet(formula, data = data, size = hidden,
- linout = TRUE, maxit = maxit, trace = FALSE)
- pred <- as.numeric(stats::predict(fit, data))
- y <- as.numeric(stats::model.response(stats::model.frame(formula, data)))
- rmse <- sqrt(mean((y - pred)^2))
- plot <- ggplot2::ggplot(data.frame(obs = y, pred = pred),
- ggplot2::aes(obs, pred)) +
- ggplot2::geom_point(size = 1.3, alpha = 0.6) +
- ggplot2::geom_abline(intercept = 0, slope = 1, color = "red",
- linetype = "dashed") +
- ggplot2::labs(x = "Observed", y = "Predicted") + mc_theme()
- list(fit = fit, predictions = pred, rmse = rmse, plot = plot)
+mc_nnet_reg <- function(data, formula, hidden = 5, maxit = 200, seed = NULL,
+                        validation = c("holdout", "cv", "none"),
+                        prop = 0.7, folds = 5L) {
+  if (!requireNamespace("nnet", quietly = TRUE)) {
+    stop("`mc_nnet_reg` requires the nnet package; please install.packages('nnet').")
+  }
+  validation <- match.arg(validation)
+  mf <- stats::model.frame(formula, data = data)
+  y <- as.numeric(stats::model.response(mf))
+  n <- length(y)
+  fit_one <- function(d) suppressWarnings(
+    nnet::nnet(formula, data = d, size = hidden, linout = TRUE,
+               maxit = maxit, trace = FALSE))
+  if (!is.null(seed)) set.seed(seed)
+  fit <- tryCatch(fit_one(data), error = function(e) NULL)
+  if (is.null(fit)) stop("The neural network failed to converge; reduce `hidden` or increase `maxit`.")
+  pred <- as.numeric(stats::predict(fit, newdata = data))
+  train_rmse <- sqrt(mean((y - pred)^2, na.rm = TRUE))
+  val_rmse <- NA_real_; val_r2 <- NA_real_
+  if (validation == "holdout" && n >= 10L) {
+    if (!is.null(seed)) set.seed(seed + 1L)
+    tr <- sample.int(n, max(5L, floor(prop * n)))
+    te <- setdiff(seq_len(n), tr)
+    m <- tryCatch(fit_one(data[tr, , drop = FALSE]), error = function(e) NULL)
+    if (!is.null(m)) {
+      yt <- y[te]
+      pt <- as.numeric(stats::predict(m, newdata = data[te, , drop = FALSE]))
+      sse <- sum((yt - pt)^2, na.rm = TRUE)
+      val_rmse <- sqrt(mean((yt - pt)^2, na.rm = TRUE))
+      val_r2 <- 1 - sse / sum((yt - mean(yt))^2)
+    }
+  } else if (validation == "cv" && n >= 10L) {
+    if (!is.null(seed)) set.seed(seed + 1L)
+    idx <- sample(rep(seq_len(folds), length.out = n))
+    errs <- rep(NA_real_, n)
+    for (k in seq_len(folds)) {
+      te <- which(idx == k); tr <- setdiff(seq_len(n), te)
+      m <- tryCatch(fit_one(data[tr, , drop = FALSE]), error = function(e) NULL)
+      if (!is.null(m))
+        errs[te] <- y[te] - as.numeric(
+          stats::predict(m, newdata = data[te, , drop = FALSE]))
+    }
+    mse <- mean(errs^2, na.rm = TRUE)
+    val_rmse <- sqrt(mse)
+    val_r2 <- 1 - mse / stats::var(y)
+  }
+  ## RMSE now reports out-of-sample error whenever validation is possible.
+  rmse <- if (is.na(val_rmse)) train_rmse else val_rmse
+  performance <- data.frame(
+    metric = c("train_rmse", "validation_rmse", "validation_r2", "n"),
+    value = c(train_rmse, val_rmse, val_r2, n),
+    stringsAsFactors = FALSE)
+  plot <- ggplot2::ggplot(data.frame(obs = y, pred = pred),
+                          ggplot2::aes(obs, pred)) +
+    ggplot2::geom_point(size = 1.3, alpha = 0.6) +
+    ggplot2::geom_abline(intercept = 0, slope = 1, color = "red",
+                         linetype = "dashed") +
+    ggplot2::labs(x = "Observed", y = "Predicted") + mc_theme()
+  list(fit = fit, predictions = pred, rmse = rmse,
+       performance = performance, validation = validation, plot = plot)
 }

@@ -10,10 +10,10 @@
 # copied, distributed, rented, or used for commercial purposes.
 # -----------------------------------------------------------------------------
 # Module : quantitative description & hypothesis testing module (desc-quant)
-# This file contains :.desc_one (internal) / mc_desc_quant / mc_norm_test /
-# mc_var_test / mc_ttest / mc_anova / mc_nonparam
+# This file contains :.desc_one (internal) / mc_describe_numeric / mc_test_normality /
+# mc_test_equal_variance / mc_ttest / mc_anova_oneway / mc_test_rank
 # where.desc_one self-implements skewness, kurtosis and
-# Shapiro-Wilk normality statistics, and mc_var_test's Levene
+# Shapiro-Wilk normality statistics, and mc_test_equal_variance's Levene
 # method is an original lm-based implementation.
 # =============================================================================
 
@@ -70,22 +70,22 @@
 #' Kurtosis much greater than 3 suggests non-normality); if planning t-tests/ANOVA,
 #' Check normality and variance homogeneity first. When grouping, group sizes may
 #' Differ, so mind the fairness of comparisons.
-#' @param.data A `data.frame`.
+#' @param .data A `data.frame`.
 #' @param vars Numeric variable names; `NULL` = all numeric columns.
 #' @param group Optional grouping variable name.
 #' @param conf Confidence level; default `0.95`.
 #' @return A wide `data.frame`, one row per variable (one row per group level
-#' When grouped), with columns `variable`, `group` (when grouped), and the 18
-#' Statistic columns.
+#'   when grouped), with columns `variable`, `group` (when grouped), the 18
+#'   statistic columns and a plain-language `distribution` verdict.
 #' @examples
-#' # low birth weight study (birthwt, MASS package)
-#' birthwt <- MASS::birthwt
-#' cat("==== overall: birth weight / age / pregnancy weight ====\n")
-#' print(mc_desc_quant(birthwt, vars = c("bwt","age","lwt")), row.names = FALSE)
-#' cat("\n==== grouped by mother's smoking status ====\n")
-#' print(mc_desc_quant(birthwt, vars = c("bwt","age"), group = "smoke"), row.names = FALSE)
+#' # SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+#' # Not real patients; see ?sim_htn_trial before interpreting any result.
+#' data(sim_htn_trial)
+#' d <- sim_htn_trial
+#' mc_describe_numeric(d, vars = c("age", "bmi", "sbp_baseline"))
+#' mc_describe_numeric(d, vars = c("crp", "triglycerides"), group = "treatment")
 #' @export
-mc_desc_quant <- function(.data, vars = NULL, group = NULL, conf = 0.95) {
+mc_describe_numeric <- function(.data, vars = NULL, group = NULL, conf = 0.95) {
  if (!is.data.frame(.data)) stop("`.data` must be a data.frame.")
  if (is.null(vars)) vars <- names(.data)[sapply(.data, is.numeric)]
  stopifnot(all(vars %in% names(.data)))
@@ -110,6 +110,15 @@ mc_desc_quant <- function(.data, vars = NULL, group = NULL, conf = 0.95) {
  df[[cn]] <- as.numeric(df[[cn]])
  }
  if (!is.null(group)) df <- df[, c(group, setdiff(names(df), group))]
+ if ("shapiro.p" %in% names(df)) {
+ skewed <- !is.na(df$skewness) & abs(df$skewness) > 1
+ heavy <- !is.na(df$kurtosis) & df$kurtosis > 3
+ sh <- !is.na(df$shapiro.p) & df$shapiro.p < (1 - conf) / 2 * 2
+ df$distribution <- ifelse(is.na(df$shapiro.p), "not tested",
+ ifelse(skewed | heavy | sh,
+ "non-normal: inspect a Q-Q plot, consider a rank test",
+ "approximately normal"))
+ }
  df
 }
 
@@ -133,26 +142,40 @@ mc_desc_quant <- function(.data, vars = NULL, group = NULL, conf = 0.95) {
 #' Unreliable or very slow for n > 5000.
 #' @param x Numeric vector.
 #' @param method `"shapiro"` (default) or `"ks"` (test method).
-#' @param... Extra arguments passed to `stats::ks.test()`.
-#' @return A `data.frame` with columns `test`, `statistic`, `p.value`.
+#' @param alpha Significance level for the verdict; default `0.05`.
+#' @param ... Extra arguments passed to `stats::ks.test()`.
+#' @return A `data.frame` with columns `test`, `statistic`, `p.value`, `n`,
+#'   `skewness`, `kurtosis` and `verdict`.
 #' @examples
-#' # test whether quantitative variables in birthwt are normal
-#' birthwt <- MASS::birthwt
-#' mc_norm_test(birthwt$bwt) # birth weight
-#' mc_norm_test(birthwt$age) # mother's age
+#' # SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+#' # Not real patients; see ?sim_htn_trial before interpreting any result.
+#' data(sim_htn_trial)
+#' d <- sim_htn_trial
+#' mc_test_normality(d$crp)             # simulated skewed marker
+#' mc_test_normality(d$age)
 #' @export
-mc_norm_test <- function(x, method = c("shapiro", "ks"),...) {
+mc_test_normality <- function(x, method = c("shapiro", "ks"), alpha = 0.05,...) {
  method <- match.arg(method)
  x <- x[!is.na(x)]
  if (method == "shapiro") {
  t <- stats::shapiro.test(x)
- data.frame(test = "Shapiro-Wilk", statistic = as.numeric(t$statistic),
- p.value = as.numeric(t$p.value), stringsAsFactors = FALSE)
+ test <- "Shapiro-Wilk"
+ stat <- as.numeric(t$statistic)
+ pval <- as.numeric(t$p.value)
  } else {
  t <- stats::ks.test(x, "pnorm", mean(x), stats::sd(x),...)
- data.frame(test = "Kolmogorov-Smirnov", statistic = as.numeric(t$statistic),
- p.value = as.numeric(t$p.value), stringsAsFactors = FALSE)
+ test <- "Kolmogorov-Smirnov"
+ stat <- as.numeric(t$statistic)
+ pval <- as.numeric(t$p.value)
  }
+ d <-.desc_one(x)
+ sk <- unname(d["skewness"]); ku <- unname(d["kurtosis"])
+ verdict <- if (!is.finite(pval)) "not tested" else
+ if (pval >= alpha) "no evidence against normality" else
+ "departure from normality; consider a rank test or transformation"
+ data.frame(test = test, statistic = stat, p.value = pval,
+ n = length(x), skewness = sk, kurtosis = ku,
+ verdict = verdict, stringsAsFactors = FALSE)
 }
 
 #' Variance homogeneity test
@@ -178,14 +201,17 @@ mc_norm_test <- function(x, method = c("shapiro", "ks"),...) {
 #' @param x Numeric vector.
 #' @param g A grouping factor.
 #' @param method `"bartlett"` (default) / `"fligner"` / `"levene"` (test method).
-#' @return A `data.frame` with columns `test`, `statistic`, `p.value`.
+#' @return A `data.frame` with columns `test`, `statistic`, `df`, `p.value`,
+#'   `n`, `n_groups`.
 #' @examples
-#' # test variance homogeneity of birth weight across races (race)
-#' birthwt <- MASS::birthwt
-#' mc_var_test(birthwt$bwt, birthwt$race, method = "bartlett")
-#' mc_var_test(birthwt$bwt, birthwt$race, method = "levene")
+#' # SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+#' # Not real patients; see ?sim_htn_trial before interpreting any result.
+#' data(sim_htn_trial)
+#' d <- sim_htn_trial
+#' mc_test_equal_variance(d$sbp_week12, d$treatment)
+#' mc_test_equal_variance(d$crp, d$site, method = "levene")
 #' @export
-mc_var_test <- function(x, g, method = c("bartlett", "fligner", "levene")) {
+mc_test_equal_variance <- function(x, g, method = c("bartlett", "fligner", "levene")) {
  method <- match.arg(method)
  g <- as.factor(g)
  if (method == "bartlett") {
@@ -200,11 +226,15 @@ mc_var_test <- function(x, g, method = c("bartlett", "fligner", "levene")) {
  a <- stats::anova(stats::lm(d ~ g))
  return(data.frame(test = "Levene",
  statistic = as.numeric(a["g", "F value"]),
+ df = as.numeric(a["g", "Df"]),
  p.value = as.numeric(a["g", "Pr(>F)"]),
+ n = sum(!is.na(x)), n_groups = nlevels(g),
  stringsAsFactors = FALSE))
  }
  data.frame(test = nm, statistic = as.numeric(t$statistic),
- p.value = as.numeric(t$p.value), stringsAsFactors = FALSE)
+ df = as.numeric(t$parameter), p.value = as.numeric(t$p.value),
+ n = sum(!is.na(x)), n_groups = nlevels(g),
+ stringsAsFactors = FALSE)
 }
 
 #' T-test (unified interface)
@@ -226,7 +256,7 @@ mc_var_test <- function(x, g, method = c("bartlett", "fligner", "levene")) {
 #' Statistic, degrees of freedom, p-value and confidence interval.
 #' Note: paired tests require x, y to be paired (e.g. same person measured
 #' Before/after); using an independent test when groups are not independent
-#' Understates error. For clearly skewed or small samples, consider mc_nonparam()'s
+#' Understates error. For clearly skewed or small samples, consider mc_test_rank()'s
 #' Wilcoxon test.
 #' @param x Numeric vector.
 #' @param y A second vector (for independent/paired); `NULL` for one-sample.
@@ -234,15 +264,19 @@ mc_var_test <- function(x, g, method = c("bartlett", "fligner", "levene")) {
 #' @param mu Hypothesised mean for one-sample; default `0`.
 #' @param conf Confidence level; default `0.95`.
 #' @param alternative `"two.sided"` (default) / `"less"` / `"greater"`.
-#' @return A `data.frame` with columns `method`, `estimate`, `conf.low`,
-#' `conf.high`, `statistic`, `p.value`.
+#' @return A `data.frame` with the original columns `method`, `estimate`,
+#'   `conf.low`, `conf.high`, `statistic`, `p.value`, plus `n1`, `n2`,
+#'   `mean1`, `mean2`, `sd1`, `sd2`, `effect`, `cohens_d`, `hedges_g`,
+#'   `effect_ci.low` and `effect_ci.high`.
 #' @examples
-#' #
-#' birthwt <- MASS::birthwt
-#' # one-sample: is the average birth weight equal to 3000 g?
-#' mc_ttest(birthwt$bwt, mu = 3000)
-#' # independent two-sample (welch correction): smoking vs non-smoking mothers' birth weight
-#' mc_ttest(birthwt$bwt[birthwt$smoke == 1], birthwt$bwt[birthwt$smoke == 0])
+#' # SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+#' # Not real patients; see ?sim_htn_trial before interpreting any result.
+#' data(sim_htn_trial)
+#' d <- sim_htn_trial
+#' a <- d$sbp_week12[d$treatment == "Active"]
+#' p <- d$sbp_week12[d$treatment == "Placebo"]
+#' mc_ttest(a, p)                       # Hedges' g and its CI
+#' mc_ttest(a, mu = 135)                # one-sample test
 #' @export
 mc_ttest <- function(x, y = NULL, paired = FALSE, mu = 0, conf = 0.95,
  alternative = "two.sided") {
@@ -253,11 +287,44 @@ mc_ttest <- function(x, y = NULL, paired = FALSE, mu = 0, conf = 0.95,
  }
  est <- tt$estimate
  if (length(est) == 2) est <- est[1] - est[2]
+ zc <- stats::qnorm(1 - (1 - conf) / 2)
+ ## Effect size with an approximate CI: a bare p value is not reportable.
+ if (is.null(y) && !paired) {
+ xv <- x[!is.na(x)]; n1 <- length(xv); n2 <- NA_integer_
+ d <- (mean(xv) - mu) / stats::sd(xv)
+ g <- NA_real_; eff <- "Cohen d (one-sample)"
+ se <- sqrt(1 / n1 + d^2 / (2 * (n1 - 1)))
+ eci <- d + c(-1, 1) * zc * se
+ m1 <- mean(xv); m2 <- NA_real_; s1 <- stats::sd(xv); s2 <- NA_real_
+ } else if (paired) {
+ dv <- (x - y)[!is.na(x - y)]; n1 <- length(dv); n2 <- n1
+ d <- mean(dv) / stats::sd(dv)
+ g <- NA_real_; eff <- "Cohen dz (paired)"
+ se <- sqrt(1 / n1 + d^2 / (2 * (n1 - 1)))
+ eci <- d + c(-1, 1) * zc * se
+ m1 <- mean(x, na.rm = TRUE); m2 <- mean(y, na.rm = TRUE)
+ s1 <- stats::sd(x, na.rm = TRUE); s2 <- stats::sd(y, na.rm = TRUE)
+ } else {
+ a <- x[!is.na(x)]; b <- y[!is.na(y)]
+ n1 <- length(a); n2 <- length(b)
+ sp <- sqrt(((n1 - 1) * stats::var(a) + (n2 - 1) * stats::var(b)) /
+ (n1 + n2 - 2))
+ d <- (mean(a) - mean(b)) / sp
+ j <-.mc_hedges_j(n1, n2)
+ g <- d * j; eff <- "Hedges g (two-sample)"
+ eci <-.mc_d_ci(d, n1, n2, conf) * j
+ m1 <- mean(a); m2 <- mean(b)
+ s1 <- stats::sd(a); s2 <- stats::sd(b)
+ }
  data.frame(method = tt$method, estimate = as.numeric(est),
  conf.low = as.numeric(tt$conf.int[1]),
  conf.high = as.numeric(tt$conf.int[2]),
  statistic = as.numeric(tt$statistic),
- p.value = as.numeric(tt$p.value), stringsAsFactors = FALSE)
+ p.value = as.numeric(tt$p.value),
+ n1 = n1, n2 = n2, mean1 = m1, mean2 = m2, sd1 = s1, sd2 = s2,
+ effect = eff, cohens_d = d, hedges_g = g,
+ effect_ci.low = eci[1], effect_ci.high = eci[2],
+ stringsAsFactors = FALSE)
 }
 
 #' One-way ANOVA
@@ -277,24 +344,39 @@ mc_ttest <- function(x, y = NULL, paired = FALSE, mu = 0, conf = 0.95,
 #' And p-value of each term.
 #' Note: ANOVA only tells you "at least two groups differ"; which two require
 #' Post-hoc multiple comparisons (e.g. Tukey HSD). Its assumptions are normality
-#' And equal variance per group - verify first with mc_norm_test() and mc_var_test().
+#' And equal variance per group - verify first with mc_test_normality() and mc_test_equal_variance().
 #' If variances are unequal or distributions skewed, consider Kruskal-Wallis
-#' (see mc_nonparam).
+#' (see mc_test_rank).
 #' @param formula A formula like `y ~ group`.
 #' @param data A `data.frame` containing the variables.
 #' @return A `data.frame` with columns `term`, `df`, `sumsq`, `meansq`,
-#' `statistic`, `p.value`.
+#'   `statistic`, `p.value`, `eta_sq`, `omega_sq`. Use [mc_posthoc_tukey()]
+#'   for the pairwise contrasts that a significant omnibus F requires.
 #' @examples
-#' # do mothers of different races (race) differ in birth weight? (one-way aNOVA)
-#' birthwt <- MASS::birthwt
-#' mc_anova(bwt ~ factor(race), data = birthwt)
+#' # SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+#' # Not real patients; see ?sim_htn_trial before interpreting any result.
+#' data(sim_htn_trial)
+#' d <- sim_htn_trial
+#' mc_anova_oneway(sbp_week12 ~ race, data = d)
+#' mc_anova_oneway(crp ~ site, data = d)
 #' @export
-mc_anova <- function(formula, data) {
+mc_anova_oneway <- function(formula, data) {
  a <- stats::aov(formula, data = data)
  s <- summary(a)[[1]]
- data.frame(term = rownames(s), df = s[, "Df"], sumsq = s[, "Sum Sq"],
+ eta <- rep(NA_real_, nrow(s)); omega <- rep(NA_real_, nrow(s))
+ ssb <- s[1, "Sum Sq"]; ssw <- s[nrow(s), "Sum Sq"]
+ dfb <- s[1, "Df"]; msw <- s[nrow(s), "Mean Sq"]
+ ## eta-squared and omega-squared quantify how much variance the factor
+ ## explains; omega-squared is the less biased of the two.
+ if (is.finite(ssb) && is.finite(ssw) && ssb + ssw > 0) {
+ eta[1] <- ssb / (ssb + ssw)
+ omega[1] <- (ssb - dfb * msw) / (ssb + ssw + msw)
+ }
+ out <- data.frame(term = rownames(s), df = s[, "Df"], sumsq = s[, "Sum Sq"],
  meansq = s[, "Mean Sq"], statistic = s[, "F value"],
- p.value = s[, "Pr(>F)"], stringsAsFactors = FALSE)
+ p.value = s[, "Pr(>F)"], eta_sq = eta, omega_sq = omega,
+ stringsAsFactors = FALSE)
+ out
 }
 
 #' Non-parametric group difference test
@@ -321,23 +403,51 @@ mc_anova <- function(formula, data) {
 #' @param x Numeric vector.
 #' @param g Grouping vector/factor.
 #' @param method `"wilcoxon"` (default) or `"kruskal"` (test method).
-#' @return A `data.frame` with columns `test`, `statistic`, `p.value`.
+#' @param conf Confidence level for the rank-biserial interval; default `0.95`.
+#' @return A `data.frame` with columns `test`, `statistic`, `df`, `p.value`,
+#'   `n`, `effect`, `effect_size`, `effect_ci.low`, `effect_ci.high`, `note`.
 #' @examples
-#' # birth weight by smoking status (two-group wilcoxon) and race (multi-group kruskal-wallis)
-#' birthwt <- MASS::birthwt
-#' mc_nonparam(birthwt$bwt, birthwt$smoke, method = "wilcoxon")
-#' mc_nonparam(birthwt$bwt, factor(birthwt$race), method = "kruskal")
+#' # SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+#' # Not real patients; see ?sim_htn_trial before interpreting any result.
+#' data(sim_htn_trial)
+#' d <- sim_htn_trial
+#' mc_test_rank(d$crp, d$treatment)                       # two groups, Wilcoxon
+#' mc_test_rank(d$crp, d$site, method = "kruskal")       # several groups
 #' @export
-mc_nonparam <- function(x, g, method = c("wilcoxon", "kruskal")) {
+mc_test_rank <- function(x, g, method = c("wilcoxon", "kruskal"),
+ conf = 0.95) {
  method <- match.arg(method)
- g <- as.factor(g)
+ g <- droplevels(as.factor(g))
+ keep <- !is.na(x) & !is.na(g)
+ x <- x[keep]; g <- g[keep]
  if (method == "wilcoxon") {
- t <- stats::wilcox.test(x ~ g)
+ t <- stats::wilcox.test(x ~ g, exact = FALSE, conf.level = conf)
  nm <- "Wilcoxon rank-sum"
+ lv <- levels(g)
+ a <- x[g == lv[1]]; b <- x[g == lv[2]]
+ n1 <- length(a); n2 <- length(b)
+ u <- sum(rank(c(a, b))[seq_len(n1)]) - n1 * (n1 + 1) / 2
+ r <- 2 * u / (n1 * n2) - 1
+ ci <-.mc_r_ci(r, n1 + n2, conf)
+ eff <- "rank-biserial r"
+ val <- r; lo <- ci[1]; hi <- ci[2]
+ dfv <- NA_real_
+ note <- paste0("n=", n1, "/", n2, "; Fisher-z CI")
  } else {
  t <- stats::kruskal.test(x ~ g)
  nm <- "Kruskal-Wallis"
+ k <- nlevels(g); n <- length(x)
+ h <- as.numeric(t$statistic)
+ val <- (h - k + 1) / (n - k)
+ eff <- "epsilon-squared"
+ lo <- NA_real_; hi <- NA_real_
+ dfv <- if (is.null(t$parameter)) NA_real_ else as.numeric(t$parameter)
+ note <- paste0("k=", k, " groups; n=", n,
+ "; pairwise contrasts need multiplicity adjustment")
  }
  data.frame(test = nm, statistic = as.numeric(t$statistic),
- p.value = as.numeric(t$p.value), stringsAsFactors = FALSE)
+ df = dfv, p.value = as.numeric(t$p.value),
+ n = length(x), effect = eff, effect_size = val,
+ effect_ci.low = lo, effect_ci.high = hi, note = note,
+ stringsAsFactors = FALSE)
 }

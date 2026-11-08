@@ -10,9 +10,9 @@
 # copied, distributed, rented, or used for commercial purposes.
 # -----------------------------------------------------------------------------
 # Module : qualitative description & association analysis module (desc-qual)
-# This file contains : mc_contingency / mc_corr / mc_tableone
-# mc_contingency covers three independence tests: chi-square,
-# Fisher's exact, and CMH stratified; mc_corr's partial correlation
+# This file contains : mc_crosstab_test / mc_correlate / mc_baseline_table
+# mc_crosstab_test covers three independence tests: chi-square,
+# Fisher's exact, and CMH stratified; mc_correlate's partial correlation
 # is computed by regressing on controls and taking residuals, an
 # original implementation.
 # =============================================================================
@@ -52,7 +52,7 @@
 #' Association when there is a confounding stratum (e.g. multi-center studies).
 #' OR > 1 suggests a positive association; a CI crossing 1 means the association
 #' Is not significant.
-#' @param.data A `data.frame`.
+#' @param .data A `data.frame`.
 #' @param row Row variable name, categorical.
 #' @param col Column variable name, categorical.
 #' @param correct Continuity correction for chi-square; default `TRUE` (only
@@ -60,32 +60,21 @@
 #' @param method Test type: `"chisq"` (default), `"fisher"`, or `"cmh"`.
 #' @param strata Stratifying variable name for the CMH test.
 #' @return A list with `table` (contingency table), `test` (a data frame:
-#' Test/statistic/df/p.value); for `method = "chisq"` with a 2x2 table it also
-#' Returns `OR` (OR/CI.low/CI.high/fisher.p), for `method = "fisher"` it
-#' Returns `OR` (with 95% CI and p), and for `method = "cmh"` it returns
-#' `commonOR` (common odds ratio and its CI).
+#'   test/statistic/df/p.value), `effect` (Cramer's V or the common OR, with a
+#'   CI where available), `diagnostics` (sample size, minimum expected count,
+#'   number of sparse cells and a recommendation), plus the method-specific
+#'   `OR` or `commonOR` tables.
 #' @examples
-#' # demonstrate three independence tests with birthwt
-#' birthwt <- MASS::birthwt
-#'
-#' ## ---- chi-square independence test (2x2 with fisher OR) ----
-#' res <- mc_contingency(birthwt, row = "smoke", col = "low")
-#' cat("---- contingency table / table ----\n"); print(res$table)
-#' cat("\n---- chi-square test / chi-square ----\n"); print(res$test, row.names = FALSE)
-#' cat("\n---- odds ratio OR / odds ratio ----\n"); print(res$OR, row.names = FALSE)
-#'
-#' ## ---- fisher's exact test (small samples / sparse expected counts) ----
-#' res2 <- mc_contingency(birthwt, row = "smoke", col = "low", method = "fisher")
-#' print(res2$test, row.names = FALSE); print(res2$OR, row.names = FALSE)
-#'
-#' ## ---- cMH stratified test: common OR of smoking & low birth weight after controlling for hypertension (ht) ----
-#' res3 <- mc_contingency(birthwt, row = "smoke", col = "low",
-#' method = "cmh", strata = "ht")
-#' cat("\n---- cMH test / cochran-mantel-haenszel ----\n")
-#' print(res3$test, row.names = FALSE)
-#' print(res3$commonOR, row.names = FALSE)
+#' # SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+#' # Not real patients; see ?sim_htn_trial before interpreting any result.
+#' data(sim_htn_trial)
+#' d <- sim_htn_trial
+#' mc_crosstab_test(d, row = "treatment", col = "bp_control")
+#' mc_crosstab_test(d, row = "treatment", col = "bp_control", method = "fisher")
+#' mc_crosstab_test(d, row = "treatment", col = "bp_control",
+#'                  method = "cmh", strata = "site")
 #' @export
-mc_contingency <- function(.data, row, col, correct = TRUE,
+mc_crosstab_test <- function(.data, row, col, correct = TRUE,
  method = c("chisq", "fisher", "cmh"),
  strata = NULL) {
  method <- match.arg(method)
@@ -130,6 +119,13 @@ mc_contingency <- function(.data, row, col, correct = TRUE,
  commonOR = data.frame(commonOR = cor,
  CI.low = if (length(ci) == 2) exp(ci[1]) else NA_real_,
  CI.high = if (length(ci) == 2) exp(ci[2]) else NA_real_,
+ stringsAsFactors = FALSE),
+ effect = data.frame(effect = "common odds ratio", estimate = cor,
+ CI.low = if (length(ci) == 2) exp(ci[1]) else NA_real_,
+ CI.high = if (length(ci) == 2) exp(ci[2]) else NA_real_,
+ stringsAsFactors = FALSE),
+ diagnostics = data.frame(n = sum(xtab),
+ note = "stratified table; inspect stratum-specific counts",
  stringsAsFactors = FALSE))
  return(res)
  }
@@ -150,7 +146,13 @@ mc_contingency <- function(.data, row, col, correct = TRUE,
  CI.low = as.numeric(ft$conf.int[1]),
  CI.high = as.numeric(ft$conf.int[2]),
  fisher.p = as.numeric(ft$p.value),
- stringsAsFactors = FALSE))
+ stringsAsFactors = FALSE),
+ effect = data.frame(effect = if (nrow(tab) == 2 && ncol(tab) == 2)
+ "phi / Cramer's V" else "Cramer's V",
+ estimate = NA_real_,
+ note = "exact test; effect size estimated from the chi-square approximation",
+ stringsAsFactors = FALSE),
+ diagnostics = .mc_table_diagnostics(tab))
  return(res)
  }
  ## default: chi-square
@@ -173,6 +175,13 @@ mc_contingency <- function(.data, row, col, correct = TRUE,
  fisher.p = as.numeric(ft$p.value),
  stringsAsFactors = FALSE)
  }
+ v <-.mc_cramers_v(as.numeric(ct$statistic), sum(tab), nrow(tab), ncol(tab))
+ res$effect <- data.frame(
+ effect = if (nrow(tab) == 2 && ncol(tab) == 2) "phi / Cramer's V" else "Cramer's V",
+ estimate = v, CI.low = NA_real_, CI.high = NA_real_,
+ note = "point estimate; no analytic CI without a resampling step",
+ stringsAsFactors = FALSE)
+ res$diagnostics <-.mc_table_diagnostics(tab, ct$expected)
  res
 }
 
@@ -198,27 +207,29 @@ mc_contingency <- function(.data, row, col, correct = TRUE,
 #' Direction, not causation; near 0 does not mean no relation (could be
 #' Non-linear). Spearman suits ordinal data or clearly skewed data. Partial
 #' Correlation helps identify "spurious correlation" caused by a common confounder.
-#' @param.data A `data.frame`.
+#' @param .data A `data.frame`.
 #' @param vars Variable names; `NULL` = all numeric columns.
 #' @param method `"pearson"` (default) or `"spearman"`.
 #' @param control Optional control variable names for partial correlation.
-#' @return A long `data.frame` with columns `var1`, `var2`, `r`, `p.value`.
+#' @param conf Confidence level for the correlation interval; default `0.95`.
+#' @param p_adjust Multiplicity method for the family of pairwise tests;
+#'   default `"holm"`.
+#' @return A long `data.frame` with columns `var1`, `var2`, `r`, `conf.low`,
+#'   `conf.high`, `n`, `method`, `p.value`, `p.adjusted`.
 #' @examples
-#' # correlation of birth weight & pregnancy weight in birthwt (spearman)
-#' birthwt <- MASS::birthwt
-#' cat("==== spearman correlation / spearman ====\n")
-#' # note: birthwt has tied observations; cor.test switches to the asymptotic
-#' # method for p-values and warns, which is normal; we suppress the warning here
-#' # to simplify the example output
-#' suppressWarnings(print(mc_corr(birthwt, vars = c("bwt","lwt"), method = "spearman"),
-#' row.names = FALSE))
-#' cat("\n==== partial correlation after controlling for mother's age / partial on age ====\n")
-#' print(mc_corr(birthwt, vars = c("bwt","lwt"), control = "age"),
-#' row.names = FALSE)
+#' # SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+#' # Not real patients; see ?sim_htn_trial before interpreting any result.
+#' data(sim_htn_trial)
+#' d <- sim_htn_trial
+#' mc_correlate(d, vars = c("age", "bmi", "sbp_baseline", "ldl", "glucose"))
+#' mc_correlate(d, vars = c("sbp_week12", "dbp_week12"),
+#'              method = "spearman", control = "age")
 #' @export
-mc_corr <- function(.data, vars = NULL, method = c("pearson", "spearman"),
- control = NULL) {
+mc_correlate <- function(.data, vars = NULL, method = c("pearson", "spearman"),
+ control = NULL, conf = 0.95,
+ p_adjust = c("holm", "bonferroni", "BH", "BY", "none")) {
  method <- match.arg(method)
+ p_adjust <- match.arg(p_adjust)
  if (is.null(vars)) vars <- names(.data)[sapply(.data, is.numeric)]
  mat <-.data[vars]
  if (!is.null(control)) {
@@ -231,17 +242,28 @@ mc_corr <- function(.data, vars = NULL, method = c("pearson", "spearman"),
  }
  }
  n <- length(vars)
+ if (n < 2L) stop("`vars` must contain at least two numeric columns.")
  pairs <- utils::combn(n, 2)
  rows <- list()
  for (k in seq_len(ncol(pairs))) {
  i <- pairs[1, k]; j <- pairs[2, k]
- t <- stats::cor.test(mat[[i]], mat[[j]], method = method)
+ a <- mat[[i]]; b <- mat[[j]]
+ ok <- !is.na(a) & !is.na(b)
+ t <- suppressWarnings(stats::cor.test(a[ok], b[ok], method = method,
+ conf.level = conf))
+ ci <- tryCatch(as.numeric(t$conf.int), error = function(e) c(NA_real_, NA_real_))
  rows[[length(rows) + 1]] <- data.frame(
  var1 = vars[i], var2 = vars[j],
- r = as.numeric(t$estimate), p.value = as.numeric(t$p.value),
- stringsAsFactors = FALSE)
+ r = as.numeric(t$estimate),
+ conf.low = ci[1], conf.high = ci[2],
+ n = sum(ok), method = method,
+ p.value = as.numeric(t$p.value), stringsAsFactors = FALSE)
  }
- do.call(rbind, rows)
+ out <- do.call(rbind, rows)
+ ## A correlation matrix implies many simultaneous tests; report adjusted p.
+ out$p.adjusted <- as.numeric(stats::p.adjust(out$p.value, method = p_adjust))
+ rownames(out) <- NULL
+ out
 }
 
 #' Baseline characteristics table
@@ -261,24 +283,48 @@ mc_corr <- function(.data, vars = NULL, method = c("pearson", "spearman"),
 #' Result: returns a tidy data frame, directly usable with knitr::kable() or
 #' print() to make a table.
 #' Note: p-values for group comparisons are usually not in this table (compute
-#' Separately with mc_ttest/mc_nonparam/mc_contingency). Too many levels for a
+#' Separately with mc_ttest/mc_test_rank/mc_crosstab_test). Too many levels for a
 #' Categorical variable widens the table; consider merging rare categories first.
 #' This is a descriptive table, not a substitute for statistical inference.
-#' @param.data A `data.frame`.
+#' @param .data A `data.frame`.
 #' @param vars Variable names to include.
 #' @param group Optional grouping variable name.
 #' @param digits Number of decimals; default `2`.
-#' @return A `data.frame` with columns `variable`, `level`, `stratum`, `value`.
+#' @param p_value Add group-comparison p values (Holm-adjusted across `vars`);
+#'   default `TRUE`.
+#' @param smd Add the standardized mean difference for numeric variables;
+#'   default `TRUE`.
+#' @param p_adjust Multiplicity method for the p-value column; default `"holm"`.
+#' @return A `data.frame` with columns `variable`, `level`, `stratum`, `value`,
+#'   and, when `group` is given, `test`, `p.value`, `p.adjusted`, `effect`,
+#'   `effect_size` and `smd`.
 #' @examples
-#' # birthwt baseline characteristics table (grouped by low birth weight)
-#' birthwt <- MASS::birthwt
-#' bw <- birthwt
-#' bw$race <- factor(bw$race, levels = 1:3, labels = c("white","black","other"))
-#' bw$smoke <- factor(bw$smoke, levels = 0:1, labels = c("no","yes"))
-#' bw$low <- factor(bw$low, levels = 0:1, labels = c("normal","low"))
-#' mc_tableone(bw, vars = c("age","lwt","race","smoke","bwt"), group = "low")
+#' # SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+#' # Not real patients; see ?sim_htn_trial before interpreting any result.
+#' data(sim_htn_trial)
+#' d <- sim_htn_trial
+#' mc_baseline_table(d,
+#'   vars = c("age", "bmi", "sex", "smoke", "sbp_baseline"),
+#'   group = "treatment")
 #' @export
-mc_tableone <- function(.data, vars, group = NULL, digits = 2) {
+mc_baseline_table <- function(.data, vars, group = NULL, digits = 2,
+ p_value = TRUE, smd = TRUE,
+ p_adjust = c("holm", "bonferroni", "BH", "BY", "none")) {
+ p_adjust <- match.arg(p_adjust)
+ cmp <- NULL
+ if (!is.null(group) && (p_value || smd)) {
+ cmp <- tryCatch(mc_compare_groups(.data, group = group, vars = vars,
+ p_adjust = p_adjust),
+ error = function(e) NULL)
+ }
+ smd_of <- function(x, g) {
+ lv <- levels(droplevels(factor(g)))
+ if (length(lv) != 2L || !is.numeric(x)) return(NA_real_)
+ a <- x[g == lv[1] & !is.na(x)]; b <- x[g == lv[2] & !is.na(x)]
+ den <- sqrt((stats::var(a) + stats::var(b)) / 2)
+ if (!is.finite(den) || den == 0) return(NA_real_)
+ (mean(a) - mean(b)) / den
+ }
  rows <- list()
  for (v in vars) {
  x <-.data[[v]]
@@ -319,5 +365,18 @@ mc_tableone <- function(.data, vars, group = NULL, digits = 2) {
  }
  }
  }
- do.call(rbind, rows)
+ out <- do.call(rbind, rows)
+ if (!is.null(cmp)) {
+ out$test <- cmp$test[match(out$variable, cmp$variable)]
+ out$p.value <- cmp$p.value[match(out$variable, cmp$variable)]
+ out$p.adjusted <- cmp$p.adjusted[match(out$variable, cmp$variable)]
+ out$effect <- cmp$effect[match(out$variable, cmp$variable)]
+ out$effect_size <- cmp$estimate[match(out$variable, cmp$variable)]
+ }
+ if (smd && !is.null(group)) {
+ out$smd <- vapply(seq_len(nrow(out)), function(i)
+ smd_of(.data[[as.character(out$variable[i])]], .data[[group]]),
+ numeric(1))
+ }
+ out
 }

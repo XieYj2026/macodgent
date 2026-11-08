@@ -55,17 +55,19 @@
 #' @return A list with `coef`, `performance`, `vif`, `diagnostics`,
 #' `diag_plots`, `plot` (coefficient table, performance metrics, VIF,
 #' Diagnostics, diagnostic plots and the main residual plot).
+#' @param alpha Significance level for the shared PASS / REVIEW checks; default `0.05`.
 #' @examples
-#' # predict birth weight by mother's age, pregnancy weight, smoking
-#' birthwt <- MASS::birthwt
-#' res <- mc_linear(birthwt, bwt ~ age + lwt + smoke + factor(race),
-#' bootstrap = 200)
-#' res$coef # coefficient table (with bootstrap cI)
-#' res$performance # r^2 / adjusted r^2 / aIC / bIC
-#' res$vif # variance inflation factor (multicollinearity)
-#' print(res$plot) # residuals vs fitted diagnostic plot
+#' # SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+#' # Not real patients; see ?sim_htn_trial before interpreting any result.
+#' data(sim_htn_trial)
+#' d <- sim_htn_trial
+#' fit <- mc_linear(d,
+#'   sbp_week12 ~ age + bmi + treatment + sbp_baseline, bootstrap = 0L)
+#' fit$coefficients
+#' fit$checks
 #' @export
-mc_linear <- function(data, formula, bootstrap = 0L, conf_level = 0.95) {
+mc_linear <- function(data, formula, bootstrap = 0L, conf_level = 0.95,
+                      alpha = 0.05) {
  if (!inherits(data, "data.frame"))
  stop("`data` must be a data.frame.")
  if (!inherits(formula, "formula"))
@@ -129,6 +131,9 @@ mc_linear <- function(data, formula, bootstrap = 0L, conf_level = 0.95) {
  sm$fstatistic["value"], stats::AIC(fit), stats::BIC(fit)),
  stringsAsFactors = FALSE)
 
+ ## ---- shared methodological checks ----
+ checks <- .mc_model_checks(fit, "linear", alpha = alpha)
+
  ## ---- diagnostic data ----
  fitted <- as.numeric(fit$fitted.values)
  resid <- as.numeric(fit$residuals)
@@ -142,7 +147,7 @@ mc_linear <- function(data, formula, bootstrap = 0L, conf_level = 0.95) {
  p1 <- ggplot2::ggplot(diag_df, ggplot2::aes(fitted, resid)) +
  ggplot2::geom_point(size = 1.2, alpha = 0.6) +
  ggplot2::geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
- ggplot2::geom_smooth(se = FALSE, color = "blue", size = 0.8) +
+ ggplot2::geom_smooth(se = FALSE, color = "blue", linewidth = 0.8) +
  ggplot2::labs(x = "Fitted values", y = "Residuals") + mc_theme()
  p2 <- ggplot2::ggplot(diag_df, ggplot2::aes(sample = std_resid)) +
  ggplot2::stat_qq(size = 1.2, alpha = 0.6) +
@@ -152,7 +157,7 @@ mc_linear <- function(data, formula, bootstrap = 0L, conf_level = 0.95) {
  mc_theme()
  p3 <- ggplot2::ggplot(diag_df, ggplot2::aes(fitted, sqrt(abs(std_resid)))) +
  ggplot2::geom_point(size = 1.2, alpha = 0.6) +
- ggplot2::geom_smooth(se = FALSE, color = "blue", size = 0.8) +
+ ggplot2::geom_smooth(se = FALSE, color = "blue", linewidth = 0.8) +
  ggplot2::labs(x = "Fitted values", y = "Sqrt(|standardized residuals|)") +
  mc_theme()
  p4 <- ggplot2::ggplot(diag_df, ggplot2::aes(seq_along(cooks), cooks)) +
@@ -160,7 +165,7 @@ mc_linear <- function(data, formula, bootstrap = 0L, conf_level = 0.95) {
  ggplot2::geom_hline(yintercept = 1, linetype = "dashed", color = "red") +
  ggplot2::labs(x = "Observation index", y = "Cook's distance") + mc_theme()
 
- list(coef = cf, performance = performance, vif = vif,
+ list(coef = cf, performance = performance, vif = vif, checks = checks,
  diagnostics = diag_df, diag_plots = list(p1, p2, p3, p4),
  plot = p1, fit = fit)
 }

@@ -14,10 +14,12 @@
 # evaluation (NSE), to avoid spurious R CMD check notes
 # =============================================================================
 
-#' @importFrom stats sd median IQR setNames
+#' @importFrom stats sd median IQR setNames coef model.response
 NULL
 
 # Declare variable names referenced via non-standard evaluation (NSE) to avoid
 # spurious "undefined global variable" notes from R CMD check.
 utils::globalVariables(c("sv", "g", "d", "z", "variable", "estimate",
- "conf.low", "conf.high", "strata", "lo", "hi"))
+ "conf.low", "conf.high", "strata", "lo", "hi",
+ "obs", "sresid", "std_resid", "time",
+ "mean_predicted", "mean_observed", "fpr", "tpr", "n"))
