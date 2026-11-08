@@ -28,8 +28,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: r-lib/actions/setup-pandoc@v2
-
       - uses: r-lib/actions/setup-r@v2
         with:
           r-version: ${{ matrix.config.r }}
@@ -43,7 +41,9 @@ jobs:
 
       - uses: r-lib/actions/check-r-package@v2
         with:
-          # 显式去掉默认的 --as-cran：本包不上 CRAN，其强制的
-          # “CRAN incoming feasibility” 联网检查在 CI 环境下会失败。
-          args: 'c("--no-manual")'
-          build_args: 'c("--no-manual")'
+          # 本包不上 CRAN：去掉默认的 --as-cran（其强制的
+          # “CRAN incoming feasibility” 联网检查在 CI 环境下会失败）。
+          # vignette 已在 inst/doc 预构建并提交仓库，CI 跳过 vignette 构建，
+          # 避免依赖 GitHub 上不稳定的 Pandoc 下载（曾因 504 导致 mac/win 失败）。
+          args: 'c("--no-manual", "--no-vignettes")'
+          build_args: 'c("--no-manual", "--no-build-vignettes")'
