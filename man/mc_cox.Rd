@@ -14,9 +14,11 @@ mc_cox(data, formula, conf = 0.95)
 \item{conf}{Confidence level; default \code{0.95}.}
 }
 \value{
-A list with \code{model} (coxph object), \code{coefficients} (HR table:
-Term/estimate/conf.low/conf.high/p.value), \code{ph_test} (PH test table),
-\code{forest} (ggplot forest plot).
+A list with \code{model} (coxph object), \code{coefficients} (HR
+table: term/estimate/conf.low/conf.high/p.value), \code{ph_test} (PH test
+table), \code{forest} (ggplot forest plot), \code{performance} (n, events,
+concordance, likelihood-ratio test, AIC, R-squared) and \code{checks}
+(explicit PH-assumption and global-fit verdicts).
 }
 \description{
 Cox model, proportional-hazards assumption test
@@ -41,12 +43,12 @@ Time-varying effects, or a parametric model. View the forest plot with
 \code{print(res$forest)}.
 }
 \examples{
-# cox proportional-hazards model -- ovarian-cancer survival prognosis
-ovarian <- survival::ovarian
-ov <- ovarian
-ov$status <- ifelse(ov$fustat == 2, 0, 1)
-res <- mc_cox(ov, survival::Surv(futime, status) ~ age + rx + resid.ds + ecog.ps)
-cat("---- HR table / coefficients ----\n"); print(as.data.frame(res$coefficients), row.names = FALSE)
-cat("\n---- pH assumption test ----\n"); print(res$ph_test)
-print(res$forest)
+# SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+# Not real patients; see ?sim_htn_trial before interpreting any result.
+data(sim_htn_trial)
+d <- sim_htn_trial
+cx <- mc_cox(d,
+  survival::Surv(followup_days, cv_event) ~ age + bmi + treatment + diabetes)
+cx$coefficients
+cx$performance
 }

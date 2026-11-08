@@ -4,7 +4,7 @@
 \alias{mc_competing_risk}
 \title{Competing-risk regression (Fine-Gray)}
 \usage{
-mc_competing_risk(data, time, status, group, cause = 1)
+mc_competing_risk(data, time, status, group, cause = 1, conf = 0.95)
 }
 \arguments{
 \item{data}{A \code{data.frame}.}
@@ -16,6 +16,8 @@ mc_competing_risk(data, time, status, group, cause = 1)
 \item{group}{Covariate (grouping/exposure) variable name.}
 
 \item{cause}{Event type of interest; default \code{1}.}
+
+\item{conf}{Confidence level for the subdistribution HR interval; default \code{0.95}.}
 }
 \value{
 A list with \code{model} (crr object), \code{coefficients} (subdistribution
@@ -39,22 +41,20 @@ Arguments: \code{data} is a data frame; \code{time} is the time column;
 Event code (default 1).
 Results: Returns a list with \code{coefficients} (subdistribution hazard ratio SHR,
 SE, z, p value per variable).
-Notes: The \code{status} coding differs from \code{mc_survfit()}/\code{mc_cox()}:
+Notes: The \code{status} coding differs from \code{mc_kaplan_meier()}/\code{mc_cox()}:
 Here 0 is censored and each other positive integer represents one event type;
 Arrange the data accordingly. If there is only one event type with no competition,
 An ordinary Cox model suffices. Depends on cmprsk (Suggests).
 }
 \examples{
+# SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+# Not real patients; see ?sim_htn_trial before interpreting any result.
+data(sim_htn_trial)
+d <- sim_htn_trial
 \donttest{
-# competing risks of leukemia relapse (1) and death (2)
-# event of interest cause = 1 (relapse); death is a competing event and must not be treated as censored
-set.seed(126)
-n <- 300
-trt <- sample(c(0,1), n, TRUE)
-ftime <- rexp(n,.05)
-fstatus <- sample(0:2, n, TRUE, c(.4,.35,.25)) # 0 censored, 1 relapse, 2 death (competing)
-df <- data.frame(ftime = ftime, fstatus = fstatus, trt = trt)
-res <- mc_competing_risk(df, time = "ftime", status = "fstatus", group = "trt", cause = 1)
-print(res$coefficients)
+cr <- mc_competing_risk(d, time = "followup_days", status = "comp_event",
+                        group = "treatment", cause = 1)
+cr$coefficients
+cr$checks
 }
 }

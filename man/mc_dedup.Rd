@@ -33,8 +33,11 @@ Single row. Ensure the key columns uniquely identify a record, or information
 May be lost. This matches Excel's "Remove Duplicates" semantics.
 }
 \examples{
-# removing duplicate follow-up records (deduplicate by subject iD)
-df <- data.frame(subj = c(1, 1, 2, 2, 3), measure = c("a", "a", "b", "b", "c"), visit = 1:5)
-mc_dedup(df, by = "subj") # keep the last row of each group
-mc_dedup(df, by = "subj", keep = "first") # keep the first row of each group
+# SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+# Not real patients; see ?sim_htn_trial before interpreting any result.
+data(sim_htn_trial)
+d <- sim_htn_trial
+x <- d[1:100, c("id", "age", "bmi", "treatment")]
+dup <- rbind(x, x[1:5, ])            # simulated duplicate records
+mc_dedup(dup, by = "id")
 }
