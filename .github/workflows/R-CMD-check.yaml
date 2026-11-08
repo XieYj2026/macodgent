@@ -6,7 +6,7 @@ on:
   pull_request:
   workflow_dispatch:
 
-permissions: contents: read  # 仅需读权限即可运行 check（不上传快照）
+permissions: read-all
 
 jobs:
   R-CMD-check:
