@@ -10,8 +10,8 @@
 # rented, or used for commercial purposes.
 # -----------------------------------------------------------------------------
 # Module: Survival analysis module (survival)
-# This file contains: mc_survfit / mc_cox / mc_competing_risk / mc_multistate /
-# mc_ph_test (Cox proportional-hazards assumption test)
+# This file contains: mc_kaplan_meier / mc_cox / mc_competing_risk / mc_multistate /
+# mc_test_proportional_hazards (Cox proportional-hazards assumption test)
 # mc_competing_risk rebuilds the subdistribution hazard-ratio table and
 # p values from crr coefficients; mc_multistate parses strata from the
 # formula and builds multi-state predictions on its own.
@@ -42,18 +42,24 @@
 #' @param time Time variable name.
 #' @param status Outcome variable name; 0 = censored, 1 = event.
 #' @param group Optional grouping variable name.
-#' @return A list with \code{fit} (survfit object), \code{logrank} (test data frame:
-#' Test/chisq/p.value; `NULL` when ungrouped), \code{plot} (ggplot KM plot).
+#' @param times Landmark time points for survival estimates and numbers at
+#'   risk; `NULL` = the quartiles of follow-up time.
+#' @return A list with \code{fit} (survfit object), \code{logrank} (test data
+#'   frame: test/chisq/df/p.value; `NULL` when ungrouped), \code{plot} (ggplot
+#'   KM plot), \code{median_survival} (median with 95% CI per stratum),
+#'   \code{survival_at} (landmark survival with CI) and \code{risk_table}
+#'   (numbers at risk at those landmarks).
 #' @examples
-#' # demonstrate kM curve and log-rank test with the ovarian cancer prognostic dataset
-#' ovarian <- survival::ovarian
-#' ov <- ovarian
-#' ov$status <- ifelse(ov$fustat == 2, 0, 1) # 2 = censored -> 0, 1 = death -> 1
-#' res <- mc_survfit(ov, time = "futime", status = "status", group = "rx")
-#' cat("---- log-rank test ----\n"); print(res$logrank, row.names = FALSE)
-#' print(res$plot)
+#' # SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+#' # Not real patients; see ?sim_htn_trial before interpreting any result.
+#' data(sim_htn_trial)
+#' d <- sim_htn_trial
+#' km <- mc_kaplan_meier(d, time = "followup_days", status = "cv_event",
+#'                       group = "treatment")
+#' km$logrank
+#' km$median_survival
 #' @export
-mc_survfit <- function(data, time, status, group = NULL) {
+mc_kaplan_meier <- function(data, time, status, group = NULL, times = NULL) {
  if (!requireNamespace("survival", quietly = TRUE)) stop("The survival package is required.")
  sv <- survival::Surv(data[[time]], data[[status]])
  if (is.null(group)) {
@@ -68,6 +74,7 @@ mc_survfit <- function(data, time, status, group = NULL) {
  lr <- survival::survdiff(sv ~ g, data = tmp)
  lr_df <- data.frame(test = "log-rank",
  chisq = as.numeric(lr$chisq),
+ df = length(lr$n) - 1L,
  p.value = as.numeric(lr$pvalue),
  stringsAsFactors = FALSE)
  td <- broom::tidy(fit)
@@ -81,7 +88,39 @@ mc_survfit <- function(data, time, status, group = NULL) {
  plt <- plt + ggplot2::ggtitle(paste0("log-rank p = ",
  format.pval(lr_df$p.value, digits = 3)))
  }
- list(fit = fit, logrank = lr_df, plot = plt)
+ ## Median survival with its CI, landmark survival probabilities and the
+ ## numbers at risk are the numbers a KM figure must carry in a manuscript.
+ st <- summary(fit)$table
+ if (is.null(dim(st))) {
+ lcl <- grep("LCL", names(st), value = TRUE)[1]
+ ucl <- grep("UCL", names(st), value = TRUE)[1]
+ med <- data.frame(strata = "All", median = unname(st["median"]),
+ conf.low = unname(st[lcl]), conf.high = unname(st[ucl]),
+ stringsAsFactors = FALSE)
+ } else {
+ lcl <- grep("LCL", colnames(st), value = TRUE)[1]
+ ucl <- grep("UCL", colnames(st), value = TRUE)[1]
+ med <- data.frame(strata = rownames(st), median = st[, "median"],
+ conf.low = st[, lcl], conf.high = st[, ucl],
+ stringsAsFactors = FALSE)
+ }
+ if (is.null(times)) {
+ times <- as.numeric(stats::quantile(data[[time]],
+ c(0.25, 0.5, 0.75), na.rm = TRUE))
+ }
+ times <- sort(unique(as.numeric(times)))
+ sm <- summary(fit, times = times)
+ strata_col <- if (!is.null(sm$strata)) as.character(sm$strata) else
+ rep("All", length(sm$time))
+ landmark <- data.frame(
+ strata = strata_col, time = as.numeric(sm$time),
+ n.risk = as.numeric(sm$n.risk),
+ survival = as.numeric(sm$surv),
+ conf.low = as.numeric(sm$lower), conf.high = as.numeric(sm$upper),
+ stringsAsFactors = FALSE)
+ list(fit = fit, logrank = lr_df, plot = plt,
+ median_survival = med, survival_at = landmark,
+ risk_table = landmark[, c("strata", "time", "n.risk")])
 }
 
 #' Cox PH model (PH test & forest plot)
@@ -109,18 +148,20 @@ mc_survfit <- function(data, time, status, group = NULL) {
 #' @param data A `data.frame`.
 #' @param formula A Cox model formula, e.g. \code{Surv(time, status) ~ x1 + x2}.
 #' @param conf Confidence level; default `0.95`.
-#' @return A list with \code{model} (coxph object), \code{coefficients} (HR table:
-#' Term/estimate/conf.low/conf.high/p.value), \code{ph_test} (PH test table),
-#' \code{forest} (ggplot forest plot).
+#' @return A list with \code{model} (coxph object), \code{coefficients} (HR
+#'   table: term/estimate/conf.low/conf.high/p.value), \code{ph_test} (PH test
+#'   table), \code{forest} (ggplot forest plot), \code{performance} (n, events,
+#'   concordance, likelihood-ratio test, AIC, R-squared) and \code{checks}
+#'   (explicit PH-assumption and global-fit verdicts).
 #' @examples
-#' # cox proportional-hazards model -- ovarian-cancer survival prognosis
-#' ovarian <- survival::ovarian
-#' ov <- ovarian
-#' ov$status <- ifelse(ov$fustat == 2, 0, 1)
-#' res <- mc_cox(ov, survival::Surv(futime, status) ~ age + rx + resid.ds + ecog.ps)
-#' cat("---- HR table / coefficients ----\n"); print(as.data.frame(res$coefficients), row.names = FALSE)
-#' cat("\n---- pH assumption test ----\n"); print(res$ph_test)
-#' print(res$forest)
+#' # SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+#' # Not real patients; see ?sim_htn_trial before interpreting any result.
+#' data(sim_htn_trial)
+#' d <- sim_htn_trial
+#' cx <- mc_cox(d,
+#'   survival::Surv(followup_days, cv_event) ~ age + bmi + treatment + diabetes)
+#' cx$coefficients
+#' cx$performance
 #' @export
 mc_cox <- function(data, formula, conf = 0.95) {
  if (!requireNamespace("survival", quietly = TRUE)) stop("The survival package is required.")
@@ -130,13 +171,37 @@ mc_cox <- function(data, formula, conf = 0.95) {
  td$variable <- td$term
  zph <- survival::cox.zph(fit)
  zph_df <- as.data.frame(zph$table)
+ smc <- summary(fit)
+ perf <- data.frame(
+ metric = c("n", "events", "concordance", "concordance_se",
+ "LRT_chi2", "LRT_df", "LRT_p", "AIC", "R2"),
+ value = c(as.numeric(smc$n), as.numeric(smc$nevent),
+ unname(smc$concordance[1]), unname(smc$concordance[2]),
+ unname(smc$logtest[1]), unname(smc$logtest[2]),
+ unname(smc$logtest[3]), stats::AIC(fit), unname(smc$rsq[1])),
+ stringsAsFactors = FALSE)
+ pcol <- grep("^p$", colnames(zph_df), value = TRUE)[1]
+ viol <- if (is.na(pcol)) character(0) else
+ rownames(zph_df)[!is.na(zph_df[[pcol]]) & zph_df[[pcol]] < 0.05 &
+ rownames(zph_df) != "GLOBAL"]
+ checks <- data.frame(
+ check = c("Proportional hazards", "Global fit"),
+ value = c(length(viol), unname(smc$logtest[3])),
+ status = c(if (length(viol) == 0L) "PASS" else "REVIEW",
+ if (!is.na(smc$logtest[3]) && smc$logtest[3] < 0.05) "PASS" else "REVIEW"),
+ detail = c(if (length(viol) == 0L)
+ "no covariate violates PH at alpha = 0.05" else
+ paste("PH violation:", paste(viol, collapse = ", ")),
+ "likelihood-ratio test against the null model"),
+ stringsAsFactors = FALSE)
  fp <- ggplot2::ggplot(td, ggplot2::aes(x = variable, y = estimate)) +
  ggplot2::geom_pointrange(ggplot2::aes(ymin = conf.low, ymax = conf.high)) +
  ggplot2::geom_hline(yintercept = 1, linetype = "dashed", color = "#C0392B") +
  ggplot2::coord_flip() +
  ggplot2::labs(x = "", y = "Hazard Ratio (95% CI)") +
  mc_theme()
- list(model = fit, coefficients = td, ph_test = zph_df, forest = fp)
+ list(model = fit, coefficients = td, ph_test = zph_df, forest = fp,
+ performance = perf, checks = checks)
 }
 
 #' Competing-risk regression (Fine-Gray)
@@ -158,7 +223,7 @@ mc_cox <- function(data, formula, conf = 0.95) {
 #' Event code (default 1).
 #' Results: Returns a list with \code{coefficients} (subdistribution hazard ratio SHR,
 #' SE, z, p value per variable).
-#' Notes: The \code{status} coding differs from \code{mc_survfit()}/\code{mc_cox()}:
+#' Notes: The \code{status} coding differs from \code{mc_kaplan_meier()}/\code{mc_cox()}:
 #' Here 0 is censored and each other positive integer represents one event type;
 #' Arrange the data accordingly. If there is only one event type with no competition,
 #' An ordinary Cox model suffices. Depends on cmprsk (Suggests).
@@ -169,41 +234,72 @@ mc_cox <- function(data, formula, conf = 0.95) {
 #' @param cause Event type of interest; default `1`.
 #' @return A list with \code{model} (crr object), \code{coefficients} (subdistribution
 #' HR table: variable / HR / coef / p.value).
+#' @param conf Confidence level for the subdistribution HR interval; default `0.95`.
 #' @examples
+#' # SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+#' # Not real patients; see ?sim_htn_trial before interpreting any result.
+#' data(sim_htn_trial)
+#' d <- sim_htn_trial
 #' \donttest{
-#' # competing risks of leukemia relapse (1) and death (2)
-#' # event of interest cause = 1 (relapse); death is a competing event and must not be treated as censored
-#' set.seed(126)
-#' n <- 300
-#' trt <- sample(c(0,1), n, TRUE)
-#' ftime <- rexp(n,.05)
-#' fstatus <- sample(0:2, n, TRUE, c(.4,.35,.25)) # 0 censored, 1 relapse, 2 death (competing)
-#' df <- data.frame(ftime = ftime, fstatus = fstatus, trt = trt)
-#' res <- mc_competing_risk(df, time = "ftime", status = "fstatus", group = "trt", cause = 1)
-#' print(res$coefficients)
+#' cr <- mc_competing_risk(d, time = "followup_days", status = "comp_event",
+#'                         group = "treatment", cause = 1)
+#' cr$coefficients
+#' cr$checks
 #' }
 #' @export
-mc_competing_risk <- function(data, time, status, group, cause = 1) {
+mc_competing_risk <- function(data, time, status, group, cause = 1,
+                              conf = 0.95) {
  if (!requireNamespace("cmprsk", quietly = TRUE)) {
  stop("`mc_competing_risk` requires the cmprsk package; please install.packages('cmprsk').")
  }
- ftime <- data[[time]]
- fstatus <- data[[status]]
- cov <- as.matrix(data[[group]])
- colnames(cov) <- group
- fit <- cmprsk::crr(ftime, fstatus, cov1 = cov, failcode = cause)
+  ftime <- data[[time]]
+  fstatus <- data[[status]]
+  # crr() passes cov1 to Fortran, so it must be numeric. as.matrix() on a
+  # factor column yields a character matrix and fails with "NA/NaN/Inf in
+  # foreign function call"; model.matrix() dummy-codes factors and keeps
+  # numeric grouping variables unchanged.
+  cov <- stats::model.matrix(~ ., data = as.data.frame(data[group]))[, -1L,
+                                                                     drop = FALSE]
+  if (!ncol(cov)) stop("`group` must provide at least one usable covariate.")
+  fit <- cmprsk::crr(ftime, fstatus, cov1 = cov, failcode = cause)
  cf <- as.numeric(fit$coef)
  names(cf) <- names(fit$coef)
  se <- sqrt(diag(as.matrix(fit$var)))
  z <- cf / se
  pval <- 2 * stats::pnorm(-abs(z))
+ zc <- stats::qnorm(1 - (1 - conf) / 2)
  coef_df <- data.frame(
- variable = names(cf),
- coef = cf,
- HR = exp(cf),
- se = se,
+ variable = names(cf), coef = cf, se = se, z = z,
+ HR = exp(cf), HR_lower = exp(cf - zc * se),
+ HR_upper = exp(cf + zc * se),
  p.value = pval, stringsAsFactors = FALSE)
- list(model = fit, coefficients = coef_df)
+ ## Cumulative incidence function for the event of interest.
+ grp <- if (length(group) == 1L &&
+ length(unique(data[[group[1L]]])) <= 5L)
+ as.factor(data[[group[1L]]]) else NULL
+ cif <- tryCatch({
+ ci <- if (is.null(grp)) cmprsk::cuminc(ftime, fstatus, cencode = 0) else
+ cmprsk::cuminc(ftime, fstatus, grp, cencode = 0)
+ keys <- setdiff(names(ci)[grepl(paste0(" ", cause, "$"), names(ci))],
+ "Tests")
+ do.call(rbind, lapply(keys, function(k) {
+ zz <- ci[[k]]
+ data.frame(group = sub(paste0(" ", cause, "$"), "", k),
+ time = as.numeric(zz$time), cif = as.numeric(zz$est),
+ var = as.numeric(zz$var), stringsAsFactors = FALSE)
+ }))
+ }, error = function(e) NULL)
+ tab <- table(fstatus)
+ checks <- data.frame(
+ metric = c("n", "n_events_cause", "n_competing", "n_censored",
+ "events_per_variable", "n_coefficients"),
+ value = c(length(ftime),
+ sum(fstatus == cause), sum(fstatus > 0 & fstatus != cause),
+ sum(fstatus == 0),
+ sum(fstatus == cause) / max(1L, length(cf)), length(cf)),
+ stringsAsFactors = FALSE)
+ list(model = fit, coefficients = coef_df, cif = cif,
+ cause_counts = tab, checks = checks)
 }
 
 #' Multi-state survival model
@@ -232,39 +328,48 @@ mc_competing_risk <- function(data, time, status, group, cause = 1) {
 #' @param data mstate expanded long-format `data.frame`.
 #' @param trans Transition matrix.
 #' @param formula A formula, e.g. \code{Surv(time, status) ~ cov} (time/status are columns in data).
-#' @param... Extra arguments passed to \code{survival::coxph}.
+#' @param ... Extra arguments passed to \code{survival::coxph}.
 #' @return A list with \code{model} (coxph object), \code{msfit} (mstate::msfit object).
+#' @param times Prediction time point(s) passed to `mstate::probtrans()`; default `0`.
 #' @examples
+#' # SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+#' # Not real patients; see ?sim_htn_trial before interpreting any result.
+#' data(sim_htn_trial)
+#' d <- sim_htn_trial
 #' \donttest{
-#' # three-state model (healthy h -> complication i / direct death d)
+#' ms_d <- d[1:200, ]                  # simulated 200-subject subset
 #' set.seed(127)
-#' library(mstate)
-#' n <- 150
-#' age <- rnorm(n, 55, 8)
-#' t12 <- rexp(n,.15); t23 <- rexp(n,.20); t13 <- rexp(n,.10)
+#' n <- nrow(ms_d)
+#' age <- ms_d$age
+#' t12 <- rexp(n, .15); t23 <- rexp(n, .20); t13 <- rexp(n, .10)
 #' rows <- list()
-#' for (i in 1:n) {
-#' if (runif(1) <.6) {
-#' rows[[length(rows)+1]] <- data.frame(id=i, tstart=0, tstop=t12[i], status=1, from=1, to=2, age=age[i])
-#' rows[[length(rows)+1]] <- data.frame(id=i, tstart=t12[i], tstop=t12[i]+t23[i], status=1, from=2, to=3, age=age[i])
-#' } else {
-#' rows[[length(rows)+1]] <- data.frame(id=i, tstart=0, tstop=t13[i], status=1, from=1, to=3, age=age[i])
-#' }
+#' for (i in seq_len(n)) {
+#'   if (runif(1) < .6) {
+#'     rows[[length(rows) + 1]] <- data.frame(id = i, tstart = 0,
+#'       tstop = t12[i], status = 1, from = 1, to = 2, age = age[i])
+#'     rows[[length(rows) + 1]] <- data.frame(id = i, tstart = t12[i],
+#'       tstop = t12[i] + t23[i], status = 1, from = 2, to = 3, age = age[i])
+#'   } else {
+#'     rows[[length(rows) + 1]] <- data.frame(id = i, tstart = 0,
+#'       tstop = t13[i], status = 1, from = 1, to = 3, age = age[i])
+#'   }
 #' }
 #' ms <- do.call(rbind, rows)
-#' trans <- transMat(list(c(2,3), c(3), c()), names = c("h","i","d"))
-#' ms$trans <- with(ms, ifelse(from == 1 & to == 2, 1, ifelse(from == 1 & to == 3, 2, 3)))
-#' fit <- mc_multistate(ms, trans = trans, formula = survival::Surv(tstart, tstop, status) ~ age + survival::strata(trans))
-#' cat("coxph coefficients:\n")
-#' print(summary(fit$model)$coefficients)
-#' cat("\nmsfit class:", class(fit$msfit)[1], "\n")
+#' trans <- mstate::transMat(list(c(2, 3), c(3), c()),
+#'                           names = c("h", "i", "d"))
+#' ms$trans <- with(ms, ifelse(from == 1 & to == 2, 1,
+#'                      ifelse(from == 1 & to == 3, 2, 3)))
+#' fit <- mc_multistate(ms, trans = trans,
+#'   formula = survival::Surv(tstart, tstop, status) ~
+#'     age + survival::strata(trans))
+#' head(fit$probability_table)
 #' }
 #' @export
-mc_multistate <- function(data, trans, formula,...) {
+mc_multistate <- function(data, trans, formula, ..., times = 0) {
  if (!requireNamespace("mstate", quietly = TRUE)) {
  stop("`mc_multistate` requires the mstate package; please install.packages('mstate').")
  }
- fit <- eval(substitute(survival::coxph(formula, data = DATA,...),
+ fit <- eval(substitute(survival::coxph(formula, data = DATA, ...),
  list(DATA = data)))
  nd <- data
  fstr <- paste(deparse(formula), collapse = "")
@@ -274,7 +379,26 @@ mc_multistate <- function(data, trans, formula,...) {
  nd$strata <- data[[svar]]
  }
  ms <- mstate::msfit(fit, newdata = nd, trans = trans)
- list(model = fit, msfit = ms)
+ ## State-occupation probabilities; probtrans needs a strata column in
+ ## newdata, so it is guarded and reported as unavailable when absent.
+ tp <- tryCatch(mstate::probtrans(ms, predt = times),
+ error = function(e) NULL)
+ prob_table <- NULL
+ if (!is.null(tp)) {
+ first <- if (is.data.frame(tp)) tp else tp[[1L]]
+ prob_table <- tryCatch(as.data.frame(first), error = function(e) NULL)
+ }
+ n_trans <- tryCatch(sum(!is.na(ms$Haz$trans)),
+ error = function(e) NA_real_)
+ checks <- data.frame(
+ metric = c("n_rows", "n_transitions", "n_coefficients",
+ "probabilities_available"),
+ value = c(nrow(data), n_trans, length(stats::coef(fit)),
+ as.numeric(!is.null(prob_table))),
+ stringsAsFactors = FALSE)
+ list(model = fit, msfit = ms,
+ transition_probabilities = tp, probability_table = prob_table,
+ checks = checks)
 }
 
 #' Cox PH-assumption test
@@ -304,23 +428,23 @@ mc_multistate <- function(data, trans, formula,...) {
 #' @param which Covariate name for the residual plot (default the first).
 #' @param transform Time transformation; default `"km"` (Kaplan-Meier).
 #' @return A list with the test table and residual plot.
+#' @param alpha Significance level for the PASS / REVIEW verdict; default `0.05`.
+#' @param p_adjust Multiplicity correction for per-covariate tests; default `"BH"`.
 #' @examples
-#' # test the proportional-hazards assumption of an ovarian-cancer cox model
-#' ovarian <- survival::ovarian
-#' ov <- ovarian
-#' ov$status <- ifelse(ov$fustat == 2, 0, 1)
-#' fit <- survival::coxph(survival::Surv(futime, status) ~ age + rx + resid.ds, data = ov)
-#' r <- mc_ph_test(fit)
-#' print(r$test) # pH test table for each covariate
-#' print(r$plot) # scaled schoenfeld residuals vs time
+#' # SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+#' # Not real patients; see ?sim_htn_trial before interpreting any result.
+#' data(sim_htn_trial)
+#' d <- sim_htn_trial
+#' cx <- mc_cox(d,
+#'   survival::Surv(followup_days, cv_event) ~ age + bmi + treatment)
+#' mc_test_proportional_hazards(fit = cx$model)
 #' @export
-mc_ph_test <- function(fit = NULL, data = NULL, formula = NULL,
- which = NULL, transform = "km") {
+mc_test_proportional_hazards <- function(fit = NULL, data = NULL, formula = NULL,
+ which = NULL, transform = "km", alpha = 0.05,
+ p_adjust = "BH") {
  if (is.null(fit)) {
  if (is.null(data) || is.null(formula))
  stop("Provide either a fitted `coxph` object or both `data` and `formula`.")
- if (!requireNamespace("survival", quietly = TRUE))
- stop("`mc_ph_test` requires the survival package.")
  fit <- survival::coxph(formula, data = data)
  }
  if (!inherits(fit, "coxph"))
@@ -329,18 +453,35 @@ mc_ph_test <- function(fit = NULL, data = NULL, formula = NULL,
  tb <- as.data.frame(zp$table)
  names(tb) <- c("chisq", "df", "p_value")
  tb$variable <- rownames(tb)
- vnames <- colnames(zp$y) # covariate names (columns of cox.zph$y = variables, rows = event times)
+ vnames <- colnames(zp$y)
  w <- if (is.null(which)) vnames[1] else which
  if (!w %in% vnames) stop("`which` must be one of: ", paste(vnames, collapse = ", "))
+ ## Multiplicity correction across the covariate-specific tests only.
+ per <- tb$variable != "GLOBAL"
+ tb$p.adjusted <- NA_real_
+ tb$p.adjusted[per] <- stats::p.adjust(tb$p_value[per], method = p_adjust)
+ global_p <- if ("GLOBAL" %in% tb$variable)
+ tb$p_value[tb$variable == "GLOBAL"][1] else NA_real_
+ verdict <- .mc_check_row("Proportional hazards (global)", global_p,
+ "global PH p > alpha",
+ if (is.na(global_p)) NA else global_p > alpha,
+ "Schoenfeld residuals; per-covariate p values in `test`")
+ checks <- rbind(verdict,
+ .mc_check_row("Per-covariate PH", suppressWarnings(min(tb$p.adjusted[per], na.rm = TRUE)),
+ "min adjusted p > alpha",
+ if (all(is.na(tb$p.adjusted[per]))) NA else
+ min(tb$p.adjusted[per], na.rm = TRUE) > alpha))
  yy <- as.numeric(zp$y[, w, drop = TRUE])
  tt <- as.numeric(zp$x)
  dfp <- data.frame(time = tt, sresid = yy)
  plot <- ggplot2::ggplot(dfp, ggplot2::aes(time, sresid)) +
  ggplot2::geom_point(size = 1.2, alpha = 0.6) +
- ggplot2::geom_smooth(se = TRUE, color = "steelblue", size = 0.8) +
+ ggplot2::geom_smooth(se = TRUE, color = "steelblue", linewidth = 0.8) +
  ggplot2::geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
  ggplot2::labs(x = paste("Transformed time (", transform, ")", sep = ""),
  y = paste("Scaled Schoenfeld residual (", w, ")", sep = "")) +
  mc_theme()
- list(test = tb[, c("variable", "chisq", "df", "p_value")], plot = plot)
+ list(test = tb[, c("variable", "chisq", "df", "p_value", "p.adjusted")],
+ global_p = global_p, verdict = verdict, checks = checks,
+ p_adjust = p_adjust, plot = plot)
 }

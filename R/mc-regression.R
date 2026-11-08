@@ -44,17 +44,31 @@
 #' @return A tidy \code{data.frame} with columns \code{term} / \code{estimate}
 #' (OR) / \code{std.error} / \code{statistic} / \code{p.value} / \code{conf.low}
 #' / \code{conf.high}; \code{estimate} is the exponentiated OR.
+#' @param diagnostics If `TRUE`, return the full diagnostic bundle from [mc_logistic_report()] instead of only the coefficient table.
+#' @param auc_boot Bootstrap resamples for the AUC CI; `0` uses the Hanley-McNeil approximation.
+#' @param seed Random seed used when `diagnostics = TRUE`.
 #' @examples
-#' # multivariable logistic regression for low birth weight
-#' birthwt <- MASS::birthwt
-#' mc_logistic(birthwt, low ~ age + lwt + smoke + factor(race))
+#' # SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+#' # Not real patients; see ?sim_htn_trial before interpreting any result.
+#' data(sim_htn_trial)
+#' d <- sim_htn_trial
+#' mc_logistic(d, bp_control ~ age + bmi + treatment)
+#' mc_logistic(d, bp_control ~ age + bmi + treatment,
+#'             diagnostics = TRUE, auc_boot = 0L)$checks
 #' @export
-mc_logistic <- function(data, formula, conf = 0.95) {
- fit <- eval(substitute(stats::glm(formula, data = DATA,
- family = stats::binomial),
- list(DATA = data)))
- td <- broom::tidy(fit, conf.int = TRUE, conf.level = conf, exponentiate = TRUE)
- td
+mc_logistic <- function(data, formula, conf = 0.95, diagnostics = FALSE,
+                        auc_boot = 0L, seed = 1L) {
+  fit <- eval(substitute(stats::glm(formula, data = DATA,
+                                    family = stats::binomial),
+                         list(DATA = data)))
+  td <- broom::tidy(fit, conf.int = TRUE, conf.level = conf,
+                    exponentiate = TRUE)
+  if (!isTRUE(diagnostics)) return(td)
+  rep <- mc_logistic_report(data, formula, conf = conf,
+                            auc_boot = auc_boot, seed = seed)
+  list(coefficients = td, model = fit, report = rep,
+       checks = rep$checks, performance = rep$performance,
+       diagnostics = rep$diagnostics)
 }
 
 #' Univariate screen -> multivariable logistic regression
@@ -90,48 +104,80 @@ mc_logistic <- function(data, formula, conf = 0.95) {
 #' @return A list with \code{univariate} (univariate table), \code{selected}
 #' (selected variables), and \code{multivariable} (multivariable coefficient
 #' Table; \code{NULL} if no variables were selected).
+#' @param p_adjust Multiplicity correction for the univariate p values; `"none"` (default), `"holm"`, `"BH"`, etc.
+#' @param bootstrap Number of resamples for variable-selection stability; `0` (default) skips it.
+#' @param seed Random seed for the stability resamples.
 #' @examples
-#' # : univariate screening then multivariable modelling ("screen then model")
-#' birthwt <- MASS::birthwt
-#' bw <- birthwt
-#' bw$race <- factor(bw$race)
-#' bw$smoke <- factor(bw$smoke)
-#' res <- mc_logistic_screen(bw, y = "low",
-#' x_vars = c("age","lwt","race","smoke","ht","ui"))
-#' cat("==== univariate ====\n"); print(res$univariate, row.names = FALSE)
-#' cat("\n==== selected ====\n"); print(res$selected)
-#' cat("\n==== multivariable ====\n"); print(as.data.frame(res$multivariable), row.names = FALSE)
+#' # SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+#' # Not real patients; see ?sim_htn_trial before interpreting any result.
+#' data(sim_htn_trial)
+#' d <- sim_htn_trial
+#' scr <- mc_logistic_screen(d, y = "bp_control",
+#'   x_vars = c("age", "bmi", "ldl", "glucose", "smoke", "diabetes"),
+#'   p_adjust = "BH")
+#' scr$univariate
+#' scr$selected
 #' @export
-mc_logistic_screen <- function(data, y, x_vars, alpha = 0.05, conf = 0.95) {
+mc_logistic_screen <- function(data, y, x_vars, alpha = 0.05, conf = 0.95,
+                               p_adjust = "none", bootstrap = 0L,
+                               seed = NULL) {
  univ <- list()
- sig <- c()
  for (xv in x_vars) {
  f <- stats::as.formula(paste(y, "~", xv))
- m <- eval(substitute(stats::glm(f, data = DATA, family = stats::binomial),
- list(DATA = data)))
- td <- broom::tidy(m, conf.int = TRUE, exponentiate = TRUE)
+ m <- tryCatch(stats::glm(f, data = data, family = stats::binomial),
+ error = function(e) NULL)
+ if (is.null(m)) next
+ td <- broom::tidy(m, conf.int = TRUE, conf.level = conf, exponentiate = TRUE)
  rows_x <- td[td$term != "(Intercept)", ]
  if (nrow(rows_x) == 0) next
- p_min <- min(rows_x$p.value)
  best <- rows_x[which.min(rows_x$p.value), ]
  univ[[xv]] <- data.frame(
  variable = xv, OR = best$estimate,
  CI.low = best$conf.low, CI.high = best$conf.high,
- p.value = p_min, stringsAsFactors = FALSE)
- if (p_min < alpha) sig <- c(sig, xv)
+ p.value = as.numeric(best$p.value), stringsAsFactors = FALSE)
  }
+ if (!length(univ)) stop("No candidate variable could be fitted.")
  univ_df <- do.call(rbind, univ)
+ rownames(univ_df) <- NULL
+ univ_df$p.adjusted <- as.numeric(stats::p.adjust(univ_df$p.value,
+ method = p_adjust))
+ univ_df$selected <- univ_df$p.adjusted < alpha
+ ## Screening now uses the adjusted p value; with p_adjust = "none" this is
+ ## exactly the original behaviour.
+ sig <- univ_df$variable[univ_df$selected]
  if (length(sig) > 0) {
  f2 <- stats::as.formula(paste(y, "~", paste(sig, collapse = " + ")))
- m2 <- eval(substitute(stats::glm(f2, data = DATA, family = stats::binomial),
- list(DATA = data)))
- mult <- broom::tidy(m2, conf.int = TRUE, conf.level = conf, exponentiate = TRUE)
+ m2 <- stats::glm(f2, data = data, family = stats::binomial)
+ mult <- broom::tidy(m2, conf.int = TRUE, conf.level = conf,
+ exponentiate = TRUE)
  mult$variable <- mult$term
  } else {
  mult <- NULL
  message("Univariate screening selected no variables; multivariable model not built.")
  }
- list(univariate = univ_df, selected = sig, multivariable = mult)
+ stability <- NULL
+ if (bootstrap > 0L) {
+ if (!is.null(seed)) set.seed(seed)
+ cnt <- setNames(rep(0L, length(x_vars)), x_vars)
+ n <- nrow(data)
+ for (b in seq_len(bootstrap)) {
+ d <- data[sample.int(n, n, replace = TRUE), , drop = FALSE]
+ for (xv in x_vars) {
+ mm <- tryCatch(stats::glm(stats::as.formula(paste(y, "~", xv)),
+ data = d, family = stats::binomial),
+ error = function(e) NULL)
+ if (is.null(mm)) next
+ tt <- broom::tidy(mm)
+ pp <- tt$p.value[tt$term != "(Intercept)"]
+ if (length(pp) && min(pp, na.rm = TRUE) < alpha) cnt[xv] <- cnt[xv] + 1L
+ }
+ }
+ stability <- data.frame(variable = x_vars,
+ selection_frequency = as.numeric(cnt) / bootstrap,
+ stringsAsFactors = FALSE)
+ }
+ list(univariate = univ_df, selected = sig, multivariable = mult,
+ stability = stability, p_adjust = p_adjust)
 }
 
 #' Stepwise variable selection
@@ -163,24 +209,61 @@ mc_logistic_screen <- function(data, y, x_vars, alpha = 0.05, conf = 0.95) {
 #' @param k AIC penalty; default \code{2}.
 #' @return A list with \code{model} (final glm object), \code{coefficients}
 #' (coefficient table), and \code{formula} (final formula).
+#' @param family GLM family object or string; default `binomial()`. Previously hard-coded to logistic.
+#' @param bootstrap Resamples for selection stability; `0` (default) skips it.
+#' @param seed Random seed for the stability resamples.
 #' @examples
-#' # aIC-based stepwise variable selection
-#' birthwt <- MASS::birthwt
-#' bw <- birthwt
-#' bw$race <- factor(bw$race)
-#' bw$smoke <- factor(bw$smoke)
-#' mc_stepwise(bw, low ~ age + lwt + race + smoke + ht + ui)$coefficients
+#' # SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+#' # Not real patients; see ?sim_htn_trial before interpreting any result.
+#' data(sim_htn_trial)
+#' d <- sim_htn_trial
+#' mc_stepwise(d, bp_control ~ age + bmi + ldl + treatment,
+#'             direction = "both")
 #' @export
 mc_stepwise <- function(data, formula, direction = c("both", "backward", "forward"),
- k = 2) {
+ k = 2, family = stats::binomial(), bootstrap = 0L, seed = NULL) {
  direction <- match.arg(direction)
- fit <- eval(substitute(stats::glm(formula, data = DATA,
- family = stats::binomial),
- list(DATA = data)))
+ fit <- eval(substitute(stats::glm(formula, data = DATA, family = FAM),
+ list(DATA = data, FAM = family)))
+ if (direction == "forward") {
+ null_fit <- stats::update(fit, . ~ 1)
+ step_fit <- stats::step(null_fit,
+ scope = list(lower = ~ 1, upper = formula),
+ direction = "forward", k = k, trace = 0)
+ } else {
  step_fit <- stats::step(fit, direction = direction, k = k, trace = 0)
- td <- broom::tidy(step_fit, conf.int = TRUE, exponentiate = TRUE)
+ }
+ fam_obj <- if (inherits(family, "family")) family else
+ tryCatch(stats::binomial(), error = function(e) stats::gaussian())
+ expo <- identical(fam_obj$family, "binomial") &&
+ identical(fam_obj$link, "logit")
+ td <- broom::tidy(step_fit, conf.int = TRUE, exponentiate = expo)
  td$variable <- td$term
- list(model = step_fit, coefficients = td, formula = formula(step_fit))
+ final_terms <- setdiff(all.vars(stats::formula(step_fit)[[3]]), ".")
+ stability <- NULL
+ if (bootstrap > 0L) {
+ if (!is.null(seed)) set.seed(seed)
+ cnt <- setNames(rep(0L, length(final_terms)), final_terms)
+ n <- nrow(data)
+ all_terms <- all.vars(formula[[3]])
+ for (b in seq_len(bootstrap)) {
+ d <- data[sample.int(n, n, replace = TRUE), , drop = FALSE]
+ m <- tryCatch(stats::glm(formula, data = d, family = family),
+ error = function(e) NULL)
+ if (is.null(m)) next
+ s <- tryCatch(stats::step(m, direction = "both", k = k, trace = 0),
+ error = function(e) NULL)
+ if (is.null(s)) next
+ kept <- all.vars(stats::formula(s)[[3]])
+ cnt[intersect(kept, names(cnt))] <- cnt[intersect(kept, names(cnt))] + 1L
+ }
+ stability <- data.frame(variable = final_terms,
+ selection_frequency = as.numeric(cnt) / bootstrap,
+ stringsAsFactors = FALSE)
+ }
+ list(model = step_fit, coefficients = td,
+ formula = stats::formula(step_fit), family = fam_obj,
+ stability = stability)
 }
 
 #' Ordinal logistic regression
@@ -210,18 +293,17 @@ mc_stepwise <- function(data, formula, direction = c("both", "backward", "forwar
 #' @return A \code{data.frame} of coefficients with columns \code{variable} /
 #' \code{Value} / \code{Std.Error} / \code{t.value} / \code{OR} /
 #' \code{p.value}; \code{OR = exp(Value)}.
+#' @param conf Confidence level for the OR interval; default `0.95`.
 #' @examples
+#' # SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+#' # Not real patients; see ?sim_htn_trial before interpreting any result.
+#' data(sim_htn_trial)
+#' d <- sim_htn_trial
 #' \donttest{
-#' # ordinal logistic  -  ordinal outcome of number of prenatal visits (ftv)
-#' birthwt <- MASS::birthwt
-#' bw <- birthwt
-#' bw$ftv_ord <- ordered(cut(bw$ftv, c(-1, 0, 2, Inf),
-#' labels = c("0", "1-2", "3+")))
-#' bw$smoke <- factor(bw$smoke)
-#' mc_ordinal_logistic(bw, ftv_ord ~ age + lwt + smoke)
+#' mc_ordinal_logistic(d, bp_grade ~ age + bmi + treatment)
 #' }
 #' @export
-mc_ordinal_logistic <- function(data, formula) {
+mc_ordinal_logistic <- function(data, formula, conf = 0.95) {
  if (!requireNamespace("MASS", quietly = TRUE)) {
  stop("`mc_ordinal_logistic` requires the MASS package (shipped with R).")
  }
@@ -229,9 +311,47 @@ mc_ordinal_logistic <- function(data, formula) {
  list(DATA = data)))
  co <- summary(fit)$coefficients
  cf <- as.data.frame(co)
+ names(cf) <- c("estimate", "std_error", "t_value")
  cf$variable <- rownames(cf)
- cf$OR <- exp(cf$Value)
- cf$p.value <- 2 * stats::pnorm(-abs(cf$`t value`))
+ zc <- stats::qnorm(1 - (1 - conf) / 2)
+ cf$OR <- exp(cf$estimate)
+ cf$OR_lower <- exp(cf$estimate - zc * cf$std_error)
+ cf$OR_upper <- exp(cf$estimate + zc * cf$std_error)
+ cf$p.value <- 2 * stats::pnorm(-abs(cf$t_value))
+ cf$is_intercept <- grepl("\\|", cf$variable)
+ ## Approximate proportional-odds check: refit a binary logit at every
+ ## cut point and measure how far the shared slopes drift apart.
+ mf <- stats::model.frame(formula, data = data)
+ y <- stats::model.response(mf)
+ lev <- levels(factor(y))
+ po_stat <- NA_real_
+ if (length(lev) >= 3L) {
+ d <- mf[, -1, drop = FALSE]
+ splits <- lapply(seq_len(length(lev) - 1L), function(i) {
+ d$.y <- as.integer(as.integer(factor(y)) > i)
+ m <- tryCatch(stats::glm(.y ~ ., data = d,
+ family = stats::binomial),
+ error = function(e) NULL)
+ if (is.null(m)) NULL else stats::coef(m)
+ })
+ splits <- Filter(Negate(is.null), splits)
+ if (length(splits) >= 2L) {
+ common <- Reduce(intersect, lapply(splits, names))
+ common <- setdiff(common, "(Intercept)")
+ if (length(common)) {
+ mm <- do.call(rbind, lapply(splits, function(v) v[common]))
+ drift <- apply(mm, 2L, function(v) diff(range(v, na.rm = TRUE)))
+ po_stat <- max(drift / pmax(0.05, cf$std_error[match(common, cf$variable)]),
+ na.rm = TRUE)
+ }
+ }
+ }
+ checks <- .mc_check_row("Proportional odds (approximate)", po_stat,
+ "max slope drift < 1.96 SE",
+ if (is.na(po_stat)) NA else po_stat < 1.96,
+ "binary logits at each cut point; screening approximation, not the Brant test")
+ attr(cf, "checks") <- checks
+ attr(cf, "fit") <- fit
  cf
 }
 
@@ -262,19 +382,22 @@ mc_ordinal_logistic <- function(data, formula) {
 #' @param formula A formula with a \code{strata()} term.
 #' @return A coefficient table with estimate / standard error / z / p / OR / OR
 #' Confidence interval.
+#' @param conf Confidence level for the OR interval; default `0.95`.
 #' @examples
-#' # demonstrating conditional logistic regression with the built-in matched case-control dataset infert
-#' # case: infertility status (1 = case); stratum: matched set; spontaneous/induced: miscarriage history
-#' infert <- datasets::infert
-#' mc_clogistic(infert, case ~ spontaneous + induced + survival::strata(stratum))
+#' # SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+#' # Not real patients; see ?sim_htn_trial before interpreting any result.
+#' data(sim_htn_trial)
+#' d <- sim_htn_trial
+#' m <- d[1:600, ]                      # 300 simulated matched pairs
+#' mc_clogistic(m,
+#'   case_status ~ smoke + prior_cv + survival::strata(match_id))
 #' @export
-mc_clogistic <- function(data, formula) {
+mc_clogistic <- function(data, formula, conf = 0.95) {
  if (!requireNamespace("survival", quietly = TRUE)) {
  stop("`mc_clogistic` requires the survival package; please install.packages('survival').")
  }
  # survival::clogit internally calls coxph() via eval(call, parent.frame()),
- # so it fails unless survival is on the search path. Evaluate it from within a
- # child environment of the survival namespace so coxph resolves correctly.
+ # so it fails unless survival is on the search path.
  e <- new.env(parent = asNamespace("survival"))
  e$formula <- formula
  e$data <- data
@@ -284,11 +407,39 @@ mc_clogistic <- function(data, formula) {
  se <- sqrt(diag(as.matrix(fit$var)))
  z <- beta / se
  p <- 2 * stats::pnorm(-abs(z))
- or <- exp(beta)
- ci <- exp(beta + c(-1, 1) * stats::qnorm(0.975) * se)
- data.frame(variable = nam, estimate = beta, std_error = se, z = z,
- p.value = p, OR = or, OR_lower = ci[1], OR_upper = ci[2],
+ zc <- stats::qnorm(1 - (1 - conf) / 2)
+ ## Vectorised interval (the previous c(-1, 1) recycling was wrong for
+ ## models with more than two coefficients).
+ lo <- exp(beta - zc * se)
+ hi <- exp(beta + zc * se)
+ out <- data.frame(variable = nam, estimate = beta, std_error = se, z = z,
+ p.value = p, OR = exp(beta), OR_lower = lo, OR_upper = hi,
  stringsAsFactors = FALSE)
+ fstr <- paste(deparse(formula), collapse = " ")
+ sm <- regmatches(fstr, regexpr("strata\\(([^)]+)\\)", fstr))
+ strat_var <- if (length(sm)) sub("^strata\\(", "",
+ sub("\\)$", "", sm[1])) else NA_character_
+ n_strata <- if (!is.na(strat_var) && strat_var %in% names(data))
+ length(unique(data[[strat_var]])) else NA_integer_
+ scalar <- function(expr) {
+ v <- tryCatch(as.numeric(expr), error = function(e) NA_real_)
+ if (length(v) == 1L) v else NA_real_
+ }
+ events <- scalar(fit$nevent)
+ n_obs <- scalar(if (is.null(fit$n)) nrow(data) else fit$n)
+ lrt_p <- tryCatch({
+ a <- stats::anova(fit)
+ pp <- a[nrow(a), ]
+ as.numeric(pp[grep("Pr", names(pp))[1]])
+ }, error = function(e) NA_real_)
+ checks <- data.frame(
+ metric = c("n", "events", "n_strata", "logLik", "LRT_p"),
+ value = c(n_obs, events, scalar(n_strata),
+ scalar(stats::logLik(fit)), scalar(lrt_p)),
+ stringsAsFactors = FALSE)
+ attr(out, "checks") <- checks
+ attr(out, "fit") <- fit
+ out
 }
 
 #' Model comparison
@@ -314,18 +465,20 @@ mc_clogistic <- function(data, formula) {
 #' Variable, otherwise the criteria are not comparable. The weight reflects the
 #' Relative probability of each model being the best, not an absolute
 #' Goodness-of-fit.
-#' @param... Fitted model objects.
+#' @param ... Fitted model objects.
 #' @param n Sample size; auto-detected from the model if NULL.
 #' @return A ranked comparison table sorted by Akaike weight.
+#' @param lrt If `TRUE`, add pairwise likelihood-ratio tests between nested models ordered by parameter count.
 #' @examples
-#' # comparing multiple linear models predicting birth weight (aIC/bIC/aICc/weights)
-#' birthwt <- MASS::birthwt
-#' m1 <- lm(bwt ~ lwt, data = birthwt)
-#' m2 <- lm(bwt ~ lwt + age, data = birthwt)
-#' m3 <- lm(bwt ~ lwt + age + smoke + factor(race), data = birthwt)
-#' mc_model_compare(m1, m2, m3)
+#' # SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+#' # Not real patients; see ?sim_htn_trial before interpreting any result.
+#' data(sim_htn_trial)
+#' d <- sim_htn_trial
+#' m1 <- stats::lm(sbp_week12 ~ age + bmi, data = d)
+#' m2 <- stats::lm(sbp_week12 ~ age + bmi + treatment, data = d)
+#' mc_model_compare(m1, m2, lrt = TRUE)
 #' @export
-mc_model_compare <- function(..., n = NULL) {
+mc_model_compare <- function(..., n = NULL, lrt = FALSE) {
  models <- list(...)
  if (length(models) < 2) stop("`mc_model_compare` needs at least two models.")
  nm <- if (is.null(names(models))) {
@@ -348,8 +501,38 @@ mc_model_compare <- function(..., n = NULL) {
  e <- exp(-0.5 * delta)
  e / sum(e, na.rm = TRUE)
  }
+ ## Comparability audit: information criteria are only meaningful for the
+ ## same response fitted to the same observations.
+ get_family <- function(m) tryCatch({
+ if (!is.null(m$family)) m$family$family else class(m)[1]
+ }, error = function(e) class(m)[1])
+ get_response <- function(m) tryCatch(
+ paste(deparse(stats::formula(m)[[2]]), collapse = ""),
+ error = function(e) NA_character_)
+ fam <- vapply(models, get_family, character(1))
+ resp <- vapply(models, get_response, character(1))
+ comparable <- length(unique(fam)) == 1L &&
+ length(unique(resp[!is.na(resp)])) == 1L
+ if (!comparable)
+ warning("Models do not share the same family/response; AIC, BIC and AICc are not comparable.")
+ lrt_p <- rep(NA_real_, length(models))
+ if (isTRUE(lrt) && comparable) {
+ ord <- order(k)
+ for (i in seq_len(length(ord) - 1L)) {
+ m1 <- models[[ord[i]]]; m2 <- models[[ord[i + 1L]]]
+ q <- tryCatch({
+ a <- if (inherits(m1, "glm") && inherits(m2, "glm"))
+ stats::anova(m1, m2, test = "Chisq") else stats::anova(m1, m2)
+ pp <- a[nrow(a), ]
+ as.numeric(pp[grep("Pr", names(pp))[1]])
+ }, error = function(e) NA_real_)
+ lrt_p[ord[i + 1L]] <- q
+ }
+ }
  tab <- data.frame(model = nm, k = k, n = n, AIC = aic, BIC = bic,
  AICc = aicc, delta_AICc = delta, weight = w,
+ family = fam, response = resp,
+ comparable = comparable, lrt_p = lrt_p,
  stringsAsFactors = FALSE)
  tab[order(-tab$weight), ]
 }

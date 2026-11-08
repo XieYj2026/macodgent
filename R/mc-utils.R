@@ -10,14 +10,14 @@
 # for commercial purposes.
 # -----------------------------------------------------------------------------
 # Module: utilities module (utils)
-# This file contains: mc_mode / mc_inspect / mc_theme / mc_palette
+# This file contains: mc_stat_mode / mc_inspect / mc_theme / mc_palette
 # (also includes the internal original algorithm.nice_breaks: "nice numbers"
 # axis tick generator)
 # =============================================================================
 
 #' Mode (multiple modes supported)
 #'
-#' `mc_mode()` is a teaching implementation of the mode, which base R does
+#' `mc_stat_mode()` is a teaching implementation of the mode, which base R does
 #' Not provide. It returns *every* value tied for the highest frequency, so
 #' Data with several modes is handled correctly instead of returning only one.
 #'
@@ -38,13 +38,14 @@
 #' @return A vector of all mode(s), coerced back to the input type; `NULL` when
 #' There are no non-missing values.
 #' @examples
-#' # low birthweight study dataset (birthwt, MASS)
-#' birthwt <- MASS::birthwt
-#' mc_mode(factor(birthwt$race)) # most common race category (1 = white)
-#' mc_mode(factor(birthwt$smoke)) # mode of smoking status (0 = non-smoker)
-#' mc_mode(c(NA, NA, 1, 2), na.rm = FALSE) # returns "NA" when NA present
+#' # SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+#' # Not real patients; see ?sim_htn_trial before interpreting any result.
+#' data(sim_htn_trial)
+#' d <- sim_htn_trial
+#' mc_stat_mode(d$site)                 # most frequent simulated site
+#' mc_stat_mode(as.numeric(d$race))
 #' @export
-mc_mode <- function(x, na.rm = TRUE) {
+mc_stat_mode <- function(x, na.rm = TRUE) {
  if (na.rm) x <- x[!is.na(x)]
  if (length(x) == 0) return(NULL)
  freq_table <- table(x)
@@ -74,18 +75,21 @@ mc_mode <- function(x, na.rm = TRUE) {
 #' Equals the column's total length, and the missing percentage is computed
 #' Against that total length. This is the first "health check" of the
 #' Preprocessing pipeline  -  run it before any cleaning or modelling.
-#' @param.data A `data.frame` or `tibble`.
+#' @param .data A `data.frame` or `tibble`.
 #' @return A `data.frame` with those six columns, one row per input column.
+#' @param detailed If `TRUE`, add unique-percentage, constant flag, outlier count, distribution verdict and a suggested variable role.
 #' @examples
-#' # data-quality check on the birthwt data frame (try injecting
-#' # missing values to practice)
-#' birthwt <- MASS::birthwt
-#' mc_inspect(birthwt[, c("age", "lwt", "bwt", "smoke", "low")])
+#' # SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+#' # Not real patients; see ?sim_htn_trial before interpreting any result.
+#' data(sim_htn_trial)
+#' d <- sim_htn_trial
+#' mc_inspect(d[, c("id", "age", "bmi", "smoke", "crp")])
+#' mc_inspect(d[, c("age", "bmi", "smoke", "crp")], detailed = TRUE)
 #' @export
-mc_inspect <- function(.data) {
+mc_inspect <- function(.data, detailed = FALSE) {
  if (!is.data.frame(.data)) stop("`.data` must be a data.frame or tibble.")
  rows <- lapply(names(.data), function(nm) {
- col <-.data[[nm]]
+ col <- .data[[nm]]
  n_miss <- sum(is.na(col))
  data.frame(
  variable = nm,
@@ -97,20 +101,54 @@ mc_inspect <- function(.data) {
  stringsAsFactors = FALSE
  )
  })
- do.call(rbind, rows)
+ out <- do.call(rbind, rows)
+ if (!isTRUE(detailed)) return(out)
+ n <- nrow(.data)
+ extra <- lapply(names(.data), function(nm) {
+ col <- .data[[nm]]
+ nun <- length(unique(col[!is.na(col)]))
+ pct_unique <- round(100 * nun / n, 2)
+ is_const <- nun <= 1L
+ n_out <- NA_integer_
+ distribution <- "categorical"
+ if (is.numeric(col) && nun > 10L) {
+ q <- stats::quantile(col, c(0.25, 0.75), na.rm = TRUE)
+ iqr <- q[2] - q[1]
+ n_out <- sum(col < q[1] - 1.5 * iqr | col > q[2] + 1.5 * iqr,
+ na.rm = TRUE)
+ sk <- tryCatch(mean((col - mean(col, na.rm = TRUE))^3, na.rm = TRUE) /
+ stats::sd(col, na.rm = TRUE)^3,
+ error = function(e) NA_real_)
+ distribution <- if (!is.finite(sk)) "unknown" else
+ if (sk > 0.5) "right-skewed" else if (sk < -0.5) "left-skewed" else
+ "approximately symmetric"
+ }
+ role <- if (is_const) "constant (exclude)" else
+ if (pct_unique >= 95 && nun > 10L &&
+ grepl("(^id$|_id$|id$|patient|subject|record)", tolower(nm)))
+ "identifier (exclude)" else
+ if (pct_unique >= 95 && is.numeric(col)) "continuous predictor" else
+ if (nun <= 10L) "categorical predictor" else "predictor"
+ data.frame(pct_unique = pct_unique, is_constant = is_const,
+ n_outliers = n_out, distribution = distribution,
+ suggested_role = role, stringsAsFactors = FALSE)
+ })
+ out <- cbind(out, do.call(rbind, extra))
+ rownames(out) <- NULL
+ out
 }
 
 #' MA Codgent light ggplot2 theme
 #'
 #' A light, restrained ggplot2 theme with ample whitespace, ready for direct use
 #' In reports. It is the default theme returned inside the `plot`/`forest`
-#' Components of several analysis functions (e.g. `mc_survfit()`, `mc_cox()`,
+#' Components of several analysis functions (e.g. `mc_kaplan_meier()`, `mc_cox()`,
 #' `mc_rcs()`).
 #'
 #' @details
 #' Purpose: a light, restrained ggplot2 theme with ample whitespace for report
 #' Figures, matching the plot components returned by several analysis functions
-#' (e.g. mc_survfit(), mc_cox(), mc_rcs()).
+#' (e.g. mc_kaplan_meier(), mc_cox(), mc_rcs()).
 #' Arguments: base_size controls the base font size; default 12.
 #' Result: returns a ggplot2 theme object that can be appended to any ggplot
 #' With +.
@@ -120,13 +158,13 @@ mc_inspect <- function(.data) {
 #' @param base_size Base font size; default `12`.
 #' @return A `ggplot2` theme object, usable with `+`.
 #' @examples
-#' library(ggplot2)
-#' # maternal pregnancy weight vs. birth weight scatter
-#' # (coloured by smoking status)
-#' birthwt <- MASS::birthwt
-#' p <- ggplot(birthwt, aes(lwt, bwt, color = factor(smoke))) +
-#' geom_point(size = 2, alpha = 0.6) + mc_theme(base_size = 13)
-#' print(p)
+#' # SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+#' # Not real patients; see ?sim_htn_trial before interpreting any result.
+#' data(sim_htn_trial)
+#' d <- sim_htn_trial
+#' g <- ggplot2::ggplot(d[1:200, ], ggplot2::aes(sbp_baseline, sbp_week12)) +
+#'   ggplot2::geom_point(alpha = 0.3) + mc_theme()
+#' print(g)
 #' @export
 mc_theme <- function(base_size = 12) {
  ggplot2::theme_minimal(base_size = base_size) +
@@ -176,15 +214,12 @@ mc_theme <- function(base_size = 12) {
 #' @return A named character vector of the six brand colours by default, or a
 #' Vector of length `n`.
 #' @examples
-#' pal <- mc_palette() # default: six brand colours
-#' print(pal)
-#' grad <- mc_palette(n = 20, type = "gradient") # 20-colour continuous gradient
-#' print(head(grad))
-#' library(ggplot2)
-#' df <- data.frame(name = factor(names(pal), names(pal)), col = pal)
-#' p <- ggplot(df, aes(name, fill = name)) + geom_bar() +
-#' scale_fill_manual(values = pal) + theme_void()
-#' print(p)
+#' # SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+#' # Not real patients; see ?sim_htn_trial before interpreting any result.
+#' data(sim_htn_trial)
+#' d <- sim_htn_trial
+#' barplot(table(d$site), col = mc_palette(5), main = "Simulated site counts")
+#' mc_palette(6, type = "gradient")
 #' @export
 mc_palette <- function(n = NULL, type = c("brand", "gradient", "discrete")) {
  brand <- c(primary = "#1A439C",
