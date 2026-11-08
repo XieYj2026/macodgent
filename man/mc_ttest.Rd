@@ -27,8 +27,10 @@ mc_ttest(
 \item{alternative}{\code{"two.sided"} (default) / \code{"less"} / \code{"greater"}.}
 }
 \value{
-A \code{data.frame} with columns \code{method}, \code{estimate}, \code{conf.low},
-\code{conf.high}, \code{statistic}, \code{p.value}.
+A \code{data.frame} with the original columns \code{method}, \code{estimate},
+\code{conf.low}, \code{conf.high}, \code{statistic}, \code{p.value}, plus \code{n1}, \code{n2},
+\code{mean1}, \code{mean2}, \code{sd1}, \code{sd2}, \code{effect}, \code{cohens_d}, \code{hedges_g},
+\code{effect_ci.low} and \code{effect_ci.high}.
 }
 \description{
 One-sample, independent two-sample, and paired
@@ -48,14 +50,16 @@ Result: returns the mean difference (or sample mean), standard error, t
 Statistic, degrees of freedom, p-value and confidence interval.
 Note: paired tests require x, y to be paired (e.g. same person measured
 Before/after); using an independent test when groups are not independent
-Understates error. For clearly skewed or small samples, consider mc_nonparam()'s
+Understates error. For clearly skewed or small samples, consider mc_test_rank()'s
 Wilcoxon test.
 }
 \examples{
-#
-birthwt <- MASS::birthwt
-# one-sample: is the average birth weight equal to 3000 g?
-mc_ttest(birthwt$bwt, mu = 3000)
-# independent two-sample (welch correction): smoking vs non-smoking mothers' birth weight
-mc_ttest(birthwt$bwt[birthwt$smoke == 1], birthwt$bwt[birthwt$smoke == 0])
+# SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+# Not real patients; see ?sim_htn_trial before interpreting any result.
+data(sim_htn_trial)
+d <- sim_htn_trial
+a <- d$sbp_week12[d$treatment == "Active"]
+p <- d$sbp_week12[d$treatment == "Placebo"]
+mc_ttest(a, p)                       # Hedges' g and its CI
+mc_ttest(a, mu = 135)                # one-sample test
 }

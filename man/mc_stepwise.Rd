@@ -4,7 +4,15 @@
 \alias{mc_stepwise}
 \title{Stepwise variable selection}
 \usage{
-mc_stepwise(data, formula, direction = c("both", "backward", "forward"), k = 2)
+mc_stepwise(
+  data,
+  formula,
+  direction = c("both", "backward", "forward"),
+  k = 2,
+  family = stats::binomial(),
+  bootstrap = 0L,
+  seed = NULL
+)
 }
 \arguments{
 \item{data}{A \code{data.frame}.}
@@ -14,6 +22,12 @@ mc_stepwise(data, formula, direction = c("both", "backward", "forward"), k = 2)
 \item{direction}{\code{"both"} (default), \code{"backward"}, or \code{"forward"}.}
 
 \item{k}{AIC penalty; default \code{2}.}
+
+\item{family}{GLM family object or string; default \code{binomial()}. Previously hard-coded to logistic.}
+
+\item{bootstrap}{Resamples for selection stability; \code{0} (default) skips it.}
+
+\item{seed}{Random seed for the stability resamples.}
 }
 \value{
 A list with \code{model} (final glm object), \code{coefficients}
@@ -43,10 +57,10 @@ Thresholds. Treat it as a "draft" for variable screening; important
 Conclusions still need domain knowledge and a pre-registered analysis plan.
 }
 \examples{
-# aIC-based stepwise variable selection
-birthwt <- MASS::birthwt
-bw <- birthwt
-bw$race <- factor(bw$race)
-bw$smoke <- factor(bw$smoke)
-mc_stepwise(bw, low ~ age + lwt + race + smoke + ht + ui)$coefficients
+# SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+# Not real patients; see ?sim_htn_trial before interpreting any result.
+data(sim_htn_trial)
+d <- sim_htn_trial
+mc_stepwise(d, bp_control ~ age + bmi + ldl + treatment,
+            direction = "both")
 }

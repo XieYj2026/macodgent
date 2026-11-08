@@ -4,7 +4,13 @@
 \alias{mc_quantile_reg}
 \title{Quantile Regression}
 \usage{
-mc_quantile_reg(data, formula, taus = c(0.25, 0.5, 0.75))
+mc_quantile_reg(
+  data,
+  formula,
+  taus = c(0.25, 0.5, 0.75),
+  conf = 0.95,
+  se = "nid"
+)
 }
 \arguments{
 \item{data}{A \code{data.frame}.}
@@ -12,6 +18,10 @@ mc_quantile_reg(data, formula, taus = c(0.25, 0.5, 0.75))
 \item{formula}{A regression formula.}
 
 \item{taus}{Vector of quantile points; default \code{c(0.25, 0.5, 0.75)}.}
+
+\item{conf}{Confidence level for coefficient intervals; default \code{0.95}.}
+
+\item{se}{Standard-error method passed to \code{quantreg::summary.rq()}; \code{"rank"} (default), \code{"nid"} fallback.}
 }
 \value{
 A \code{data.frame} with columns \code{term}, \code{estimate}, \code{std.error}, \code{statistic},
@@ -40,9 +50,12 @@ Invisible to ordinary mean regression (OLS). Quantile regression is robust to
 Outliers. Depends on quantreg (Suggests).
 }
 \examples{
+# SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+# Not real patients; see ?sim_htn_trial before interpreting any result.
+data(sim_htn_trial)
+d <- sim_htn_trial
 \donttest{
-# conditional quantile regression of birth weight (slope of pregnancy weight lwt across quantiles)
-birthwt <- MASS::birthwt
-mc_quantile_reg(birthwt, bwt ~ lwt + age, taus = c(0.25, 0.5, 0.75))
+mc_quantile_reg(d, sbp_week12 ~ sbp_baseline + age,
+                taus = c(0.25, 0.5, 0.75))
 }
 }

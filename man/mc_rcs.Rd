@@ -4,7 +4,7 @@
 \alias{mc_rcs}
 \title{Restricted Cubic Spline Regression}
 \usage{
-mc_rcs(data, x, y, nk = 3, knots = NULL, family = "gaussian")
+mc_rcs(data, x, y, nk = 3, knots = NULL, family = "gaussian", conf = 0.95)
 }
 \arguments{
 \item{data}{A \code{data.frame}.}
@@ -18,6 +18,8 @@ mc_rcs(data, x, y, nk = 3, knots = NULL, family = "gaussian")
 \item{knots}{Full knot vector including boundaries; \code{NULL} = automatic quantile knots.}
 
 \item{family}{GLM family; \code{"gaussian"} (default) or \code{"binomial"}, etc.}
+
+\item{conf}{Confidence level for the curve band and coefficient intervals; default \code{0.95}.}
 }
 \value{
 A list with \code{model}, \code{coefficients}, \code{plot}, \code{knots}.
@@ -47,11 +49,14 @@ Notes: More knots make the curve wigglier and more prone to overfitting; usually
 Inverted-U relationships. View the result with \code{print(res$plot)}.
 }
 \examples{
-# dose-response curve of maternal age vs low-birth-weight risk (non-linear)
-birthwt <- MASS::birthwt
-res <- mc_rcs(birthwt, x = "age", y = "low", nk = 4, family = "binomial")
-cat("knots:", round(res$knots, 2), "\n")
-print(res$plot)
+# SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+# Not real patients; see ?sim_htn_trial before interpreting any result.
+data(sim_htn_trial)
+d <- sim_htn_trial
+r <- mc_rcs(d, x = "sbp_baseline", y = "sbp_week12", nk = 4)
+r$knots
+r$nonlinearity_p
+head(r$curve)
 }
 \seealso{
 \code{\link{mc_gam}} (smooth terms are also used for non-linear relationship modeling).

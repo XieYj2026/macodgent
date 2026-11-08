@@ -4,7 +4,15 @@
 \alias{mc_ridge}
 \title{Ridge Regression}
 \usage{
-mc_ridge(data, x, y, nfolds = 10, family = "gaussian")
+mc_ridge(
+  data,
+  x,
+  y,
+  nfolds = 10,
+  family = "gaussian",
+  stability = 0L,
+  seed = NULL
+)
 }
 \arguments{
 \item{data}{A \code{data.frame}.}
@@ -16,6 +24,10 @@ mc_ridge(data, x, y, nfolds = 10, family = "gaussian")
 \item{nfolds}{Cross-validation folds; default \code{10}.}
 
 \item{family}{GLM family; \code{"gaussian"} (default) or \code{"binomial"}, etc.}
+
+\item{stability}{Number of bootstrap refits for coefficient-selection frequency; \code{0} (default) skips it.}
+
+\item{seed}{Random seed for cross-validation and stability resamples.}
 }
 \value{
 A list with \code{cv}, \code{coefficients}, \code{lambda.min}.
@@ -41,10 +53,13 @@ Variance across correlated variables), but all variables remain in the
 Interpretation. Larger lambda means stronger shrinkage. Depends on glmnet (Suggests).
 }
 \examples{
+# SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+# Not real patients; see ?sim_htn_trial before interpreting any result.
+data(sim_htn_trial)
+d <- sim_htn_trial
 \donttest{
-# ridge regression for multicollinearity among mtcars predictors
-xvars <- setdiff(names(mtcars), "mpg")
-mc_ridge(mtcars, x = xvars, y = "mpg")$coefficients
+xvars <- c("age", "bmi", "sbp_baseline", "ldl", "glucose", "creatinine")
+mc_ridge(d, x = xvars, y = "sbp_week12", nfolds = 5, seed = 1)$coefficients
 }
 }
 \seealso{

@@ -47,13 +47,10 @@ More perceptually uniform ramp is needed. Often paired with mc_theme() for
 Style-consistent report figures.
 }
 \examples{
-pal <- mc_palette() # default: six brand colours
-print(pal)
-grad <- mc_palette(n = 20, type = "gradient") # 20-colour continuous gradient
-print(head(grad))
-library(ggplot2)
-df <- data.frame(name = factor(names(pal), names(pal)), col = pal)
-p <- ggplot(df, aes(name, fill = name)) + geom_bar() +
-scale_fill_manual(values = pal) + theme_void()
-print(p)
+# SIMULATED DATA -- 3000 synthetic hypertension-trial subjects.
+# Not real patients; see ?sim_htn_trial before interpreting any result.
+data(sim_htn_trial)
+d <- sim_htn_trial
+barplot(table(d$site), col = mc_palette(5), main = "Simulated site counts")
+mc_palette(6, type = "gradient")
 }
